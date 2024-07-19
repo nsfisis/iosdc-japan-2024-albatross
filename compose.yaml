@@ -1,0 +1,29 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8002:80'
+    depends_on:
+      - db
+    environment:
+      ALBATROSS_DB_HOST: db
+      ALBATROSS_DB_PORT: 5432
+      ALBATROSS_DB_USER: postgres
+      ALBATROSS_DB_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      ALBATROSS_DB_NAME: albatross
+
+  db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      POSTGRES_DB: albatross
+    expose:
+      - 5432
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+volumes:
+  db-data:
