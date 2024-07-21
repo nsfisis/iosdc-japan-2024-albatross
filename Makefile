@@ -21,3 +21,7 @@ sqldef-dryrun:
 .PHONY: sqldef
 sqldef:
 	docker compose run --no-TTY tools psqldef < ./backend/schema.sql
+
+.PHONY: sqlc
+sqlc:
+	cd backend; make sqlc

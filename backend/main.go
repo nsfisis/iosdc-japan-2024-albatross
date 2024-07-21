@@ -12,7 +12,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"iosdc-code-battle-poc/db"
+	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
 
 type Config struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"iosdc-code-battle-poc/db"
+	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
 
 func authLogin(ctx context.Context, queries *db.Queries, username, password string) (int, error) {

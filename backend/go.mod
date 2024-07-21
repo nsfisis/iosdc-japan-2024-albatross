@@ -1,4 +1,4 @@
-module iosdc-code-battle-poc
+module github.com/nsfisis/iosdc-2024-albatross-backend
 
 go 1.22.3
 
