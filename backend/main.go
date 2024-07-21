@@ -2,15 +2,14 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/labstack/echo/v4"
 
 	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
@@ -84,40 +83,40 @@ func startGame(game *Game) {
 	go gameHubs[game.GameID].Run()
 }
 
+/*
 func handleGolfPost(w http.ResponseWriter, r *http.Request) {
-	/*
-		var yourTeam string
-		waitingGolfGames := []Game{}
-		err := db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
+	var yourTeam string
+	waitingGolfGames := []Game{}
+	err := db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
+	if err != nil {
+		http.Error(w, "Error getting games", http.StatusInternalServerError)
+		return
+	}
+	if len(waitingGolfGames) == 0 {
+		_, err = db.Exec("INSERT INTO games (type, state) VALUES ($1, $2)", gameTypeGolf, gameStateWaiting)
+		if err != nil {
+			http.Error(w, "Error creating game", http.StatusInternalServerError)
+			return
+		}
+		waitingGolfGames = []Game{}
+		err = db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
 		if err != nil {
 			http.Error(w, "Error getting games", http.StatusInternalServerError)
 			return
 		}
-		if len(waitingGolfGames) == 0 {
-			_, err = db.Exec("INSERT INTO games (type, state) VALUES ($1, $2)", gameTypeGolf, gameStateWaiting)
-			if err != nil {
-				http.Error(w, "Error creating game", http.StatusInternalServerError)
-				return
-			}
-			waitingGolfGames = []Game{}
-			err = db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
-			if err != nil {
-				http.Error(w, "Error getting games", http.StatusInternalServerError)
-				return
-			}
-			yourTeam = "a"
-			startGame(&waitingGolfGames[0])
-		} else {
-			yourTeam = "b"
-			db.Exec("UPDATE games SET state = $1 WHERE game_id = $2", gameStateReady, waitingGolfGames[0].GameID)
-		}
-		waitingGame := waitingGolfGames[0]
+		yourTeam = "a"
+		startGame(&waitingGolfGames[0])
+	} else {
+		yourTeam = "b"
+		db.Exec("UPDATE games SET state = $1 WHERE game_id = $2", gameStateReady, waitingGolfGames[0].GameID)
+	}
+	waitingGame := waitingGolfGames[0]
 
-		http.Redirect(w, r, fmt.Sprintf("/golf/%d/%s/", waitingGame.GameID, yourTeam), http.StatusSeeOther)
-	*/
+	http.Redirect(w, r, fmt.Sprintf("/golf/%d/%s/", waitingGame.GameID, yourTeam), http.StatusSeeOther)
 }
+*/
 
-func handleApiLogin(w http.ResponseWriter, r *http.Request, queries *db.Queries) {
+func handleApiLogin(c echo.Context, queries *db.Queries) error {
 	type LoginRequestData struct {
 		Username string `json:"username"`
 		Password string `json:"password"`
@@ -127,39 +126,23 @@ func handleApiLogin(w http.ResponseWriter, r *http.Request, queries *db.Queries)
 		UserId int `json:"userId"`
 	}
 
-	ctx := r.Context()
+	ctx := c.Request().Context()
 
-	contentType := r.Header.Get("Content-Type")
-	if !strings.HasPrefix(contentType, "application/json") {
-		http.Error(w, "Content-Type is not application/json", http.StatusBadRequest)
-		return
-	}
-
-	var requestData LoginRequestData
-	decoder := json.NewDecoder(r.Body)
-	err := decoder.Decode(&requestData)
-	if err != nil {
-		http.Error(w, "Failed to decode JSON", http.StatusBadRequest)
-		return
+	requestData := new(LoginRequestData)
+	if err := c.Bind(requestData); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
 	userId, err := authLogin(ctx, queries, requestData.Username, requestData.Password)
 	if err != nil {
-		http.Error(w, "Login failed", http.StatusUnauthorized)
-		return
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
 	responseData := LoginResponseData{
 		UserId: userId,
 	}
-	encoder := json.NewEncoder(w)
-	err = encoder.Encode(responseData)
-	if err != nil {
-		http.Error(w, "Failed to encode JSON", http.StatusInternalServerError)
-		return
-	}
+
+	return c.JSON(http.StatusOK, responseData)
 }
 
 func main() {
@@ -180,26 +163,19 @@ func main() {
 
 	queries := db.New(conn)
 
-	server := http.NewServeMux()
+	e := echo.New()
 
-	server.HandleFunc("GET /assets/", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public"+r.URL.Path)
+	e.Static("/assets", "public/assets")
+
+	e.GET("/*", func(c echo.Context) error {
+		return c.File("public/index.html")
 	})
 
-	server.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
-	})
-
-	server.HandleFunc("POST /golf/{$}", func(w http.ResponseWriter, r *http.Request) {
-		handleGolfPost(w, r)
-	})
-
-	server.HandleFunc("GET /sock/golf/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
-		gameId := r.PathValue("gameId")
+	e.GET("/sock/golf/:gameId/watch", func(c echo.Context) error {
+		gameId := c.Param("gameId")
 		gameIdInt, err := strconv.Atoi(gameId)
 		if err != nil {
-			http.Error(w, "Invalid game id", http.StatusBadRequest)
-			return
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 		}
 		var hub *GameHub
 		for _, h := range gameHubs {
@@ -209,18 +185,16 @@ func main() {
 			}
 		}
 		if hub == nil {
-			http.Error(w, "Game not found", http.StatusNotFound)
-			return
+			return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 		}
-		serveWsWatcher(hub, w, r)
+		return serveWsWatcher(hub, c.Response(), c.Request())
 	})
 
-	server.HandleFunc("GET /sock/golf/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		gameId := r.PathValue("gameId")
+	e.GET("/sock/golf/:gameId/play", func(c echo.Context) error {
+		gameId := c.Param("gameId")
 		gameIdInt, err := strconv.Atoi(gameId)
 		if err != nil {
-			http.Error(w, "Invalid game id", http.StatusBadRequest)
-			return
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 		}
 		var hub *GameHub
 		for _, h := range gameHubs {
@@ -230,15 +204,13 @@ func main() {
 			}
 		}
 		if hub == nil {
-			http.Error(w, "Game not found", http.StatusNotFound)
-			return
+			return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 		}
-		team := r.PathValue("team")
-		serveWs(hub, w, r, team)
+		return serveWs(hub, c.Response(), c.Request(), "a")
 	})
 
-	server.HandleFunc("POST /api/login", func(w http.ResponseWriter, r *http.Request) {
-		handleApiLogin(w, r, queries)
+	e.POST("/api/login", func(c echo.Context) error {
+		return handleApiLogin(c, queries)
 	})
 
 	defer func() {
@@ -247,5 +219,7 @@ func main() {
 		}
 	}()
 
-	http.ListenAndServe(":80", server)
+	if err := e.Start(":80"); err != http.ErrServerClosed {
+		log.Fatal(err)
+	}
 }
