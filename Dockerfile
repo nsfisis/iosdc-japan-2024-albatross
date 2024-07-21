@@ -17,7 +17,6 @@ FROM golang:1.22.3
 
 WORKDIR /app
 COPY --from=backend-builder /build/server /app/server
-COPY ./frontend/public /app/public
-COPY --from=frontend-builder /build/dist/js /app/public/js
+COPY --from=frontend-builder /build/dist /app/public
 
 CMD ["/app/server"]

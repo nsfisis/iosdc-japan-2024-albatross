@@ -158,7 +158,7 @@ func main() {
 
 	server := http.NewServeMux()
 
-	server.HandleFunc("GET /js/", func(w http.ResponseWriter, r *http.Request) {
+	server.HandleFunc("GET /assets/", func(w http.ResponseWriter, r *http.Request) {
 		http.ServeFile(w, r, "./public"+r.URL.Path)
 	})
 
@@ -167,7 +167,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /golf/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/golf/index.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("POST /golf/{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -175,7 +175,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /golf/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/golf/watch.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("GET /sock/golf/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -200,7 +200,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /golf/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/golf/game.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("GET /sock/golf/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -226,7 +226,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /race/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/race/index.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("POST /race/{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -234,7 +234,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /race/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/race/watch.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("GET /sock/race/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
@@ -242,7 +242,7 @@ func main() {
 	})
 
 	server.HandleFunc("GET /race/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/race/game.html")
+		http.ServeFile(w, r, "./public/index.html")
 	})
 
 	server.HandleFunc("GET /sock/race/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
