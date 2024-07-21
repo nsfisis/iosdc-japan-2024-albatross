@@ -4,9 +4,7 @@ export default function Edit() {
   return (
     <div>
       <h1>Albatross.swift</h1>
-      <h2>
-        User Edit
-      </h2>
+      <h2>User Edit</h2>
       <Form method="post">
         <label>Display name</label>
         <input type="text" name="display_name" />
@@ -19,4 +17,4 @@ export default function Edit() {
       </p>
     </div>
   );
-};
+}

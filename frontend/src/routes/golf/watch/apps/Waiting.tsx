@@ -3,9 +3,5 @@ type Props = {
 };
 
 export default (_props: Props) => {
-  return (
-    <div>
-      対戦相手が現れるのを待っています......
-    </div>
-  );
-}
+  return <div>対戦相手が現れるのを待っています......</div>;
+};

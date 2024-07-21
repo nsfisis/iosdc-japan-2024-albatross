@@ -1,4 +1,4 @@
-import App from './watch/App.tsx';
+import App from "./watch/App.tsx";
 
 export default function GolfWatch() {
   return (
@@ -7,4 +7,4 @@ export default function GolfWatch() {
       <App gameId={0} />
     </div>
   );
-};
+}

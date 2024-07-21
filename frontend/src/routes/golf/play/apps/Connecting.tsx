@@ -4,9 +4,5 @@ type Props = {
 };
 
 export default (_props: Props) => {
-  return (
-    <div>
-      接続中です......
-    </div>
-  );
-}
+  return <div>接続中です......</div>;
+};

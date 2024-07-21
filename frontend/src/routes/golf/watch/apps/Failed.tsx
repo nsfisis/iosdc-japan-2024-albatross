@@ -3,9 +3,5 @@ type Props = {
 };
 
 export default (_props: Props) => {
-  return (
-    <div>
-      エラー
-    </div>
-  );
-}
+  return <div>エラー</div>;
+};

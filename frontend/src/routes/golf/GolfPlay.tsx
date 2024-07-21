@@ -1,4 +1,4 @@
-import App from './play/App.tsx';
+import App from "./play/App.tsx";
 
 export default function GolfPlay() {
   return (
@@ -7,4 +7,4 @@ export default function GolfPlay() {
       <App gameId={0} playerId={0} />
     </div>
   );
-};
+}

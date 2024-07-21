@@ -4,4 +4,4 @@ export default function GolfEntry() {
       <h1>Golf Entry</h1>
     </div>
   );
-};
+}

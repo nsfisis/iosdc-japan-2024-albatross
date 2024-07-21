@@ -4,9 +4,7 @@ export default function Login() {
   return (
     <div>
       <h1>Albatross.swift</h1>
-      <h2>
-        Login
-      </h2>
+      <h2>Login</h2>
       <Form method="post">
         <label>Username</label>
         <input type="text" name="username" />
@@ -16,7 +14,7 @@ export default function Login() {
       </Form>
     </div>
   );
-};
+}
 
 export async function loginAction({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
@@ -35,4 +33,4 @@ export async function loginAction({ request }: ActionFunctionArgs) {
   }
   const { userId } = await res.json();
   return redirect(`/users/${userId}/`);
-};
+}
