@@ -6,7 +6,8 @@ services:
     ports:
       - '8002:80'
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       ALBATROSS_DB_HOST: db
       ALBATROSS_DB_PORT: 5432
