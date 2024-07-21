@@ -225,30 +225,6 @@ func main() {
 		serveWs(hub, w, r, team)
 	})
 
-	server.HandleFunc("GET /race/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
-	})
-
-	server.HandleFunc("POST /race/{$}", func(w http.ResponseWriter, r *http.Request) {
-		handleRacePost(w, r)
-	})
-
-	server.HandleFunc("GET /race/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
-	})
-
-	server.HandleFunc("GET /sock/race/{gameId}/watch/{$}", func(w http.ResponseWriter, r *http.Request) {
-		// TODO
-	})
-
-	server.HandleFunc("GET /race/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "./public/index.html")
-	})
-
-	server.HandleFunc("GET /sock/race/{gameId}/{team}/{$}", func(w http.ResponseWriter, r *http.Request) {
-		// TODO
-	})
-
 	defer func() {
 		for _, hub := range gameHubs {
 			hub.Close()
