@@ -22,8 +22,27 @@ services:
       POSTGRES_DB: albatross
     expose:
       - 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     volumes:
       - db-data:/var/lib/postgresql/data
+
+  tools:
+    build:
+      context: .
+      dockerfile: Dockerfile.tools
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      POSTGRES_DB: albatross
+    profiles:
+      - tools
 
 volumes:
   db-data:

@@ -1,0 +1,13 @@
+FROM golang:1.22.3
+
+WORKDIR /tools
+
+RUN wget -O psqldef.tar.gz https://github.com/sqldef/sqldef/releases/download/v0.17.14/psqldef_linux_amd64.tar.gz
+
+RUN tar -xzf psqldef.tar.gz && \
+    rm -f psqldef.tar.gz
+
+RUN touch /usr/local/bin/psqldef && \
+    echo '#!/bin/sh' >> /usr/local/bin/psqldef && \
+    echo '/tools/psqldef --user="$POSTGRES_USER" --password="$POSTGRES_PASSWORD" --host=db "$POSTGRES_DB" "$@"' >> /usr/local/bin/psqldef && \
+    chmod +x /usr/local/bin/psqldef
