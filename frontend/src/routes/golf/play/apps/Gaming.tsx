@@ -8,7 +8,7 @@ type Props = {
   score: number | null;
 };
 
-export default ({ problem, onCodeChange, score }: Props) => {
+export default function Gaming({ problem, onCodeChange, score }: Props) {
   const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     onCodeChange({ code: e.target.value });
   };
@@ -27,4 +27,4 @@ export default ({ problem, onCodeChange, score }: Props) => {
       </div>
     </div>
   );
-};
+}

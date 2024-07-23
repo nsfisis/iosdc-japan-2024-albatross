@@ -2,6 +2,6 @@ type Props = {
   gameId: number;
 };
 
-export default (_props: Props) => {
+export default function Failed(_props: Props) {
   return <div>エラー</div>;
-};
+}

@@ -4,7 +4,7 @@ type Props = {
   result: { yourScore: number | null; opponentScore: number | null };
 };
 
-export default ({ result }: Props) => {
+export default function Finished({ result }: Props) {
   const { yourScore, opponentScore } = result;
   const yourScoreToCompare = yourScore ?? Infinity;
   const opponentScoreToCompare = opponentScore ?? Infinity;
@@ -24,4 +24,4 @@ export default ({ result }: Props) => {
       </div>
     </>
   );
-};
+}

@@ -32,7 +32,7 @@ type WebSocketMessage =
       };
     };
 
-export default ({ gameId }: Props) => {
+export default function App({ gameId }: Props) {
   // const socketUrl = `wss://t.nil.ninja/iosdc/2024/sock/golf/${gameId}/watch/`;
   const socketUrl = `ws://localhost:8002/sock/golf/${gameId}/watch/`;
 
@@ -108,4 +108,4 @@ export default ({ gameId }: Props) => {
       </div>
     </div>
   );
-};
+}

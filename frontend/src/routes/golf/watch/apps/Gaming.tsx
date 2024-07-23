@@ -7,7 +7,13 @@ type Props = {
   codeB: string | null;
 };
 
-export default ({ problem, scoreA, codeA, scoreB, codeB }: Props) => {
+export default function Gaming({
+  problem,
+  scoreA,
+  codeA,
+  scoreB,
+  codeB,
+}: Props) {
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column" }}>
@@ -35,4 +41,4 @@ export default ({ problem, scoreA, codeA, scoreB, codeB }: Props) => {
       </div>
     </>
   );
-};
+}
