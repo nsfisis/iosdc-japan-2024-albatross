@@ -12,7 +12,7 @@ import (
 )
 
 const getUserAuthFromUsername = `-- name: GetUserAuthFromUsername :one
-SELECT users.user_id, username, display_username, icon_url, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
+SELECT users.user_id, username, display_username, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id
 WHERE users.username = $1
 `
@@ -21,7 +21,7 @@ type GetUserAuthFromUsernameRow struct {
 	UserID          int32
 	Username        string
 	DisplayUsername string
-	IconUrl         pgtype.Text
+	IconPath        pgtype.Text
 	IsAdmin         bool
 	CreatedAt       pgtype.Timestamp
 	UserAuthID      int32
@@ -37,7 +37,7 @@ func (q *Queries) GetUserAuthFromUsername(ctx context.Context, username string) 
 		&i.UserID,
 		&i.Username,
 		&i.DisplayUsername,
-		&i.IconUrl,
+		&i.IconPath,
 		&i.IsAdmin,
 		&i.CreatedAt,
 		&i.UserAuthID,

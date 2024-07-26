@@ -2,7 +2,7 @@ CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
     username VARCHAR(64) NOT NULL UNIQUE,
     display_username VARCHAR(64) NOT NULL,
-    icon_url VARCHAR(255),
+    icon_path VARCHAR(255),
     is_admin BOOLEAN NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );

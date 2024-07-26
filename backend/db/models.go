@@ -19,7 +19,7 @@ type User struct {
 	UserID          int32
 	Username        string
 	DisplayUsername string
-	IconUrl         pgtype.Text
+	IconPath        pgtype.Text
 	IsAdmin         bool
 	CreatedAt       pgtype.Timestamp
 }
