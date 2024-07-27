@@ -74,7 +74,7 @@ export interface components {
             /** @example john */
             username: string;
             /** @example John Doe */
-            display_username: string;
+            display_name: string;
             /** @example /images/john.jpg */
             icon_path?: string | null;
             /** @example false */

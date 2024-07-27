@@ -21,15 +21,15 @@ export default function Dashboard() {
         <h2 className="text-2xl font-semibold mb-2">User</h2>
         <div className="mb-6">
           <ul className="list-disc list-inside">
-            <li>Name: {user.displayUsername}</li>
+            <li>Name: {user.displayName}</li>
           </ul>
         </div>
         <h2 className="text-2xl font-semibold mb-2">Team</h2>
         <div className="mb-6">
           <ul className="list-disc list-inside">
-            <li>Name: {user.displayUsername}</li>
+            <li>Name: {user.displayName}</li>
             <li>
-              Members: {user.displayUsername} ({user.username})
+              Members: {user.displayName} ({user.username})
             </li>
           </ul>
         </div>

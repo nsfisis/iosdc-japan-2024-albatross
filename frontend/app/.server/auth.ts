@@ -35,7 +35,7 @@ type JwtPayload = components["schemas"]["JwtPayload"];
 export type User = {
   userId: number;
   username: string;
-  displayUsername: string;
+  displayName: string;
   iconPath: string | null;
   isAdmin: boolean;
 };
@@ -126,7 +126,7 @@ export async function isAuthenticated(
   return {
     userId: payload.user_id,
     username: payload.username,
-    displayUsername: payload.display_username,
+    displayName: payload.display_name,
     iconPath: payload.icon_path ?? null,
     isAdmin: payload.is_admin,
   };

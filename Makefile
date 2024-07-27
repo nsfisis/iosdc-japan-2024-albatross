@@ -15,12 +15,14 @@ psql: up
 	docker compose exec db psql --user=postgres albatross
 
 .PHONY: sqldef-dryrun
-sqldef-dryrun: down build
+sqldef-dryrun: down
+	docker compose build db
 	docker compose up -d db
 	docker compose run --no-TTY tools psqldef --dry-run < ./backend/schema.sql
 
 .PHONY: sqldef
-sqldef: down build
+sqldef: down
+	docker compose build db
 	docker compose up -d db
 	docker compose run --no-TTY tools psqldef < ./backend/schema.sql
 

@@ -22,11 +22,11 @@ import (
 
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
-	DisplayUsername string  `json:"display_username"`
-	IconPath        *string `json:"icon_path"`
-	IsAdmin         bool    `json:"is_admin"`
-	UserId          float32 `json:"user_id"`
-	Username        string  `json:"username"`
+	DisplayName string  `json:"display_name"`
+	IconPath    *string `json:"icon_path"`
+	IsAdmin     bool    `json:"is_admin"`
+	UserId      float32 `json:"user_id"`
+	Username    string  `json:"username"`
 }
 
 // PostApiLoginJSONBody defines parameters for PostApiLogin.
@@ -172,15 +172,15 @@ func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6RSwY7aQAz9lcjnKAToKTeqXlj1gFT1VFXISQwMndjT8WTZaJV/ryYpAQrSVoIDEOf5",
-	"2c/vvUMljRMmDgrFO2h1oAaHvy+nsMHOCtbxyXlx5IOh4V1t1Fnstq2SZ2wo1ugNG2cJCniRAydfhCCF",
-	"0LlY0eAN76FPwVTCW4fhcNsyMw3uSWdHOXB2dHtIgVtrsYxvg2/pEZVusW4M3zDt0OoFXIpYQo7ouOrW",
-	"1Dfg+WI5QbltSvJn5L2ouNm9oD4FT79b46mG4sc05IokvT/W1eo/J0Ypj1QF6COl4Z3E6cGEYfbKlhi8",
-	"qCaGQySxyYnKZLVZQwqv5NUIQwF5Ns/yqEAcMToDBSyzPMshhXjxwbkZOjOzsh/P5kRD/I3eYjDC6xoK",
-	"2IiGlTNfB9QokDR8lrqL2Eo4EA9t6Jw11dA4O6rwJUH3kXGoehJ/a8BUnS+Wj9LypBV/rz2NfnztS1cM",
-	"2lBQJ6zj3os8f0J1kF90G1B4i5/s6vtDKSPJ4+Vr0sobF8YEfGurilR3rbVdgm04EIe4KtXxmp/y+RNS",
-	"GlLF/T9WrPkVramTylMdZ6HVD+Wcif5H0Jn/7GYiPpnsjHBtmwZ9BwV8V/LJmOy+7/s/AQAA//8GnrqA",
-	"2gQAAA==",
+	"H4sIAAAAAAAC/6RSwY7aQAz9lcjnKITdnnKj6oVVD0hVT1WFnMTA0Ik9HU+WjVb592qSEkhB2kpwAGbm",
+	"+dnv+b1DJY0TJg4KxTtodaAGh78vp7DBzgrW8eS8OPLB0PBWG3UWuy1jQ/FMb9g4S1DAixw4+SIEKYTO",
+	"xRsN3vAe+hRMJbx1GA7zkoVpcE+6OMqBs6PbQwrcWotlfA2+pXtUusW6MTxj2qHVC7gUsYQc0a2S35p6",
+	"Bl4+PU9QbpuS/Bl5KypOdiuoT8HT79Z4qqH4MTW5IknnRl2N/XNik/JIVYA+0hneSewcTBj6rmyJwYtq",
+	"YjhETpucqExWmzWk8EpejTAUkGfLLI/TiyNGZ6CA5yzPckghuj1sbIHOLKzsR8ucaIi/cacYjPC6hgI2",
+	"omHlzNcBNYojDZ+l7iK2Eg7EQxk6Z001FC6OKnxJzm1UHKqexM/Nn26XT8/3kvLgGv66PbW+7/alKoZs",
+	"uFAnrOPcT3n+gOogv2geTniLn+zq+0MpI8n94WvSyhsXxgR8a6uKVHettV2CbTgQhzgq1dHNT/nyASkN",
+	"qeL+n1Ws+RWtqZPKUx17odUP5ZyJ/kfQmf+8zUR8Mq0zwrVtGvQdFPBdySdjsvu+7/8EAAD//3hNTqrS",
+	"BAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

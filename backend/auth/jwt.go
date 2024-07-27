@@ -11,11 +11,11 @@ import (
 )
 
 type JWTClaims struct {
-	UserID          int     `json:"user_id"`
-	Username        string  `json:"username"`
-	DisplayUsername string  `json:"display_username"`
-	IconPath        *string `json:"icon_path"`
-	IsAdmin         bool    `json:"is_admin"`
+	UserID      int     `json:"user_id"`
+	Username    string  `json:"username"`
+	DisplayName string  `json:"display_name"`
+	IconPath    *string `json:"icon_path"`
+	IsAdmin     bool    `json:"is_admin"`
 	jwt.RegisteredClaims
 }
 
@@ -25,11 +25,11 @@ func NewJWT(user *db.User) (string, error) {
 		iconPath = &user.IconPath.String
 	}
 	claims := &JWTClaims{
-		UserID:          int(user.UserID),
-		Username:        user.Username,
-		DisplayUsername: user.DisplayUsername,
-		IconPath:        iconPath,
-		IsAdmin:         user.IsAdmin,
+		UserID:      int(user.UserID),
+		Username:    user.Username,
+		DisplayName: user.DisplayName,
+		IconPath:    iconPath,
+		IsAdmin:     user.IsAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),
 		},

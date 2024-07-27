@@ -12,23 +12,23 @@ import (
 )
 
 const getUserAuthByUsername = `-- name: GetUserAuthByUsername :one
-SELECT users.user_id, username, display_username, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
+SELECT users.user_id, username, display_name, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id
 WHERE users.username = $1
 LIMIT 1
 `
 
 type GetUserAuthByUsernameRow struct {
-	UserID          int32
-	Username        string
-	DisplayUsername string
-	IconPath        pgtype.Text
-	IsAdmin         bool
-	CreatedAt       pgtype.Timestamp
-	UserAuthID      int32
-	UserID_2        int32
-	AuthType        string
-	PasswordHash    pgtype.Text
+	UserID       int32
+	Username     string
+	DisplayName  string
+	IconPath     pgtype.Text
+	IsAdmin      bool
+	CreatedAt    pgtype.Timestamp
+	UserAuthID   int32
+	UserID_2     int32
+	AuthType     string
+	PasswordHash pgtype.Text
 }
 
 func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (GetUserAuthByUsernameRow, error) {
@@ -37,7 +37,7 @@ func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (G
 	err := row.Scan(
 		&i.UserID,
 		&i.Username,
-		&i.DisplayUsername,
+		&i.DisplayName,
 		&i.IconPath,
 		&i.IsAdmin,
 		&i.CreatedAt,
@@ -50,7 +50,7 @@ func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (G
 }
 
 const getUserById = `-- name: GetUserById :one
-SELECT user_id, username, display_username, icon_path, is_admin, created_at FROM users
+SELECT user_id, username, display_name, icon_path, is_admin, created_at FROM users
 WHERE users.user_id = $1
 LIMIT 1
 `
@@ -61,7 +61,7 @@ func (q *Queries) GetUserById(ctx context.Context, userID int32) (User, error) {
 	err := row.Scan(
 		&i.UserID,
 		&i.Username,
-		&i.DisplayUsername,
+		&i.DisplayName,
 		&i.IconPath,
 		&i.IsAdmin,
 		&i.CreatedAt,

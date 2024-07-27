@@ -55,7 +55,7 @@ func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 	var p JwtPayload
 	p.UserId = float32(c.UserID)
 	p.Username = c.Username
-	p.DisplayUsername = c.DisplayUsername
+	p.DisplayName = c.DisplayName
 	p.IconPath = c.IconPath
 	p.IsAdmin = c.IsAdmin
 	_ = p

@@ -16,12 +16,12 @@ type Game struct {
 }
 
 type User struct {
-	UserID          int32
-	Username        string
-	DisplayUsername string
-	IconPath        pgtype.Text
-	IsAdmin         bool
-	CreatedAt       pgtype.Timestamp
+	UserID      int32
+	Username    string
+	DisplayName string
+	IconPath    pgtype.Text
+	IsAdmin     bool
+	CreatedAt   pgtype.Timestamp
 }
 
 type UserAuth struct {

@@ -58,7 +58,7 @@ components:
         username:
           type: string
           example: "john"
-        display_username:
+        display_name:
           type: string
           example: "John Doe"
         icon_path:
@@ -71,5 +71,5 @@ components:
       required:
         - user_id
         - username
-        - display_username
+        - display_name
         - is_admin
