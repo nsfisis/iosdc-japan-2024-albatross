@@ -1,6 +1,6 @@
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { Form } from "@remix-run/react";
-import { authenticator } from "../services/auth.server";
+import { authenticator } from "../.server/auth";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   return await authenticator.isAuthenticated(request, {

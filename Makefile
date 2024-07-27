@@ -28,6 +28,10 @@ sqldef: down build
 oapi-codegen:
 	cd backend; make oapi-codegen
 
+.PHONY: openapi-typescript
+openapi-typescript:
+	cd frontend; make openapi-typescript
+
 .PHONY: sqlc
 sqlc:
 	cd backend; make sqlc

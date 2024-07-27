@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
-import { isAuthenticated } from "../services/auth.server";
+import { isAuthenticated } from "../.server/auth";
 import { useLoaderData } from "@remix-run/react";
 
 export async function loader({ request }: LoaderFunctionArgs) {
