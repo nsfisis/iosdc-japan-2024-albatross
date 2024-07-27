@@ -1,4 +1,4 @@
-package main
+package auth
 
 import (
 	"context"
@@ -7,8 +7,8 @@ import (
 	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
 
-func authLogin(ctx context.Context, queries *db.Queries, username, password string) (int, error) {
-	userAuth, err := queries.GetUserAuthFromUsername(ctx, username)
+func Login(ctx context.Context, queries *db.Queries, username, password string) (int, error) {
+	userAuth, err := queries.GetUserAuthByUsername(ctx, username)
 	if err != nil {
 		return 0, err
 	}
