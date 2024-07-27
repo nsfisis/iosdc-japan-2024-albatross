@@ -24,6 +24,10 @@ sqldef: down build
 	docker compose up -d db
 	docker compose run --no-TTY tools psqldef < ./backend/schema.sql
 
+.PHONY: oapi-codegen
+oapi-codegen:
+	cd backend; make oapi-codegen
+
 .PHONY: sqlc
 sqlc:
 	cd backend; make sqlc
