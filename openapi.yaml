@@ -1,0 +1,75 @@
+openapi: 3.0.0
+info:
+  title: Albatross internal web API
+  version: 0.1.0
+paths:
+  /api/login:
+    post:
+      summary: User login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                username:
+                  type: string
+                  example: "john"
+                password:
+                  type: string
+                  example: "password123"
+              required:
+                - username
+                - password
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "xxxxx.xxxxx.xxxxx"
+                required:
+                  - token
+        '401':
+          description: Invalid username or password
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid credentials"
+                required:
+                  - message
+components:
+  schemas:
+    JwtPayload:
+      type: object
+      properties:
+        user_id:
+          type: number
+          example: 123
+        username:
+          type: string
+          example: "john"
+        display_username:
+          type: string
+          example: "John Doe"
+        icon_path:
+          type: string
+          nullable: true
+          example: "/images/john.jpg"
+        is_admin:
+          type: boolean
+          example: false
+      required:
+        - user_id
+        - username
+        - display_username
+        - is_admin

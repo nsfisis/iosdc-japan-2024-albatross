@@ -1,0 +1,9 @@
+package: api
+generate:
+  models: true
+  echo-server: true
+  strict-server: true
+  embedded-spec: true
+output: api/generated.go
+output-options:
+  skip-prune: true

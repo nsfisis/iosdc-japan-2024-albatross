@@ -1,24 +1,24 @@
 import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
-import { sessionStorage } from "./session.server";
 import { jwtDecode } from "jwt-decode";
 import type { Session } from "@remix-run/server-runtime";
+import { sessionStorage } from "./session";
+import { apiClient } from "./api/client";
+import { components } from "./api/schema";
 
 export const authenticator = new Authenticator<string>(sessionStorage);
 
 async function login(username: string, password: string): Promise<string> {
-  const res = await fetch(`http://api-server/api/login`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
+  const { data, error } = await apiClient.POST("/api/login", {
+    body: {
+      username,
+      password,
     },
-    body: JSON.stringify({ username, password }),
   });
-  if (!res.ok) {
-    throw new Error("Invalid username or password");
+  if (error) {
+    throw new Error(error.message);
   }
-  const user = await res.json();
-  return user.token;
+  return data.token;
 }
 
 authenticator.use(
@@ -30,13 +30,7 @@ authenticator.use(
   "default",
 );
 
-type JwtPayload = {
-  user_id: number;
-  username: string;
-  display_username: string;
-  icon_path: string | null;
-  is_admin: boolean;
-};
+type JwtPayload = components["schemas"]["JwtPayload"];
 
 export type User = {
   userId: number;
@@ -102,9 +96,8 @@ export async function isAuthenticated(
         headers?: HeadersInit;
       } = {},
 ): Promise<User | null> {
-  let jwt;
-
   // This function's signature should be compatible with `authenticator.isAuthenticated` but TypeScript does not infer it correctly.
+  let jwt;
   const { successRedirect, failureRedirect, headers } = options;
   if (successRedirect && failureRedirect) {
     jwt = await authenticator.isAuthenticated(request, {
@@ -129,13 +122,12 @@ export async function isAuthenticated(
   if (!jwt) {
     return null;
   }
-  // TODO: runtime type check
   const payload = jwtDecode<JwtPayload>(jwt);
   return {
     userId: payload.user_id,
     username: payload.username,
     displayUsername: payload.display_username,
-    iconPath: payload.icon_path,
+    iconPath: payload.icon_path ?? null,
     isAdmin: payload.is_admin,
   };
 }

@@ -10,8 +10,9 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	oapimiddleware "github.com/oapi-codegen/echo-middleware"
 
-	"github.com/nsfisis/iosdc-2024-albatross-backend/auth"
+	"github.com/nsfisis/iosdc-2024-albatross-backend/api"
 	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
 
@@ -117,50 +118,17 @@ func handleGolfPost(w http.ResponseWriter, r *http.Request) {
 }
 */
 
-func handleApiLogin(c echo.Context, queries *db.Queries) error {
-	type LoginRequestData struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}
-
-	type LoginResponseData struct {
-		Token string `json:"token"`
-	}
-
-	ctx := c.Request().Context()
-
-	requestData := new(LoginRequestData)
-	if err := c.Bind(requestData); err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
-	}
-
-	userId, err := auth.Login(ctx, queries, requestData.Username, requestData.Password)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-
-	user, err := queries.GetUserById(ctx, int32(userId))
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	jwt, err := auth.NewJWT(&user)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-	}
-
-	responseData := LoginResponseData{
-		Token: jwt,
-	}
-
-	return c.JSON(http.StatusOK, responseData)
-}
-
 func main() {
 	var err error
 	config, err = loadEnv()
 	if err != nil {
 		fmt.Printf("Error loading env %v", err)
+		return
+	}
+
+	openApiSpec, err := api.GetSwagger()
+	if err != nil {
+		fmt.Printf("Error loading OpenAPI spec\n: %s", err)
 		return
 	}
 
@@ -175,6 +143,13 @@ func main() {
 	queries := db.New(conn)
 
 	e := echo.New()
+
+	{
+		apiGroup := e.Group("/api")
+		apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
+		apiHandler := api.NewHandler(queries)
+		api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
+	}
 
 	e.GET("/sock/golf/:gameId/watch", func(c echo.Context) error {
 		gameId := c.Param("gameId")
@@ -212,10 +187,6 @@ func main() {
 			return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 		}
 		return serveWs(hub, c.Response(), c.Request(), "a")
-	})
-
-	e.POST("/api/login", func(c echo.Context) error {
-		return handleApiLogin(c, queries)
 	})
 
 	defer func() {
