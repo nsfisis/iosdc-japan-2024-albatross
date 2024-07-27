@@ -11,6 +11,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
+	"github.com/nsfisis/iosdc-2024-albatross-backend/auth"
 	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
 
@@ -123,7 +124,7 @@ func handleApiLogin(c echo.Context, queries *db.Queries) error {
 	}
 
 	type LoginResponseData struct {
-		UserId int `json:"userId"`
+		Token string `json:"token"`
 	}
 
 	ctx := c.Request().Context()
@@ -133,13 +134,23 @@ func handleApiLogin(c echo.Context, queries *db.Queries) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	userId, err := authLogin(ctx, queries, requestData.Username, requestData.Password)
+	userId, err := auth.Login(ctx, queries, requestData.Username, requestData.Password)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
 
+	user, err := queries.GetUserById(ctx, int32(userId))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	jwt, err := auth.NewJWT(&user)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
 	responseData := LoginResponseData{
-		UserId: userId,
+		Token: jwt,
 	}
 
 	return c.JSON(http.StatusOK, responseData)

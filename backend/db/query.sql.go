@@ -11,13 +11,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getUserAuthFromUsername = `-- name: GetUserAuthFromUsername :one
+const getUserAuthByUsername = `-- name: GetUserAuthByUsername :one
 SELECT users.user_id, username, display_username, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id
 WHERE users.username = $1
+LIMIT 1
 `
 
-type GetUserAuthFromUsernameRow struct {
+type GetUserAuthByUsernameRow struct {
 	UserID          int32
 	Username        string
 	DisplayUsername string
@@ -30,9 +31,9 @@ type GetUserAuthFromUsernameRow struct {
 	PasswordHash    pgtype.Text
 }
 
-func (q *Queries) GetUserAuthFromUsername(ctx context.Context, username string) (GetUserAuthFromUsernameRow, error) {
-	row := q.db.QueryRow(ctx, getUserAuthFromUsername, username)
-	var i GetUserAuthFromUsernameRow
+func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (GetUserAuthByUsernameRow, error) {
+	row := q.db.QueryRow(ctx, getUserAuthByUsername, username)
+	var i GetUserAuthByUsernameRow
 	err := row.Scan(
 		&i.UserID,
 		&i.Username,
@@ -44,6 +45,26 @@ func (q *Queries) GetUserAuthFromUsername(ctx context.Context, username string) 
 		&i.UserID_2,
 		&i.AuthType,
 		&i.PasswordHash,
+	)
+	return i, err
+}
+
+const getUserById = `-- name: GetUserById :one
+SELECT user_id, username, display_username, icon_path, is_admin, created_at FROM users
+WHERE users.user_id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserById(ctx context.Context, userID int32) (User, error) {
+	row := q.db.QueryRow(ctx, getUserById, userID)
+	var i User
+	err := row.Scan(
+		&i.UserID,
+		&i.Username,
+		&i.DisplayUsername,
+		&i.IconPath,
+		&i.IsAdmin,
+		&i.CreatedAt,
 	)
 	return i, err
 }
