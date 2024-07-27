@@ -165,12 +165,6 @@ func main() {
 
 	e := echo.New()
 
-	e.Static("/assets", "public/assets")
-
-	e.GET("/*", func(c echo.Context) error {
-		return c.File("public/index.html")
-	})
-
 	e.GET("/sock/golf/:gameId/watch", func(c echo.Context) error {
 		gameId := c.Param("gameId")
 		gameIdInt, err := strconv.Atoi(gameId)
