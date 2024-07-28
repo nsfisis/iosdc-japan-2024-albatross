@@ -32,6 +32,11 @@ const (
 	WaitingStart   GameState = "waiting_start"
 )
 
+// Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
+const (
+	Success GamePlayerMessageS2CExecResultPayloadStatus = "success"
+)
+
 // Game defines model for Game.
 type Game struct {
 	DisplayName     string    `json:"display_name"`
@@ -55,6 +60,17 @@ type GamePlayerMessageC2S struct {
 	union json.RawMessage
 }
 
+// GamePlayerMessageC2SCode defines model for GamePlayerMessageC2SCode.
+type GamePlayerMessageC2SCode struct {
+	Data GamePlayerMessageC2SCodePayload `json:"data"`
+	Type string                          `json:"type"`
+}
+
+// GamePlayerMessageC2SCodePayload defines model for GamePlayerMessageC2SCodePayload.
+type GamePlayerMessageC2SCodePayload struct {
+	Code string `json:"code"`
+}
+
 // GamePlayerMessageC2SEntry defines model for GamePlayerMessageC2SEntry.
 type GamePlayerMessageC2SEntry struct {
 	Type string `json:"type"`
@@ -69,6 +85,21 @@ type GamePlayerMessageC2SReady struct {
 type GamePlayerMessageS2C struct {
 	union json.RawMessage
 }
+
+// GamePlayerMessageS2CExecResult defines model for GamePlayerMessageS2CExecResult.
+type GamePlayerMessageS2CExecResult struct {
+	Data GamePlayerMessageS2CExecResultPayload `json:"data"`
+	Type string                                `json:"type"`
+}
+
+// GamePlayerMessageS2CExecResultPayload defines model for GamePlayerMessageS2CExecResultPayload.
+type GamePlayerMessageS2CExecResultPayload struct {
+	Score  *int                                        `json:"score"`
+	Status GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
+}
+
+// GamePlayerMessageS2CExecResultPayloadStatus defines model for GamePlayerMessageS2CExecResultPayload.Status.
+type GamePlayerMessageS2CExecResultPayloadStatus string
 
 // GamePlayerMessageS2CPrepare defines model for GamePlayerMessageS2CPrepare.
 type GamePlayerMessageS2CPrepare struct {
@@ -242,6 +273,32 @@ func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SReady(v GamePlayerMessag
 	return err
 }
 
+// AsGamePlayerMessageC2SCode returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SCode
+func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SCode() (GamePlayerMessageC2SCode, error) {
+	var body GamePlayerMessageC2SCode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageC2SCode overwrites any union data inside the GamePlayerMessageC2S as the provided GamePlayerMessageC2SCode
+func (t *GamePlayerMessageC2S) FromGamePlayerMessageC2SCode(v GamePlayerMessageC2SCode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageC2SCode performs a merge with any union data inside the GamePlayerMessageC2S, using the provided GamePlayerMessageC2SCode
+func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SCode(v GamePlayerMessageC2SCode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
 func (t GamePlayerMessageC2S) MarshalJSON() ([]byte, error) {
 	b, err := t.union.MarshalJSON()
 	return b, err
@@ -294,6 +351,32 @@ func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CStart(v GamePlayerMessage
 
 // MergeGamePlayerMessageS2CStart performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CStart
 func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CStart(v GamePlayerMessageS2CStart) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageS2CExecResult returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CExecResult
+func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CExecResult() (GamePlayerMessageS2CExecResult, error) {
+	var body GamePlayerMessageS2CExecResult
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2CExecResult overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CExecResult
+func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CExecResult(v GamePlayerMessageS2CExecResult) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2CExecResult performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CExecResult
+func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CExecResult(v GamePlayerMessageS2CExecResult) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -647,24 +730,26 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xWUW/jNgz+K4a2RyNJ06K4+a3rtqKHGxYs29OhCBiLidXZkk6U28sK//dBkmPHsXNJ",
-	"2zwMdw851yapjx8/inxhqSq0kigtseSFUZphAf7xDgp0/2ujNBor0L/lgnQOm4Wsv+JXKHSOLPH20QWL",
-	"md1o9zdZI+SaVTHjpQErlFwQpkpy6vhdXk8aFyEtrtE4nzUUuBC8Y3oxZKiNWuZYOMMfDa5Ywn4YtzmN",
-	"64TGs9qsihlZMBb5Amwn+k9X19cfrj5MBuGQBRvylWXBks8szRUhZzF7BmGFXC9QWuM4at/4c5hDiBoM",
-	"svpkR4rPLzyshBSUIWcP8Q6ZkFrxhH0yq5gZ/FIKg9yh2LK0BRh36zNA/UMTUi0fMbUuOVe5WQ4bNL8j",
-	"Eax9okriHyuWfP42rT3X+fSWVfErnW6nc1Y9DCFxX94O5nY6/1Vas3kToj8R+OYwrBC41x+BXNdWkixL",
-	"mPZuSTqlBL3HsZL6rydVqcH4GhDGe5wPhKv3u9Qyq7vj1SWaT2/nvsOGS7QTun+JgYVjF8Y3As5gkyvg",
-	"jo8DTNM0Tdq2P4HrOGA6lfI9IL0EX3sp7kHaup8KJ9ThbDT7cKeRvL1jz09xB0QvNX/uKybIHqDGfQjN",
-	"x+fD5x4evx9VJqNfFA4NYJEqudBgs67LWBSwRho/qkyOHvV60JUWwAshO54ryAkb46VSOYJ01iWh6U3t",
-	"6eXQRHWm/SwclKPl3J6yE6Q3+BrcQwzP2vbYoxcpNUK7idnF9VcmKBIUQbTtjQGu6k8nrS1W2Hwv9xrV",
-	"0A413J+BgxAp7mDvJ+1CCLlSfjyEs9lNvgRrFFHkgBkJefSMy+hmds9i9oSGPA1sMroYTRxmpVGCFixh",
-	"l6PJaOJWG7CZJ27sNhH/tEbfFI5Vv3ncc7cbor3zBs7FQIEWDflx4ZTFvpToJ2PQQ93f9V7j74l2qO22",
-	"VO2dIXA0rftNaTNlxL/+eLbLnDUlDoRsWH5wxqSVpJDLdDKp7x2L0qcFWuci9ZHHjxRU0sbriqmhRFgs",
-	"6JSLsL3sGBgDm8F9jw5Ut6Nd9kmQjdQqCh5VzK4ml+/IpWgXw1awvymzFJyjjJpqH5XuNtApOTTxfRQq",
-	"iwLcyhVyqxOr4lp745d6Ga6OqtD93PMDWvTXZKOldsE+qqL/szCPC6/P/o2n+DuTzh3aCOrEnHRytQ6z",
-	"TSsaUMxMkf3kTQIUJPuzChv3G9nQQPSsTHdCNG8vppdDg+Wds7Ieic3RwwR21Vid9Sq06h/cm6hf3b/R",
-	"zu/xLc4HOaX68zJNkWhV5vkmgtJmKK2DijzI+eLccr6XT5ALHqUGuTsLcjqrnLfxt9WMlImacnYV/jeh",
-	"iYKsq6qq/gsAAP//bqjkD+ERAAA=",
+	"H4sIAAAAAAAC/9xX3W7jNhN9FX38CmwLCP7LItj6Lk23aRZb1Fi3V4vAoMWxzZQitRxqEzfQuxf8kWRZ",
+	"8kpJfFE0F44tcYZnzpwhZ55IotJMSZAGyfyJYLKDlLqvNzQF+z/TKgNtOLinjGMm6H4lw1t4pGkmgMzd",
+	"+mhKYmL2mf2NRnO5JUVMWK6p4UquEBIlGTbsLi4nlQmXBragrc2WprDirLF02rUw02otILULv9OwIXPy",
+	"/3Ed0zgENF6EZUVM0FBtgK2oaXj/8e3l5bu37yadcNBQ4+OVeUrmn0kiFAIjMXmg3HC5XYE02nJUP3H7",
+	"EIsQMqqBhJ0tKS4+/2XDJccdMHIXH5BZuT8is4iJhi8518AsipKlEmDczE8H9XeVS7W+h8TY4GzmFoLu",
+	"Qf8GiHTrAlUSft+Q+edv09oyXc6uSRE/0+h6tiTFXRcS++blYK5ny/fS6P2LEH0Cyl5mea0YnI7HvW3X",
+	"FTW0T8OnvC3oXijKbCp9bm1VSzRkTjK3fJ7McJ7YffsE5d7GHs0gqRxBaMWVhGhraWeaS/P9m19BCBVH",
+	"D0oL9r83P/Qic46GQvJZb4H5BjvgLAbRMxSEF9BzQGhncT4QthhfVcqLcHQ9uwqWs+ulO/5eYvn+EZJP",
+	"gLkwJ6qoueY8tdTw2V9ROEvm8AiJ9hjOXledcFqRYqJ0s7ym9v6SuRB0bX8ancOp+yzHwwsN8yQBxOY1",
+	"VD7sCy+4iwOgoRGW8jpbBoPDYemr7+Xz5+4ISCvA53YtR5BK86FwfC2ejWbnbhjJZRN0foobINqVYd8+",
+	"o8VrC9qbd6H58HB639P98Qe1k9HPCro6ZJ4oucqo2TVNxjylW8DxvdrJ0X227TTFFWUplw3LDRVY1/1a",
+	"KQFU2tU5gm611bOLriPCLm1HYaH0prPc5cBJqzOtcHcxvKjL44hewETzzLa0TVx/7DhGHCMalbXRwVV4",
+	"NWiuMNyIo9gDqq4hp7s+PQfeU9zA3g7auuByo1yL4PcmV2JNjVaIkQWmJRXRA6yjq8UticlX0OhoIJPR",
+	"dDSxmFUGkmaczMnFaDKa2NmDmp0jbmxHBfdtC64oLKtuNLhldngDc+MWWBNNUzCg0bUMVlnkSw6uO/J6",
+	"CPUdBg93TtSNzWFJBesdUAa6Nr/KzU5p/rfbnhwy56+rlsuK5Tu7GDMl0ccym0zCuWNAurBolgmeOM/j",
+	"e/Qqqf01xVRRwg2kOOQgrA87QrWm+86BDE9kt6Fd8pGjidQm8hZFTN5OLl4RS1pPbrVgf1F6zRkDGVXZ",
+	"7pVu6WhIDJV/5wXzNKW27faxhcCKOGhv/BSm1aJXhfbjlp3QojsmKy3VE3Cviv7NwuwXXpv9K0fxf0w6",
+	"N2AiGgKz0hFq6++2TGGHYhYKzUe3xEMBND8pP3W9kI2MIj4ozY6G1vB0OrvoulheeVeGK7HaupvAphqL",
+	"sx6FRv0FRzfqo/0bHXz2d3HOyZDsL/1cscmF2Ec0NzuQxkIF5uU8Pbecb+VXKjiLEg3M7kUFnlXOpf8y",
+	"m5HSUZXOpsL/RNCRl3VRFMU/AQAA///TQodrghUAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

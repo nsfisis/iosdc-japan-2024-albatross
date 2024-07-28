@@ -190,7 +190,7 @@ export interface components {
             /** @example 1 */
             game_id: number;
             /**
-             * @example active
+             * @example closed
              * @enum {string}
              */
             state: "closed" | "waiting_entries" | "waiting_start" | "prepare" | "starting" | "gaming" | "finished";
@@ -211,7 +211,7 @@ export interface components {
             description: string;
         };
         GamePlayerMessage: components["schemas"]["GamePlayerMessageS2C"] | components["schemas"]["GamePlayerMessageC2S"];
-        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CPrepare"] | components["schemas"]["GamePlayerMessageS2CStart"];
+        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CPrepare"] | components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"];
         GamePlayerMessageS2CPrepare: {
             /** @constant */
             type: "player:s2c:prepare";
@@ -229,7 +229,21 @@ export interface components {
             /** @example 946684800 */
             start_at: number;
         };
-        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"];
+        GamePlayerMessageS2CExecResult: {
+            /** @constant */
+            type: "player:s2c:execresult";
+            data: components["schemas"]["GamePlayerMessageS2CExecResultPayload"];
+        };
+        GamePlayerMessageS2CExecResultPayload: {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success";
+            /** @example 100 */
+            score: number | null;
+        };
+        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"] | components["schemas"]["GamePlayerMessageC2SCode"];
         GamePlayerMessageC2SEntry: {
             /** @constant */
             type: "player:c2s:entry";
@@ -237,6 +251,15 @@ export interface components {
         GamePlayerMessageC2SReady: {
             /** @constant */
             type: "player:c2s:ready";
+        };
+        GamePlayerMessageC2SCode: {
+            /** @constant */
+            type: "player:c2s:code";
+            data: components["schemas"]["GamePlayerMessageC2SCodePayload"];
+        };
+        GamePlayerMessageC2SCodePayload: {
+            /** @example print('Hello, world!') */
+            code: string;
         };
     };
     responses: never;

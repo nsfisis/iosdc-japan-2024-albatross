@@ -153,7 +153,7 @@ components:
           example: 1
         state:
           type: string
-          example: "active"
+          example: "closed"
           enum:
             - closed
             - waiting_entries
@@ -202,6 +202,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GamePlayerMessageS2CPrepare'
         - $ref: '#/components/schemas/GamePlayerMessageS2CStart'
+        - $ref: '#/components/schemas/GamePlayerMessageS2CExecResult'
     GamePlayerMessageS2CPrepare:
       type: object
       properties:
@@ -239,10 +240,37 @@ components:
           example: 946684800
       required:
         - start_at
+    GamePlayerMessageS2CExecResult:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:execresult"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CExecResultPayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CExecResultPayload:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+          enum:
+            - success
+        score:
+          type: integer
+          nullable: true
+          example: 100
+      required:
+        - status
+        - score
     GamePlayerMessageC2S:
       oneOf:
         - $ref: '#/components/schemas/GamePlayerMessageC2SEntry'
         - $ref: '#/components/schemas/GamePlayerMessageC2SReady'
+        - $ref: '#/components/schemas/GamePlayerMessageC2SCode'
     GamePlayerMessageC2SEntry:
       type: object
       properties:
@@ -259,6 +287,25 @@ components:
           const: "player:c2s:ready"
       required:
         - type
+    GamePlayerMessageC2SCode:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:code"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageC2SCodePayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageC2SCodePayload:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "print('Hello, world!')"
+      required:
+        - code
     # GameWatcherMessage:
     #   oneOf:
     #     - $ref: '#/components/schemas/GameWatcherMessageS2C'
