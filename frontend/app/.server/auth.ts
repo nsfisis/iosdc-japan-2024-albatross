@@ -39,7 +39,7 @@ export async function isAuthenticated(
     failureRedirect?: never;
     headers?: never;
   },
-): Promise<User | null>;
+): Promise<{ user: User; token: string } | null>;
 export async function isAuthenticated(
   request: Request | Session,
   options: {
@@ -55,7 +55,7 @@ export async function isAuthenticated(
     failureRedirect: string;
     headers?: HeadersInit;
   },
-): Promise<User>;
+): Promise<{ user: User; token: string }>;
 export async function isAuthenticated(
   request: Request | Session,
   options: {
@@ -87,7 +87,7 @@ export async function isAuthenticated(
         failureRedirect: string;
         headers?: HeadersInit;
       } = {},
-): Promise<User | null> {
+): Promise<{ user: User; token: string } | null> {
   // This function's signature should be compatible with `authenticator.isAuthenticated` but TypeScript does not infer it correctly.
   let jwt;
   const { successRedirect, failureRedirect, headers } = options;
@@ -114,5 +114,9 @@ export async function isAuthenticated(
   if (!jwt) {
     return null;
   }
-  return jwtDecode<User>(jwt);
+  const user = jwtDecode<User>(jwt);
+  return {
+    user,
+    token: jwt,
+  };
 }

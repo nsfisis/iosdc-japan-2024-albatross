@@ -17,8 +17,33 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
+
+// Defines values for GameState.
+const (
+	Closed         GameState = "closed"
+	Finished       GameState = "finished"
+	Gaming         GameState = "gaming"
+	Prepare        GameState = "prepare"
+	Starting       GameState = "starting"
+	WaitingEntries GameState = "waiting_entries"
+	WaitingStart   GameState = "waiting_start"
+)
+
+// Game defines model for Game.
+type Game struct {
+	DisplayName     string    `json:"display_name"`
+	DurationSeconds int       `json:"duration_seconds"`
+	GameId          int       `json:"game_id"`
+	Problem         *Problem  `json:"problem,omitempty"`
+	StartedAt       *int      `json:"started_at,omitempty"`
+	State           GameState `json:"state"`
+}
+
+// GameState defines model for Game.State.
+type GameState string
 
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
@@ -27,6 +52,19 @@ type JwtPayload struct {
 	IsAdmin     bool    `json:"is_admin"`
 	UserId      int     `json:"user_id"`
 	Username    string  `json:"username"`
+}
+
+// Problem defines model for Problem.
+type Problem struct {
+	Description string `json:"description"`
+	ProblemId   int    `json:"problem_id"`
+	Title       string `json:"title"`
+}
+
+// GetGamesParams defines parameters for GetGames.
+type GetGamesParams struct {
+	PlayerId      *int   `form:"player_id,omitempty" json:"player_id,omitempty"`
+	Authorization string `json:"Authorization"`
 }
 
 // PostLoginJSONBody defines parameters for PostLogin.
@@ -40,6 +78,9 @@ type PostLoginJSONRequestBody PostLoginJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List games
+	// (GET /games)
+	GetGames(ctx echo.Context, params GetGamesParams) error
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
@@ -48,6 +89,43 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// GetGames converts echo context to params.
+func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetGamesParams
+	// ------------- Optional query parameter "player_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "player_id", ctx.QueryParams(), &params.PlayerId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter player_id: %s", err))
+	}
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetGames(ctx, params)
+	return err
 }
 
 // PostLogin converts echo context to params.
@@ -87,8 +165,39 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/games", wrapper.GetGames)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 
+}
+
+type GetGamesRequestObject struct {
+	Params GetGamesParams
+}
+
+type GetGamesResponseObject interface {
+	VisitGetGamesResponse(w http.ResponseWriter) error
+}
+
+type GetGames200JSONResponse struct {
+	Games []Game `json:"games"`
+}
+
+func (response GetGames200JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGames403JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetGames403JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type PostLoginRequestObject struct {
@@ -123,6 +232,9 @@ func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseW
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// List games
+	// (GET /games)
+	GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error)
 	// User login
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
@@ -138,6 +250,31 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// GetGames operation middleware
+func (sh *strictHandler) GetGames(ctx echo.Context, params GetGamesParams) error {
+	var request GetGamesRequestObject
+
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetGames(ctx.Request().Context(), request.(GetGamesRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetGames")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetGamesResponseObject); ok {
+		return validResponse.VisitGetGamesResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // PostLogin operation middleware
@@ -172,14 +309,20 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6RSzY7aQAx+lcjnKAToKbetemHVA1LVU1Uhk5gwdDKejp1lo1XevZqkZElB2kpwIJnJ",
-	"Z/v78RuU3Hh25FSgeAMpj9Tg8Pp81i12lrGKJx/YU1BDw7fKiLfY7Rw2FM/0io23BAU889ElX5ggBe18",
-	"vBENxtXQp2BKdjuPepyXLEyDNcnixEeXnXx9t1R2WDXGzSoPaIUm8J7ZErqIboXCzlQz8HK1nqDGKdUU",
-	"LtBbFZHKLY0+hUC/WxOoguLHNOWqSTp35or3z6kb709UKvSxnXEHjpPV6DD3ye5RA4skkWJwaJMz7ZOn",
-	"7QZSeKEghh0UkGfLLI/s2ZNDb6CAdZZnOaQQ7R0iWliuR788i8ZnDBDVsNtUUMCWRb8OkFEViX7mqovA",
-	"kp2SG2rQe2vKoWpxEnbvO3K7FB5Fzhzmtk+3y9X6XrAP+v/X5mn0fZvfqzS0NFyIZycj71WeP6Ba+RfN",
-	"1xJe4y+7+v9QytjkPvmKpAzG6xj9t7YsSeTQWtsl2OqRnEaqVEU3P+XLB6Q0JIL1P1Fs3AtaUyVloCrO",
-	"Qisfyrk0+h9Bl/6XNBMOyRRnhEvbNBg6KOC7UEjGte77vv8TAAD//y1cIMC8BAAA",
+	"H4sIAAAAAAAC/6xUTW/jNhD9K8K0R8FW4iDY+pai6CKLPRhoe1oExlgcS0wlkssZJesG+u8FqQ9btoqk",
+	"SHKIZGo+3nvzOC+Q29pZQ0YY1i/AeUk1xtfPWFN4Om8dedEUT5VmV+Fha/qv9ANrVxGsY3xyBSnIwYXf",
+	"LF6bAtoUVONRtDVbptwaxZO81W02pmgjVJAPOQXWtNVqEno1F+i83VVUh8CfPe1hDT8tj5yWPaHlpg9r",
+	"U2BBL6S2KJPqv9zc3n66+ZTNwmFB6fiapob1N8gry6QghWfUok2xJSM+aHQ8iX0gICSHnqDvHESJ/LqX",
+	"vTaaS1LwkJ6IibnoJ7oUs03B0/dGe1IBxaDSADCdzmdG+oexpN09Ui6B3Jdn2eChsqj+z7y/2NIkv1ma",
+	"m7jOrdk6lHKastQ1FsTLR1uaxaMrZlN5i6rWZpK5x4ppDN5ZWxGaEN0w+QubXK/mRhhCL1kEKK/KPHQ5",
+	"KXKh9Ih7TuHN0aRn8hLnXrswoimuP0vNieYEk8HgM1r1n950T0RLdca9RzV3ac8EOGk0VEon2C9JhxLa",
+	"7G1o2feGu2qH4i1zEoB5g1XyTLvkbnMPKTyR5ygDZIurRRYwW0cGnYY1rBbZIgt3CaWMwi2D9eNbQfEe",
+	"B1Wj1e9VWEYkn2NASPFYk5BnWH97geAs+N6QP0AKnR8gzHGYcLcwIuozDdu0zy4JFflj+l0jpfX6n9ge",
+	"TpUT39BMyVHlhxDMzhruuFxnWXjk1giZSAudq3QeKy8fuXPJsd7UTKMkWqjm1zZi3O/tODf0Hg+zC4b/",
+	"Y7oT78JXzZLYfdJltCncZKt3cKmJGYszw/5u/U4rRSYZp/2qdYdCb+Ew1o9VuKlr9IeBW0+sTWFZ2aJb",
+	"UM7yjPk2luVrDOmgEMuvVh3eoYZD5mfrp9d8PL26Xs1th3cuvH6vja3nBZx6vf1QP4v9m87W4o/wtzj5",
+	"/yqVrshbpv9Hk+fEvG+q6pBgIyUZCVBJdXa++mg735snrLRKck8q9MKKP9TOQ/1hmon1yTjOqcP/YvJJ",
+	"Z+u2bdt/AwAA//+RpToKFwoAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -68,3 +68,107 @@ func (q *Queries) GetUserById(ctx context.Context, userID int32) (User, error) {
 	)
 	return i, err
 }
+
+const listGames = `-- name: ListGames :many
+SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+LEFT JOIN problems ON games.problem_id = problems.problem_id
+`
+
+type ListGamesRow struct {
+	GameID          int32
+	State           string
+	DisplayName     string
+	DurationSeconds int32
+	CreatedAt       pgtype.Timestamp
+	StartedAt       pgtype.Timestamp
+	ProblemID       pgtype.Int4
+	ProblemID_2     pgtype.Int4
+	Title           pgtype.Text
+	Description     pgtype.Text
+}
+
+func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
+	rows, err := q.db.Query(ctx, listGames)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListGamesRow
+	for rows.Next() {
+		var i ListGamesRow
+		if err := rows.Scan(
+			&i.GameID,
+			&i.State,
+			&i.DisplayName,
+			&i.DurationSeconds,
+			&i.CreatedAt,
+			&i.StartedAt,
+			&i.ProblemID,
+			&i.ProblemID_2,
+			&i.Title,
+			&i.Description,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listGamesForPlayer = `-- name: ListGamesForPlayer :many
+SELECT games.game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
+LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN game_players ON games.game_id = game_players.game_id
+WHERE game_players.user_id = $1
+`
+
+type ListGamesForPlayerRow struct {
+	GameID          int32
+	State           string
+	DisplayName     string
+	DurationSeconds int32
+	CreatedAt       pgtype.Timestamp
+	StartedAt       pgtype.Timestamp
+	ProblemID       pgtype.Int4
+	ProblemID_2     pgtype.Int4
+	Title           pgtype.Text
+	Description     pgtype.Text
+	GameID_2        int32
+	UserID          int32
+}
+
+func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListGamesForPlayerRow, error) {
+	rows, err := q.db.Query(ctx, listGamesForPlayer, userID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListGamesForPlayerRow
+	for rows.Next() {
+		var i ListGamesForPlayerRow
+		if err := rows.Scan(
+			&i.GameID,
+			&i.State,
+			&i.DisplayName,
+			&i.DurationSeconds,
+			&i.CreatedAt,
+			&i.StartedAt,
+			&i.ProblemID,
+			&i.ProblemID_2,
+			&i.Title,
+			&i.Description,
+			&i.GameID_2,
+			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
