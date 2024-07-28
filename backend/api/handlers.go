@@ -21,19 +21,19 @@ func NewHandler(queries *db.Queries) *ApiHandler {
 	}
 }
 
-func (h *ApiHandler) PostApiLogin(ctx context.Context, request PostApiLoginRequestObject) (PostApiLoginResponseObject, error) {
+func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
 	userId, err := auth.Login(ctx, h.q, username, password)
 	if err != nil {
-		return PostApiLogin401JSONResponse{
+		return PostLogin401JSONResponse{
 			Message: "Invalid username or password",
 		}, echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
 	}
 
 	user, err := h.q.GetUserById(ctx, int32(userId))
 	if err != nil {
-		return PostApiLogin401JSONResponse{
+		return PostLogin401JSONResponse{
 			Message: "Invalid username or password",
 		}, echo.NewHTTPError(http.StatusUnauthorized, "Invalid username or password")
 	}
@@ -41,12 +41,12 @@ func (h *ApiHandler) PostApiLogin(ctx context.Context, request PostApiLoginReque
 	jwt, err := auth.NewJWT(&user)
 	if err != nil {
 		// TODO
-		return PostApiLogin401JSONResponse{
+		return PostLogin401JSONResponse{
 			Message: "Internal Server Error",
 		}, echo.NewHTTPError(http.StatusInternalServerError, "Internal Server Error")
 	}
 
-	return PostApiLogin200JSONResponse{
+	return PostLogin200JSONResponse{
 		Token: jwt,
 	}, nil
 }
@@ -64,7 +64,7 @@ func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 
 func NewJWTMiddleware() StrictMiddlewareFunc {
 	return func(handler StrictHandlerFunc, operationID string) StrictHandlerFunc {
-		if operationID == "PostApiLogin" {
+		if operationID == "PostLogin" {
 			return handler
 		} else {
 			return func(c echo.Context, request interface{}) (response interface{}, err error) {

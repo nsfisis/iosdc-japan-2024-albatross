@@ -9,7 +9,7 @@ import { components } from "./api/schema";
 export const authenticator = new Authenticator<string>(sessionStorage);
 
 async function login(username: string, password: string): Promise<string> {
-  const { data, error } = await apiClient.POST("/api/login", {
+  const { data, error } = await apiClient.POST("/login", {
     body: {
       username,
       password,

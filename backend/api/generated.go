@@ -29,20 +29,20 @@ type JwtPayload struct {
 	Username    string  `json:"username"`
 }
 
-// PostApiLoginJSONBody defines parameters for PostApiLogin.
-type PostApiLoginJSONBody struct {
+// PostLoginJSONBody defines parameters for PostLogin.
+type PostLoginJSONBody struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
 }
 
-// PostApiLoginJSONRequestBody defines body for PostApiLogin for application/json ContentType.
-type PostApiLoginJSONRequestBody PostApiLoginJSONBody
+// PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
+type PostLoginJSONRequestBody PostLoginJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// User login
-	// (POST /api/login)
-	PostApiLogin(ctx echo.Context) error
+	// (POST /login)
+	PostLogin(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -50,12 +50,12 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// PostApiLogin converts echo context to params.
-func (w *ServerInterfaceWrapper) PostApiLogin(ctx echo.Context) error {
+// PostLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostApiLogin(ctx)
+	err = w.Handler.PostLogin(ctx)
 	return err
 }
 
@@ -87,34 +87,34 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.POST(baseURL+"/api/login", wrapper.PostApiLogin)
+	router.POST(baseURL+"/login", wrapper.PostLogin)
 
 }
 
-type PostApiLoginRequestObject struct {
-	Body *PostApiLoginJSONRequestBody
+type PostLoginRequestObject struct {
+	Body *PostLoginJSONRequestBody
 }
 
-type PostApiLoginResponseObject interface {
-	VisitPostApiLoginResponse(w http.ResponseWriter) error
+type PostLoginResponseObject interface {
+	VisitPostLoginResponse(w http.ResponseWriter) error
 }
 
-type PostApiLogin200JSONResponse struct {
+type PostLogin200JSONResponse struct {
 	Token string `json:"token"`
 }
 
-func (response PostApiLogin200JSONResponse) VisitPostApiLoginResponse(w http.ResponseWriter) error {
+func (response PostLogin200JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostApiLogin401JSONResponse struct {
+type PostLogin401JSONResponse struct {
 	Message string `json:"message"`
 }
 
-func (response PostApiLogin401JSONResponse) VisitPostApiLoginResponse(w http.ResponseWriter) error {
+func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
 
@@ -124,8 +124,8 @@ func (response PostApiLogin401JSONResponse) VisitPostApiLoginResponse(w http.Res
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// User login
-	// (POST /api/login)
-	PostApiLogin(ctx context.Context, request PostApiLoginRequestObject) (PostApiLoginResponseObject, error)
+	// (POST /login)
+	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -140,29 +140,29 @@ type strictHandler struct {
 	middlewares []StrictMiddlewareFunc
 }
 
-// PostApiLogin operation middleware
-func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
-	var request PostApiLoginRequestObject
+// PostLogin operation middleware
+func (sh *strictHandler) PostLogin(ctx echo.Context) error {
+	var request PostLoginRequestObject
 
-	var body PostApiLoginJSONRequestBody
+	var body PostLoginJSONRequestBody
 	if err := ctx.Bind(&body); err != nil {
 		return err
 	}
 	request.Body = &body
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostApiLogin(ctx.Request().Context(), request.(PostApiLoginRequestObject))
+		return sh.ssi.PostLogin(ctx.Request().Context(), request.(PostLoginRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostApiLogin")
+		handler = middleware(handler, "PostLogin")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(PostApiLoginResponseObject); ok {
-		return validResponse.VisitPostApiLoginResponse(ctx.Response())
+	} else if validResponse, ok := response.(PostLoginResponseObject); ok {
+		return validResponse.VisitPostLoginResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -172,14 +172,14 @@ func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6RSzY7aQAx+lcjnKISlp9yoemHVA1LVU1Uhk5gwdDKejp1lo1XevZqkZElB2kpwIJnJ",
+	"H4sIAAAAAAAC/6RSzY7aQAx+lcjnKAToKbetemHVA1LVU1Uhk5gwdDKejp1lo1XevZqkZElB2kpwIJnJ",
 	"Z/v78RuU3Hh25FSgeAMpj9Tg8Pp81i12lrGKJx/YU1BDw7fKiLfY7Rw2FM/0io23BAU889ElX5ggBe18",
-	"vBENxtXQp2BKdjuPepyXLEyDNcnixEeXnXx9t1R2WDXGzSoPaIUm8J7ZErqIboXCzlQz8PJpNUGNU6op",
-	"XKC3KiKVWxp9CoF+tyZQBcWPacpVk3TuzBXvn1M33p+oVOhjO+MOHCer0WHu2u5RA4skkWJwaJMz7ZP1",
-	"dgMpvFAQww4KyLNllkf27MmhN1DAKsuzHFKI9g4RLdCbheV69MyzaHzGEFENu00FBWxZdO3N1wE1iiPR",
-	"z1x1EVuyU3JDGXpvTTkULk7C7n1VbnfDo8iZw9z96Xb5tLqX74Mx/HV7Gn3f7fcqDS0NF+LZycj7Kc8f",
-	"UK38i+bbCa/xl139fyhlbHKffEVSBuN13IBvbVmSyKG1tkuw1SM5jVSpim5+ypcPSGlIBOt/oti4F7Sm",
-	"SspAVZyFVj6Uc2n0P4Iu/S9pJhySKc4Il7ZpMHRQwHehkIyb3fd9/ycAAP//0SNLNsMEAAA=",
+	"vBENxtXQp2BKdjuPepyXLEyDNcnixEeXnXx9t1R2WDXGzSoPaIUm8J7ZErqIboXCzlQz8HK1nqDGKdUU",
+	"LtBbFZHKLY0+hUC/WxOoguLHNOWqSTp35or3z6kb709UKvSxnXEHjpPV6DD3ye5RA4skkWJwaJMz7ZOn",
+	"7QZSeKEghh0UkGfLLI/s2ZNDb6CAdZZnOaQQ7R0iWliuR788i8ZnDBDVsNtUUMCWRb8OkFEViX7mqovA",
+	"kp2SG2rQe2vKoWpxEnbvO3K7FB5Fzhzmtk+3y9X6XrAP+v/X5mn0fZvfqzS0NFyIZycj71WeP6Ba+RfN",
+	"1xJe4y+7+v9QytjkPvmKpAzG6xj9t7YsSeTQWtsl2OqRnEaqVEU3P+XLB6Q0JIL1P1Fs3AtaUyVloCrO",
+	"Qisfyrk0+h9Bl/6XNBMOyRRnhEvbNBg6KOC7UEjGte77vv8TAAD//y1cIMC8BAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

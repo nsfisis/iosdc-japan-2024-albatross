@@ -3,7 +3,7 @@ info:
   title: Albatross internal web API
   version: 0.1.0
 paths:
-  /api/login:
+  /login:
     post:
       summary: User login
       requestBody:

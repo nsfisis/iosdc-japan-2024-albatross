@@ -127,7 +127,7 @@ func main() {
 		return
 	}
 
-	openApiSpec, err := api.GetSwagger()
+	openApiSpec, err := api.GetSwaggerWithPrefix("/api")
 	if err != nil {
 		fmt.Printf("Error loading OpenAPI spec\n: %s", err)
 		return

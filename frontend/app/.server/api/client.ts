@@ -4,6 +4,6 @@ import type { paths } from "./schema";
 export const apiClient = createClient<paths>({
   baseUrl:
     process.env.NODE_ENV === "development"
-      ? "http://localhost:8002/"
-      : "http://api-server/",
+      ? "http://localhost:8002/api/"
+      : "http://api-server/api/",
 });
