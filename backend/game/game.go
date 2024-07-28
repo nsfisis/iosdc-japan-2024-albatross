@@ -1,15 +1,86 @@
-package main
+package game
 
 import (
+	"context"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/gorilla/websocket"
+
+	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
+	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
 )
 
+type gameState = api.GameState
+
+const (
+	gameStateClosed         gameState = api.Closed
+	gameStateWaitingEntries gameState = api.WaitingEntries
+	gameStateWaitingStart   gameState = api.WaitingStart
+	gameStatePrepare        gameState = api.Prepare
+	gameStateStarting       gameState = api.Starting
+	gameStateGaming         gameState = api.Gaming
+	gameStateFinished       gameState = api.Finished
+)
+
+type game struct {
+	gameID          int
+	state           string
+	displayName     string
+	durationSeconds int
+	startedAt       *time.Time
+	problem         *problem
+}
+
+type problem struct {
+	problemID   int
+	title       string
+	description string
+}
+
+// func startGame(game *Game) {
+// 	if gameHubs[game.GameID] != nil {
+// 		return
+// 	}
+// 	gameHubs[game.GameID] = NewGameHub(game)
+// 	go gameHubs[game.GameID].Run()
+// }
+
+/*
+func handleGolfPost(w http.ResponseWriter, r *http.Request) {
+	var yourTeam string
+	waitingGolfGames := []Game{}
+	err := db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
+	if err != nil {
+		http.Error(w, "Error getting games", http.StatusInternalServerError)
+		return
+	}
+	if len(waitingGolfGames) == 0 {
+		_, err = db.Exec("INSERT INTO games (type, state) VALUES ($1, $2)", gameTypeGolf, gameStateWaiting)
+		if err != nil {
+			http.Error(w, "Error creating game", http.StatusInternalServerError)
+			return
+		}
+		waitingGolfGames = []Game{}
+		err = db.Select(&waitingGolfGames, "SELECT * FROM games WHERE type = $1 AND state = $2 ORDER BY created_at", gameTypeGolf, gameStateWaiting)
+		if err != nil {
+			http.Error(w, "Error getting games", http.StatusInternalServerError)
+			return
+		}
+		yourTeam = "a"
+		startGame(&waitingGolfGames[0])
+	} else {
+		yourTeam = "b"
+		db.Exec("UPDATE games SET state = $1 WHERE game_id = $2", gameStateReady, waitingGolfGames[0].GameID)
+	}
+	waitingGame := waitingGolfGames[0]
+
+	http.Redirect(w, r, fmt.Sprintf("/golf/%d/%s/", waitingGame.GameID, yourTeam), http.StatusSeeOther)
+}
+*/
+
 type GameHub struct {
-	game              *Game
+	game              *game
 	clients           map[*GameClient]bool
 	receive           chan *MessageWithClient
 	register          chan *GameClient
@@ -21,7 +92,7 @@ type GameHub struct {
 	finishTime        time.Time
 }
 
-func NewGameHub(game *Game) *GameHub {
+func NewGameHub(game *game) *GameHub {
 	return &GameHub{
 		game:              game,
 		clients:           make(map[*GameClient]bool),
@@ -181,23 +252,6 @@ func (h *GameHub) closeWatcher(watcher *GameWatcher) {
 	close(watcher.send)
 }
 
-const (
-	writeWait      = 10 * time.Second
-	pongWait       = 60 * time.Second
-	pingPeriod     = (pongWait * 9) / 10
-	maxMessageSize = 512
-)
-
-var (
-	newline = []byte{'\n'}
-	space   = []byte{' '}
-)
-
-var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
-}
-
 type GameClient struct {
 	hub   *GameHub
 	conn  *websocket.Conn
@@ -263,32 +317,6 @@ func (c *GameClient) writePump() {
 	}
 }
 
-func serveWs(hub *GameHub, w http.ResponseWriter, r *http.Request, team string) error {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
-	client := &GameClient{hub: hub, conn: conn, send: make(chan *Message), team: team}
-	client.hub.register <- client
-
-	go client.writePump()
-	go client.readPump()
-	return nil
-}
-
-func serveWsWatcher(hub *GameHub, w http.ResponseWriter, r *http.Request) error {
-	conn, err := upgrader.Upgrade(w, r, nil)
-	if err != nil {
-		return err
-	}
-	watcher := &GameWatcher{hub: hub, conn: conn, send: make(chan *Message)}
-	watcher.hub.registerWatcher <- watcher
-
-	go watcher.writePump()
-	go watcher.readPump()
-	return nil
-}
-
 // Receives messages from the client and sends them to the hub.
 func (c *GameWatcher) readPump() {
 	c.conn.SetReadLimit(maxMessageSize)
@@ -325,4 +353,33 @@ func (c *GameWatcher) writePump() {
 			}
 		}
 	}
+}
+
+type GameHubs struct {
+	hubs map[int]*GameHub
+}
+
+func NewGameHubs() *GameHubs {
+	return &GameHubs{
+		hubs: make(map[int]*GameHub),
+	}
+}
+
+func (hubs *GameHubs) Close() {
+	for _, hub := range hubs.hubs {
+		hub.Close()
+	}
+}
+
+func (hubs *GameHubs) RestoreFromDB(ctx context.Context, q *db.Queries) error {
+	games, err := q.ListGames(ctx)
+	if err != nil {
+		return err
+	}
+	_ = games
+	return nil
+}
+
+func (hubs *GameHubs) SockHandler() *sockHandler {
+	return newSockHandler(hubs)
 }
