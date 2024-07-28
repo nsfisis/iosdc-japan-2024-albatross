@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"net/http"
+	"strings"
 
 	"github.com/labstack/echo/v4"
 
@@ -59,4 +60,28 @@ func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 	p.IconPath = c.IconPath
 	p.IsAdmin = c.IsAdmin
 	_ = p
+}
+
+func NewJWTMiddleware() StrictMiddlewareFunc {
+	return func(handler StrictHandlerFunc, operationID string) StrictHandlerFunc {
+		if operationID == "PostApiLogin" {
+			return handler
+		} else {
+			return func(c echo.Context, request interface{}) (response interface{}, err error) {
+				authorization := c.Request().Header.Get("Authorization")
+				const prefix = "Bearer "
+				if !strings.HasPrefix(authorization, prefix) {
+					return nil, echo.NewHTTPError(http.StatusUnauthorized)
+				}
+				token := authorization[len(prefix):]
+
+				claims, err := auth.ParseJWT(token)
+				if err != nil {
+					return nil, echo.NewHTTPError(http.StatusUnauthorized)
+				}
+				c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
+				return handler(c, request)
+			}
+		}
+	}
 }

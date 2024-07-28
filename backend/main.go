@@ -148,7 +148,9 @@ func main() {
 		apiGroup := e.Group("/api")
 		apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
 		apiHandler := api.NewHandler(queries)
-		api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
+		api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, []api.StrictMiddlewareFunc{
+			api.NewJWTMiddleware(),
+		}))
 	}
 
 	e.GET("/sock/golf/:gameId/watch", func(c echo.Context) error {

@@ -1,11 +1,10 @@
 package auth
 
 import (
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
-	echojwt "github.com/labstack/echo-jwt/v4"
-	"github.com/labstack/echo/v4"
 
 	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
 )
@@ -38,17 +37,16 @@ func NewJWT(user *db.User) (string, error) {
 	return token.SignedString([]byte("TODO"))
 }
 
-func NewJWTMiddleware() echo.MiddlewareFunc {
-	return echojwt.WithConfig(echojwt.Config{
-		NewClaimsFunc: func(c echo.Context) jwt.Claims {
-			return new(JWTClaims)
-		},
-		SigningKey: []byte("TODO"),
+func ParseJWT(token string) (*JWTClaims, error) {
+	claims := new(JWTClaims)
+	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+		return []byte("TODO"), nil
 	})
-}
-
-func GetJWTClaimsFromEchoContext(c echo.Context) *JWTClaims {
-	user := c.Get("user").(*jwt.Token)
-	claims := user.Claims.(*JWTClaims)
-	return claims
+	if err != nil {
+		return nil, err
+	}
+	if !t.Valid {
+		return nil, errors.New("invalid token")
+	}
+	return claims, nil
 }
