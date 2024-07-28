@@ -118,6 +118,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    [path: `/games/${integer}`]: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a game */
+        get: {
+            parameters: {
+                query?: never;
+                header: {
+                    Authorization: string;
+                };
+                path: {
+                    game_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A game */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Game"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Forbidden operation */
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -138,7 +190,7 @@ export interface components {
             /** @example 1 */
             game_id: number;
             /**
-             * @example active
+             * @example closed
              * @enum {string}
              */
             state: "closed" | "waiting_entries" | "waiting_start" | "prepare" | "starting" | "gaming" | "finished";
@@ -157,6 +209,57 @@ export interface components {
             title: string;
             /** @example This is a problem */
             description: string;
+        };
+        GamePlayerMessage: components["schemas"]["GamePlayerMessageS2C"] | components["schemas"]["GamePlayerMessageC2S"];
+        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CPrepare"] | components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"];
+        GamePlayerMessageS2CPrepare: {
+            /** @constant */
+            type: "player:s2c:prepare";
+            data: components["schemas"]["GamePlayerMessageS2CPreparePayload"];
+        };
+        GamePlayerMessageS2CPreparePayload: {
+            problem: components["schemas"]["Problem"];
+        };
+        GamePlayerMessageS2CStart: {
+            /** @constant */
+            type: "player:s2c:start";
+            data: components["schemas"]["GamePlayerMessageS2CStartPayload"];
+        };
+        GamePlayerMessageS2CStartPayload: {
+            /** @example 946684800 */
+            start_at: number;
+        };
+        GamePlayerMessageS2CExecResult: {
+            /** @constant */
+            type: "player:s2c:execresult";
+            data: components["schemas"]["GamePlayerMessageS2CExecResultPayload"];
+        };
+        GamePlayerMessageS2CExecResultPayload: {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success";
+            /** @example 100 */
+            score: number | null;
+        };
+        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"] | components["schemas"]["GamePlayerMessageC2SCode"];
+        GamePlayerMessageC2SEntry: {
+            /** @constant */
+            type: "player:c2s:entry";
+        };
+        GamePlayerMessageC2SReady: {
+            /** @constant */
+            type: "player:c2s:ready";
+        };
+        GamePlayerMessageC2SCode: {
+            /** @constant */
+            type: "player:c2s:code";
+            data: components["schemas"]["GamePlayerMessageC2SCodePayload"];
+        };
+        GamePlayerMessageC2SCodePayload: {
+            /** @example print('Hello, world!') */
+            code: string;
         };
     };
     responses: never;

@@ -6,7 +6,7 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	oapimiddleware "github.com/oapi-codegen/echo-middleware"
@@ -15,6 +15,19 @@ import (
 	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
 	"github.com/nsfisis/iosdc-2024-albatross/backend/game"
 )
+
+func connectDB(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
+	pool, err := pgxpool.New(ctx, dsn)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := pool.Ping(ctx); err != nil {
+		return nil, err
+	}
+
+	return pool, nil
+}
 
 func main() {
 	var err error
@@ -30,13 +43,14 @@ func main() {
 
 	ctx := context.Background()
 
-	conn, err := pgx.Connect(ctx, fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.dbHost, config.dbPort, config.dbUser, config.dbPassword, config.dbName))
+	dbDSN := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", config.dbHost, config.dbPort, config.dbUser, config.dbPassword, config.dbName)
+	connPool, err := connectDB(ctx, dbDSN)
 	if err != nil {
 		log.Fatalf("Error connecting to db %v", err)
 	}
-	defer conn.Close(ctx)
+	defer connPool.Close()
 
-	queries := db.New(conn)
+	queries := db.New(connPool)
 
 	e := echo.New()
 
@@ -50,20 +64,22 @@ func main() {
 		api.NewJWTMiddleware(),
 	}))
 
-	gameHubs := game.NewGameHubs()
-	err = gameHubs.RestoreFromDB(ctx, queries)
+	gameHubs := game.NewGameHubs(queries)
+	err = gameHubs.RestoreFromDB(ctx)
 	if err != nil {
 		log.Fatalf("Error restoring game hubs from db %v", err)
 	}
 	defer gameHubs.Close()
 	sockGroup := e.Group("/sock")
 	sockHandler := gameHubs.SockHandler()
-	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
-		return sockHandler.HandleSockGolfWatch(c)
-	})
 	sockGroup.GET("/golf/:gameId/play", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfPlay(c)
 	})
+	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
+		return sockHandler.HandleSockGolfWatch(c)
+	})
+
+	gameHubs.Run()
 
 	if err := e.Start(":80"); err != http.ErrServerClosed {
 		log.Fatal(err)

@@ -11,6 +11,44 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const getGameById = `-- name: GetGameById :one
+SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+LEFT JOIN problems ON games.problem_id = problems.problem_id
+WHERE games.game_id = $1
+LIMIT 1
+`
+
+type GetGameByIdRow struct {
+	GameID          int32
+	State           string
+	DisplayName     string
+	DurationSeconds int32
+	CreatedAt       pgtype.Timestamp
+	StartedAt       pgtype.Timestamp
+	ProblemID       pgtype.Int4
+	ProblemID_2     pgtype.Int4
+	Title           pgtype.Text
+	Description     pgtype.Text
+}
+
+func (q *Queries) GetGameById(ctx context.Context, gameID int32) (GetGameByIdRow, error) {
+	row := q.db.QueryRow(ctx, getGameById, gameID)
+	var i GetGameByIdRow
+	err := row.Scan(
+		&i.GameID,
+		&i.State,
+		&i.DisplayName,
+		&i.DurationSeconds,
+		&i.CreatedAt,
+		&i.StartedAt,
+		&i.ProblemID,
+		&i.ProblemID_2,
+		&i.Title,
+		&i.Description,
+	)
+	return i, err
+}
+
 const getUserAuthByUsername = `-- name: GetUserAuthByUsername :one
 SELECT users.user_id, username, display_name, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id
@@ -171,4 +209,36 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 		return nil, err
 	}
 	return items, nil
+}
+
+const updateGameStartedAt = `-- name: UpdateGameStartedAt :exec
+UPDATE games
+SET started_at = $2
+WHERE game_id = $1
+`
+
+type UpdateGameStartedAtParams struct {
+	GameID    int32
+	StartedAt pgtype.Timestamp
+}
+
+func (q *Queries) UpdateGameStartedAt(ctx context.Context, arg UpdateGameStartedAtParams) error {
+	_, err := q.db.Exec(ctx, updateGameStartedAt, arg.GameID, arg.StartedAt)
+	return err
+}
+
+const updateGameState = `-- name: UpdateGameState :exec
+UPDATE games
+SET state = $2
+WHERE game_id = $1
+`
+
+type UpdateGameStateParams struct {
+	GameID int32
+	State  string
+}
+
+func (q *Queries) UpdateGameState(ctx context.Context, arg UpdateGameStateParams) error {
+	_, err := q.db.Exec(ctx, updateGameState, arg.GameID, arg.State)
+	return err
 }

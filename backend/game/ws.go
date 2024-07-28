@@ -17,28 +17,40 @@ const (
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
 	WriteBufferSize: 1024,
+	CheckOrigin: func(r *http.Request) bool {
+		// TODO: insecure!
+		return true
+	},
 }
 
-func servePlayerWs(hub *GameHub, w http.ResponseWriter, r *http.Request, team string) error {
+func servePlayerWs(hub *gameHub, w http.ResponseWriter, r *http.Request, team string) error {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
-	client := &GameClient{hub: hub, conn: conn, send: make(chan *Message), team: team}
-	client.hub.register <- client
+	player := &playerClient{
+		hub:         hub,
+		conn:        conn,
+		s2cMessages: make(chan playerMessageS2C),
+	}
+	hub.registerPlayer <- player
 
-	go client.writePump()
-	go client.readPump()
+	go player.writePump()
+	go player.readPump()
 	return nil
 }
 
-func serveWatcherWs(hub *GameHub, w http.ResponseWriter, r *http.Request) error {
+func serveWatcherWs(hub *gameHub, w http.ResponseWriter, r *http.Request) error {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
 	}
-	watcher := &GameWatcher{hub: hub, conn: conn, send: make(chan *Message)}
-	watcher.hub.registerWatcher <- watcher
+	watcher := &watcherClient{
+		hub:         hub,
+		conn:        conn,
+		s2cMessages: make(chan watcherMessageS2C),
+	}
+	hub.registerWatcher <- watcher
 
 	go watcher.writePump()
 	go watcher.readPump()

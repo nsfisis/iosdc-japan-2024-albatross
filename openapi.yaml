@@ -87,6 +87,39 @@ paths:
                     example: "Forbidden operation"
                 required:
                   - message
+  /games/{game_id}:
+    get:
+      summary: Get a game
+      parameters:
+        - in: path
+          name: game_id
+          schema:
+            type: integer
+          required: true
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
 components:
   schemas:
     JwtPayload:
@@ -120,7 +153,7 @@ components:
           example: 1
         state:
           type: string
-          example: "active"
+          example: "closed"
           enum:
             - closed
             - waiting_entries
@@ -161,3 +194,123 @@ components:
         - problem_id
         - title
         - description
+    GamePlayerMessage:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageS2C'
+        - $ref: '#/components/schemas/GamePlayerMessageC2S'
+    GamePlayerMessageS2C:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageS2CPrepare'
+        - $ref: '#/components/schemas/GamePlayerMessageS2CStart'
+        - $ref: '#/components/schemas/GamePlayerMessageS2CExecResult'
+    GamePlayerMessageS2CPrepare:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:prepare"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CPreparePayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CPreparePayload:
+      type: object
+      properties:
+        problem:
+          $ref: '#/components/schemas/Problem'
+      required:
+        - problem
+    GamePlayerMessageS2CStart:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:start"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CStartPayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CStartPayload:
+      type: object
+      properties:
+        start_at:
+          type: integer
+          example: 946684800
+      required:
+        - start_at
+    GamePlayerMessageS2CExecResult:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:execresult"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CExecResultPayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CExecResultPayload:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+          enum:
+            - success
+        score:
+          type: integer
+          nullable: true
+          example: 100
+      required:
+        - status
+        - score
+    GamePlayerMessageC2S:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageC2SEntry'
+        - $ref: '#/components/schemas/GamePlayerMessageC2SReady'
+        - $ref: '#/components/schemas/GamePlayerMessageC2SCode'
+    GamePlayerMessageC2SEntry:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:entry"
+      required:
+        - type
+    GamePlayerMessageC2SReady:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:ready"
+      required:
+        - type
+    GamePlayerMessageC2SCode:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:code"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageC2SCodePayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageC2SCodePayload:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "print('Hello, world!')"
+      required:
+        - code
+    # GameWatcherMessage:
+    #   oneOf:
+    #     - $ref: '#/components/schemas/GameWatcherMessageS2C'
+    #     - $ref: '#/components/schemas/GameWatcherMessageC2S'
+    # GameWatcherMessageS2C:
+    #   oneOf:
+    # GameWatcherMessageC2S:
+    #   oneOf:

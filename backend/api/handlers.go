@@ -133,6 +133,41 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	}
 }
 
+func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdRequestObject) (GetGamesGameIdResponseObject, error) {
+	// TODO: user permission
+	// user := ctx.Value("user").(*auth.JWTClaims)
+	gameId := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameId))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	var startedAt *int
+	if row.StartedAt.Valid {
+		startedAtTimestamp := int(row.StartedAt.Time.Unix())
+		startedAt = &startedAtTimestamp
+	}
+	var problem *Problem
+	if row.ProblemID.Valid && GameState(row.State) != Closed && GameState(row.State) != WaitingEntries {
+		if !row.Title.Valid || !row.Description.Valid {
+			panic("inconsistent data")
+		}
+		problem = &Problem{
+			ProblemId:   int(row.ProblemID.Int32),
+			Title:       row.Title.String,
+			Description: row.Description.String,
+		}
+	}
+	game := Game{
+		GameId:          int(row.GameID),
+		State:           GameState(row.State),
+		DisplayName:     row.DisplayName,
+		DurationSeconds: int(row.DurationSeconds),
+		StartedAt:       startedAt,
+		Problem:         problem,
+	}
+	return GetGamesGameId200JSONResponse(game), nil
+}
+
 func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 	var c auth.JWTClaims
 	var p JwtPayload
