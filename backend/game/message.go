@@ -66,4 +66,16 @@ func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error
 	}
 }
 
+const (
+	watcherMessageTypeS2CStart      = "watcher:s2c:start"
+	watcherMessageTypeS2CExecResult = "watcher:s2c:execreslut"
+	watcherMessageTypeS2CCode       = "watcher:s2c:code"
+)
+
 type watcherMessageS2C = interface{}
+type watcherMessageS2CStart = api.GameWatcherMessageS2CStart
+type watcherMessageS2CStartPayload = api.GameWatcherMessageS2CStartPayload
+type watcherMessageS2CCode = api.GameWatcherMessageS2CCode
+type watcherMessageS2CCodePayload = api.GameWatcherMessageS2CCodePayload
+type watcherMessageS2CExecResult = api.GameWatcherMessageS2CExecResult
+type watcherMessageS2CExecResultPayload = api.GameWatcherMessageS2CExecResultPayload

@@ -179,26 +179,46 @@ func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 	_ = p
 }
 
+func setupJWTFromAuthorizationHeader(c echo.Context) error {
+	authorization := c.Request().Header.Get("Authorization")
+	const prefix = "Bearer "
+	if !strings.HasPrefix(authorization, prefix) {
+		return echo.NewHTTPError(http.StatusUnauthorized)
+	}
+	token := authorization[len(prefix):]
+	claims, err := auth.ParseJWT(token)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	}
+	c.Set("user", claims)
+	c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
+	return nil
+}
+
+func NewEchoJWTMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			err := setupJWTFromAuthorizationHeader(c)
+			if err != nil {
+				return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+			}
+			return next(c)
+		}
+	}
+}
+
 func NewJWTMiddleware() StrictMiddlewareFunc {
 	return func(handler StrictHandlerFunc, operationID string) StrictHandlerFunc {
 		if operationID == "PostLogin" {
 			return handler
-		} else {
-			return func(c echo.Context, request interface{}) (response interface{}, err error) {
-				authorization := c.Request().Header.Get("Authorization")
-				const prefix = "Bearer "
-				if !strings.HasPrefix(authorization, prefix) {
-					return nil, echo.NewHTTPError(http.StatusUnauthorized)
-				}
-				token := authorization[len(prefix):]
+		}
 
-				claims, err := auth.ParseJWT(token)
-				if err != nil {
-					return nil, echo.NewHTTPError(http.StatusUnauthorized)
-				}
-				c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
-				return handler(c, request)
+		return func(c echo.Context, request interface{}) (interface{}, error) {
+			err := setupJWTFromAuthorizationHeader(c)
+			if err != nil {
+				return nil, echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 			}
+			return handler(c, request)
 		}
 	}
 }

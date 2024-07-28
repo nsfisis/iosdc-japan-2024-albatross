@@ -1,29 +1,30 @@
 import type { components } from "../.server/api/schema";
 import { useState, useEffect } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
-import { useDebouncedCallback } from "use-debounce";
-import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
-import GolfPlayAppWaiting from "./GolfPlayApps/GolfPlayAppWaiting";
-import GolfPlayAppStarting from "./GolfPlayApps/GolfPlayAppStarting";
-import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
-import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
+import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
+import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
+import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
+import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
+import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
 
-type WebSocketMessage = components["schemas"]["GamePlayerMessageS2C"];
+type WebSocketMessage = components["schemas"]["GameWatcherMessageS2C"];
 
 type Game = components["schemas"]["Game"];
 type Problem = components["schemas"]["Problem"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
-export default function GolfPlayApp({ game }: { game: Game }) {
+export default function GolfWatchApp({ game }: { game: Game }) {
   // const socketUrl = `wss://t.nil.ninja/iosdc/2024/sock/golf/${game.game_id}/play`;
   const socketUrl =
     process.env.NODE_ENV === "development"
       ? `ws://localhost:8002/sock/golf/${game.game_id}/play`
       : `ws://api-server/sock/golf/${game.game_id}/play`;
 
-  const { sendJsonMessage, lastJsonMessage, readyState } =
-    useWebSocket<WebSocketMessage>(socketUrl, {});
+  const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
+    socketUrl,
+    {},
+  );
 
   const [gameState, setGameState] = useState<GameState>("connecting");
 
@@ -65,15 +66,10 @@ export default function GolfPlayApp({ game }: { game: Game }) {
     }
   }, [gameState, startedAt, game.duration_seconds]);
 
-  const [currentScore, setCurrentScore] = useState<number | null>(null);
-
-  const onCodeChange = useDebouncedCallback((code: string) => {
-    console.log("player:c2s:code");
-    sendJsonMessage({
-      type: "player:c2s:code",
-      data: { code },
-    });
-  }, 1000);
+  const [scoreA, setScoreA] = useState<number | null>(null);
+  const [scoreB, setScoreB] = useState<number | null>(null);
+  const [codeA, setCodeA] = useState<string>("");
+  const [codeB, setCodeB] = useState<string>("");
 
   if (readyState === ReadyState.UNINSTANTIATED) {
     throw new Error("WebSocket is not connected");
@@ -89,12 +85,7 @@ export default function GolfPlayApp({ game }: { game: Game }) {
     } else if (readyState === ReadyState.OPEN) {
       if (lastJsonMessage !== null) {
         console.log(lastJsonMessage.type);
-        if (lastJsonMessage.type === "player:s2c:prepare") {
-          const { problem } = lastJsonMessage.data;
-          setProblem(problem);
-          console.log("player:c2s:ready");
-          sendJsonMessage({ type: "player:c2s:ready" });
-        } else if (lastJsonMessage.type === "player:s2c:start") {
+        if (lastJsonMessage.type === "watcher:s2c:start") {
           if (
             gameState !== "starting" &&
             gameState !== "gaming" &&
@@ -106,39 +97,39 @@ export default function GolfPlayApp({ game }: { game: Game }) {
             setTimeLeftSeconds(start_at - nowSec);
             setGameState("starting");
           }
-        } else if (lastJsonMessage.type === "player:s2c:execresult") {
+        } else if (lastJsonMessage.type === "watcher:s2c:code") {
+          const { player_id, code } = lastJsonMessage.data;
+          setCodeA(code);
+        } else if (lastJsonMessage.type === "watcher:s2c:execresult") {
           const { score } = lastJsonMessage.data;
-          if (
-            score !== null &&
-            (currentScore === null || score < currentScore)
-          ) {
-            setCurrentScore(score);
+          if (score !== null && (scoreA === null || score < scoreA)) {
+            setScoreA(score);
           }
         }
       } else {
         setGameState("waiting");
-        console.log("player:c2s:entry");
-        sendJsonMessage({ type: "player:c2s:entry" });
       }
     }
-  }, [sendJsonMessage, lastJsonMessage, readyState, gameState, currentScore]);
+  }, [lastJsonMessage, readyState, gameState, scoreA]);
 
   if (gameState === "connecting") {
-    return <GolfPlayAppConnecting />;
+    return <GolfWatchAppConnecting />;
   } else if (gameState === "waiting") {
-    return <GolfPlayAppWaiting />;
+    return <GolfWatchAppWaiting />;
   } else if (gameState === "starting") {
-    return <GolfPlayAppStarting timeLeft={timeLeftSeconds!} />;
+    return <GolfWatchAppStarting timeLeft={timeLeftSeconds!} />;
   } else if (gameState === "gaming") {
     return (
-      <GolfPlayAppGaming
+      <GolfWatchAppGaming
         problem={problem!.description}
-        onCodeChange={onCodeChange}
-        currentScore={currentScore}
+        codeA={codeA}
+        scoreA={scoreA}
+        codeB={codeB}
+        scoreB={scoreB}
       />
     );
   } else if (gameState === "finished") {
-    return <GolfPlayAppFinished />;
+    return <GolfWatchAppFinished />;
   } else {
     return null;
   }

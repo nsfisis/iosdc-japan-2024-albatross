@@ -121,6 +121,14 @@ func (hub *gameHub) run() {
 							},
 						}
 					}
+					for watcher := range hub.watchers {
+						watcher.s2cMessages <- &watcherMessageS2CStart{
+							Type: watcherMessageTypeS2CStart,
+							Data: watcherMessageS2CStartPayload{
+								StartAt: int(startAt.Unix()),
+							},
+						}
+					}
 					err := hub.q.UpdateGameStartedAt(hub.ctx, db.UpdateGameStartedAtParams{
 						GameID: int32(hub.game.gameID),
 						StartedAt: pgtype.Timestamp{
@@ -151,8 +159,26 @@ func (hub *gameHub) run() {
 					Type: playerMessageTypeS2CExecResult,
 					Data: playerMessageS2CExecResultPayload{
 						Score:  &score,
-						Status: api.Success,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatusSuccess,
 					},
+				}
+				for watcher := range hub.watchers {
+					watcher.s2cMessages <- &watcherMessageS2CCode{
+						Type: watcherMessageTypeS2CCode,
+						Data: watcherMessageS2CCodePayload{
+							PlayerId: message.client.playerID,
+							Code:     code,
+						},
+					}
+					watcher.s2cMessages <- &watcherMessageS2CExecResult{
+						Type: watcherMessageTypeS2CExecResult,
+						Data: watcherMessageS2CExecResultPayload{
+							PlayerId: message.client.playerID,
+							Score:    &score,
+							Stdout:   "",
+							Stderr:   "",
+						},
+					}
 				}
 			default:
 				log.Fatalf("unexpected message type: %T", message.message)

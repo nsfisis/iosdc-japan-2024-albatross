@@ -12,12 +12,13 @@ type playerClient struct {
 	hub         *gameHub
 	conn        *websocket.Conn
 	s2cMessages chan playerMessageS2C
+	playerID    int
 }
 
 // Receives messages from the client and sends them to the hub.
 func (c *playerClient) readPump() {
 	defer func() {
-		log.Printf("closing client")
+		log.Printf("closing player client")
 		c.hub.unregisterPlayer <- c
 		c.conn.Close()
 	}()
@@ -87,7 +88,7 @@ func (c *watcherClient) writePump() {
 	defer func() {
 		ticker.Stop()
 		c.conn.Close()
-		log.Printf("closing watcher")
+		log.Printf("closing watcher client")
 		c.hub.unregisterWatcher <- c
 	}()
 	for {

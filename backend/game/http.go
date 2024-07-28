@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	// "github.com/nsfisis/iosdc-2024-albatross/backend/auth"
 )
 
 type sockHandler struct {
@@ -18,7 +19,11 @@ func newSockHandler(hubs *GameHubs) *sockHandler {
 }
 
 func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
-	// TODO: auth
+	// user := c.Get("user").(*auth.JWTClaims)
+	// if user == nil {
+	// 	return echo.NewHTTPError(http.StatusUnauthorized)
+	// }
+	// TODO: check user permission
 	gameId := c.Param("gameId")
 	gameIdInt, err := strconv.Atoi(gameId)
 	if err != nil {
@@ -34,7 +39,7 @@ func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
 	if foundHub == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 	}
-	return servePlayerWs(foundHub, c.Response(), c.Request(), "a")
+	return servePlayerWs(foundHub, c.Response(), c.Request(), 1)
 }
 
 func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
