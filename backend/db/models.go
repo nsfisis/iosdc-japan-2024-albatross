@@ -18,6 +18,11 @@ type Game struct {
 	ProblemID       pgtype.Int4
 }
 
+type GamePlayer struct {
+	GameID int32
+	UserID int32
+}
+
 type Problem struct {
 	ProblemID   int32
 	Title       string
