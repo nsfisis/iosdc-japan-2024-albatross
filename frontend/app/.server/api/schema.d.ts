@@ -158,6 +158,32 @@ export interface components {
             /** @example This is a problem */
             description: string;
         };
+        GamePlayerMessage: components["schemas"]["GamePlayerMessageS2C"] | components["schemas"]["GamePlayerMessageC2S"];
+        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CPrepare"] | components["schemas"]["GamePlayerMessageS2CStart"];
+        GamePlayerMessageS2CPrepare: {
+            /** @constant */
+            type: "player:s2c:prepare";
+            data: {
+                problem: components["schemas"]["Problem"];
+            };
+        };
+        GamePlayerMessageS2CStart: {
+            /** @constant */
+            type: "player:s2c:start";
+            data: {
+                /** @example 946684800 */
+                start_at: number;
+            };
+        };
+        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"];
+        GamePlayerMessageC2SEntry: {
+            /** @constant */
+            type: "player:c2s:entry";
+        };
+        GamePlayerMessageC2SReady: {
+            /** @constant */
+            type: "player:c2s:ready";
+        };
     };
     responses: never;
     parameters: never;

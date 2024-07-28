@@ -45,6 +45,53 @@ type Game struct {
 // GameState defines model for Game.State.
 type GameState string
 
+// GamePlayerMessage defines model for GamePlayerMessage.
+type GamePlayerMessage struct {
+	union json.RawMessage
+}
+
+// GamePlayerMessageC2S defines model for GamePlayerMessageC2S.
+type GamePlayerMessageC2S struct {
+	union json.RawMessage
+}
+
+// GamePlayerMessageC2SEntry defines model for GamePlayerMessageC2SEntry.
+type GamePlayerMessageC2SEntry struct {
+	Type string `json:"type"`
+}
+
+// GamePlayerMessageC2SReady defines model for GamePlayerMessageC2SReady.
+type GamePlayerMessageC2SReady struct {
+	Type string `json:"type"`
+}
+
+// GamePlayerMessageS2C defines model for GamePlayerMessageS2C.
+type GamePlayerMessageS2C struct {
+	union json.RawMessage
+}
+
+// GamePlayerMessageS2CPrepare defines model for GamePlayerMessageS2CPrepare.
+type GamePlayerMessageS2CPrepare struct {
+	Data GamePlayerMessageS2CPreparePayload `json:"data"`
+	Type string                             `json:"type"`
+}
+
+// GamePlayerMessageS2CPreparePayload defines model for GamePlayerMessageS2CPreparePayload.
+type GamePlayerMessageS2CPreparePayload struct {
+	Problem Problem `json:"problem"`
+}
+
+// GamePlayerMessageS2CStart defines model for GamePlayerMessageS2CStart.
+type GamePlayerMessageS2CStart struct {
+	Data GamePlayerMessageS2CStartPayload `json:"data"`
+	Type string                           `json:"type"`
+}
+
+// GamePlayerMessageS2CStartPayload defines model for GamePlayerMessageS2CStartPayload.
+type GamePlayerMessageS2CStartPayload struct {
+	StartAt int `json:"start_at"`
+}
+
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
 	DisplayName string  `json:"display_name"`
@@ -75,6 +122,192 @@ type PostLoginJSONBody struct {
 
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
+
+// AsGamePlayerMessageS2C returns the union data inside the GamePlayerMessage as a GamePlayerMessageS2C
+func (t GamePlayerMessage) AsGamePlayerMessageS2C() (GamePlayerMessageS2C, error) {
+	var body GamePlayerMessageS2C
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2C overwrites any union data inside the GamePlayerMessage as the provided GamePlayerMessageS2C
+func (t *GamePlayerMessage) FromGamePlayerMessageS2C(v GamePlayerMessageS2C) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2C performs a merge with any union data inside the GamePlayerMessage, using the provided GamePlayerMessageS2C
+func (t *GamePlayerMessage) MergeGamePlayerMessageS2C(v GamePlayerMessageS2C) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageC2S returns the union data inside the GamePlayerMessage as a GamePlayerMessageC2S
+func (t GamePlayerMessage) AsGamePlayerMessageC2S() (GamePlayerMessageC2S, error) {
+	var body GamePlayerMessageC2S
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageC2S overwrites any union data inside the GamePlayerMessage as the provided GamePlayerMessageC2S
+func (t *GamePlayerMessage) FromGamePlayerMessageC2S(v GamePlayerMessageC2S) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageC2S performs a merge with any union data inside the GamePlayerMessage, using the provided GamePlayerMessageC2S
+func (t *GamePlayerMessage) MergeGamePlayerMessageC2S(v GamePlayerMessageC2S) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GamePlayerMessage) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GamePlayerMessage) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGamePlayerMessageC2SEntry returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SEntry
+func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SEntry() (GamePlayerMessageC2SEntry, error) {
+	var body GamePlayerMessageC2SEntry
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageC2SEntry overwrites any union data inside the GamePlayerMessageC2S as the provided GamePlayerMessageC2SEntry
+func (t *GamePlayerMessageC2S) FromGamePlayerMessageC2SEntry(v GamePlayerMessageC2SEntry) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageC2SEntry performs a merge with any union data inside the GamePlayerMessageC2S, using the provided GamePlayerMessageC2SEntry
+func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SEntry(v GamePlayerMessageC2SEntry) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageC2SReady returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SReady
+func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SReady() (GamePlayerMessageC2SReady, error) {
+	var body GamePlayerMessageC2SReady
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageC2SReady overwrites any union data inside the GamePlayerMessageC2S as the provided GamePlayerMessageC2SReady
+func (t *GamePlayerMessageC2S) FromGamePlayerMessageC2SReady(v GamePlayerMessageC2SReady) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageC2SReady performs a merge with any union data inside the GamePlayerMessageC2S, using the provided GamePlayerMessageC2SReady
+func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SReady(v GamePlayerMessageC2SReady) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GamePlayerMessageC2S) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GamePlayerMessageC2S) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGamePlayerMessageS2CPrepare returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CPrepare
+func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CPrepare() (GamePlayerMessageS2CPrepare, error) {
+	var body GamePlayerMessageS2CPrepare
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2CPrepare overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CPrepare
+func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CPrepare(v GamePlayerMessageS2CPrepare) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2CPrepare performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CPrepare
+func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CPrepare(v GamePlayerMessageS2CPrepare) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageS2CStart returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CStart
+func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CStart() (GamePlayerMessageS2CStart, error) {
+	var body GamePlayerMessageS2CStart
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2CStart overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CStart
+func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CStart(v GamePlayerMessageS2CStart) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2CStart performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CStart
+func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CStart(v GamePlayerMessageS2CStart) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GamePlayerMessageS2C) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GamePlayerMessageS2C) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
@@ -309,20 +542,23 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xUTW/jNhD9K8K0R8FW4iDY+pai6CKLPRhoe1oExlgcS0wlkssZJesG+u8FqQ9btoqk",
-	"SHKIZGo+3nvzOC+Q29pZQ0YY1i/AeUk1xtfPWFN4Om8dedEUT5VmV+Fha/qv9ANrVxGsY3xyBSnIwYXf",
-	"LF6bAtoUVONRtDVbptwaxZO81W02pmgjVJAPOQXWtNVqEno1F+i83VVUh8CfPe1hDT8tj5yWPaHlpg9r",
-	"U2BBL6S2KJPqv9zc3n66+ZTNwmFB6fiapob1N8gry6QghWfUok2xJSM+aHQ8iX0gICSHnqDvHESJ/LqX",
-	"vTaaS1LwkJ6IibnoJ7oUs03B0/dGe1IBxaDSADCdzmdG+oexpN09Ui6B3Jdn2eChsqj+z7y/2NIkv1ma",
-	"m7jOrdk6lHKastQ1FsTLR1uaxaMrZlN5i6rWZpK5x4ppDN5ZWxGaEN0w+QubXK/mRhhCL1kEKK/KPHQ5",
-	"KXKh9Ih7TuHN0aRn8hLnXrswoimuP0vNieYEk8HgM1r1n950T0RLdca9RzV3ac8EOGk0VEon2C9JhxLa",
-	"7G1o2feGu2qH4i1zEoB5g1XyTLvkbnMPKTyR5ygDZIurRRYwW0cGnYY1rBbZIgt3CaWMwi2D9eNbQfEe",
-	"B1Wj1e9VWEYkn2NASPFYk5BnWH97geAs+N6QP0AKnR8gzHGYcLcwIuozDdu0zy4JFflj+l0jpfX6n9ge",
-	"TpUT39BMyVHlhxDMzhruuFxnWXjk1giZSAudq3QeKy8fuXPJsd7UTKMkWqjm1zZi3O/tODf0Hg+zC4b/",
-	"Y7oT78JXzZLYfdJltCncZKt3cKmJGYszw/5u/U4rRSYZp/2qdYdCb+Ew1o9VuKlr9IeBW0+sTWFZ2aJb",
-	"UM7yjPk2luVrDOmgEMuvVh3eoYZD5mfrp9d8PL26Xs1th3cuvH6vja3nBZx6vf1QP4v9m87W4o/wtzj5",
-	"/yqVrshbpv9Hk+fEvG+q6pBgIyUZCVBJdXa++mg735snrLRKck8q9MKKP9TOQ/1hmon1yTjOqcP/YvJJ",
-	"Z+u2bdt/AwAA//+RpToKFwoAAA==",
+	"H4sIAAAAAAAC/6xWW2+jRhT+K2jaR+RrFG15S9N2ldVWter2aRVZx3BsJoWZ2TlDsu6K/76aGQzG4Bgn",
+	"zkNC4Fy+853rdxbLXEmBwhCLvjOKU8zBPX6EHO1fpaVCbTi6twknlcFuJaqv+A1ylSGLnHwwZSEzO2X/",
+	"J6O52LIyZEmhwXApVoSxFAm19Oa3k1qFC4Nb1FZnCzmueNISnfYJKi3XGeZW8GeNGxaxn8ZNTOMqoPGi",
+	"EitDRga0wWQFpmX9l5vb2w83Hya9cMiA8fGKImfRFxZnkjBhIXsBbrjYrlAYbTlq3jg/zCJEBRpZ5dmS",
+	"4uLzDxsuOKWYsMfwgEyIDX/GLpllyDR+LbjGxKLYs7QHGLbz00P9Y21Srp8wNjY4m7lFBjvUfyIRbF2g",
+	"UuBfGxZ9eZ3Wjupyds/K8EKl+9mSlY99SOyXt4O5ny1/F0bv3oTob4RkdxqWN9zpD0+ubStBhkVMObUo",
+	"nlGETuNcSt3XQVmqMV4CQjuN64Gw+X5XtSyq7rg4RcvZ/dJ1WH+KDkx3hxgYODcwXjG4gF0mIbF8nGCa",
+	"ZnHUtP0ArkOPaSjlR0A6AV46FI8g7dWHwvF5uBrNztwwkvcz9voUt0B0QnN+L9ggR4Bq9T40n15O+z29",
+	"fj/JVAS/SexbwDyWYqXApG2VMc9hizR+kqkYPaltryqtIMm5aGluICOshddSZgjCSheEurO1Z/O+jWpF",
+	"u1FYKGfTufdyYKSz+GrcfQwvmvY4ohcp1lzZjdnG9U/KKeAUQLDvjR6uqk+DzhbDTXYUe4Wq74bq70/P",
+	"gbcUtrB3g7YmuNhItx68b3aXrcFoSRRYYFpAFrzgOrhbPLCQPaMmRwObjKajicUsFQpQnEVsPpqMJva0",
+	"AZM64sb2EnFPW3RNYVl1l8dDYm9DNB+dgFXRkKNBTW5d2MpiXwt0m9HXQ9Xf1V3j5kSz1A5bqtJOERLU",
+	"jfpdYVKp+f/OPTtkzugCe0zWLD9aYVJSkI9lNplUc8egcGGBUhmPneXxE/kqaey1i6mmhBvMacggbIYd",
+	"A61h13vv0YnstmqXfeZkArkJvEYZspvJ/B2x5M1h2BTsH1KveZKgCOpsny3dvaEhMdT2nRUq8hzsyeVj",
+	"qwIrQzbO5NYPKCWpp/gWksxnJ+KhIJlfpT+b3siGAqIXqdttXr+dzuZ90+GdA6+aa7XrfgLbtV5etZ6N",
+	"/A+PxuI3+zM6+H1+FTsjQ7K/LOIYiTZFlu0CKEyKwliomPhynl67nB/EM2Q8CWKNifUFGV21nPf299kM",
+	"pA7qdLYr/F9CHfiyLsuy/BEAAP//HvsQPaYPAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

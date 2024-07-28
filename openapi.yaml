@@ -161,3 +161,76 @@ components:
         - problem_id
         - title
         - description
+    GamePlayerMessage:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageS2C'
+        - $ref: '#/components/schemas/GamePlayerMessageC2S'
+    GamePlayerMessageS2C:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageS2CPrepare'
+        - $ref: '#/components/schemas/GamePlayerMessageS2CStart'
+    GamePlayerMessageS2CPrepare:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:prepare"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CPreparePayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CPreparePayload:
+      type: object
+      properties:
+        problem:
+          $ref: '#/components/schemas/Problem'
+      required:
+        - problem
+    GamePlayerMessageS2CStart:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:start"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CStartPayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CStartPayload:
+      type: object
+      properties:
+        start_at:
+          type: integer
+          example: 946684800
+      required:
+        - start_at
+    GamePlayerMessageC2S:
+      oneOf:
+        - $ref: '#/components/schemas/GamePlayerMessageC2SEntry'
+        - $ref: '#/components/schemas/GamePlayerMessageC2SReady'
+    GamePlayerMessageC2SEntry:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:entry"
+      required:
+        - type
+    GamePlayerMessageC2SReady:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:c2s:ready"
+      required:
+        - type
+    # GameWatcherMessage:
+    #   oneOf:
+    #     - $ref: '#/components/schemas/GameWatcherMessageS2C'
+    #     - $ref: '#/components/schemas/GameWatcherMessageC2S'
+    # GameWatcherMessageS2C:
+    #   oneOf:
+    # GameWatcherMessageC2S:
+    #   oneOf:
