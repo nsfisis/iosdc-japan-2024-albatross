@@ -30,15 +30,7 @@ authenticator.use(
   "default",
 );
 
-type JwtPayload = components["schemas"]["JwtPayload"];
-
-export type User = {
-  userId: number;
-  username: string;
-  displayName: string;
-  iconPath: string | null;
-  isAdmin: boolean;
-};
+export type User = components["schemas"]["JwtPayload"];
 
 export async function isAuthenticated(
   request: Request | Session,
@@ -122,12 +114,5 @@ export async function isAuthenticated(
   if (!jwt) {
     return null;
   }
-  const payload = jwtDecode<JwtPayload>(jwt);
-  return {
-    userId: payload.user_id,
-    username: payload.username,
-    displayName: payload.display_name,
-    iconPath: payload.icon_path ?? null,
-    isAdmin: payload.is_admin,
-  };
+  return jwtDecode<User>(jwt);
 }

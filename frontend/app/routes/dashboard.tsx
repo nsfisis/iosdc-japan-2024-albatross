@@ -16,12 +16,12 @@ export default function Dashboard() {
       <div className="p-6 rounded shadow-md max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold mb-4">
           {user.username}{" "}
-          {user.isAdmin && <span className="text-red-500 text-lg">admin</span>}
+          {user.is_admin && <span className="text-red-500 text-lg">admin</span>}
         </h1>
         <h2 className="text-2xl font-semibold mb-2">User</h2>
         <div className="mb-6">
           <ul className="list-disc list-inside">
-            <li>Name: {user.displayName}</li>
+            <li>Name: {user.display_name}</li>
           </ul>
         </div>
         <h2 className="text-2xl font-semibold mb-2">Game</h2>
