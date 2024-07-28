@@ -3,102 +3,52 @@ package game
 import (
 	"encoding/json"
 	"fmt"
+
+	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
 )
 
-type MessageWithClient struct {
-	Client  *GameClient
-	Message *Message
+const (
+	playerMessageTypeS2CPrepare = "player:s2c:prepare"
+	playerMessageTypeS2CStart   = "player:s2c:start"
+	playerMessageTypeC2SEntry   = "player:c2s:entry"
+	playerMessageTypeC2SReady   = "player:c2s:ready"
+)
+
+type playerMessageC2SWithClient struct {
+	client  *playerClient
+	message playerMessageC2S
 }
 
-type Message struct {
-	Type string      `json:"type"`
-	Data MessageData `json:"data"`
-}
+type playerMessage = api.GamePlayerMessage
 
-type MessageData interface{}
+type playerMessageS2C = interface{}
+type playerMessageS2CPrepare = api.GamePlayerMessageS2CPrepare
+type playerMessageS2CPreparePayload = api.GamePlayerMessageS2CPreparePayload
+type playerMessageS2CStart = api.GamePlayerMessageS2CStart
+type playerMessageS2CStartPayload = api.GamePlayerMessageS2CStartPayload
 
-type MessageDataConnect struct {
-}
+type playerMessageC2S = interface{}
+type playerMessageC2SEntry = api.GamePlayerMessageC2SEntry
+type playerMessageC2SReady = api.GamePlayerMessageC2SReady
 
-type MessageDataPrepare struct {
-	Problem string `json:"problem"`
-}
-
-type MessageDataReady struct {
-}
-
-type MessageDataStart struct {
-	StartTime string `json:"startTime"`
-}
-
-type MessageDataCode struct {
-	Code string `json:"code"`
-}
-
-type MessageDataScore struct {
-	Score int `json:"score"`
-}
-
-type MessageDataFinish struct {
-	YourScore     *int `json:"yourScore"`
-	OpponentScore *int `json:"opponentScore"`
-}
-
-type MessageDataWatch struct {
-	Problem string `json:"problem"`
-	ScoreA  *int   `json:"scoreA"`
-	CodeA   string `json:"codeA"`
-	ScoreB  *int   `json:"scoreB"`
-	CodeB   string `json:"codeB"`
-}
-
-func (m *Message) UnmarshalJSON(data []byte) error {
-	var raw map[string]json.RawMessage
-	if err := json.Unmarshal(data, &raw); err != nil {
-		return err
+func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error) {
+	var typ string
+	if err := json.Unmarshal(raw["type"], &typ); err != nil {
+		return nil, err
 	}
 
-	if err := json.Unmarshal(raw["type"], &m.Type); err != nil {
-		return err
-	}
-
-	var err error
-	switch m.Type {
-	case "connect":
-		var data MessageDataConnect
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "prepare":
-		var data MessageDataPrepare
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "ready":
-		var data MessageDataReady
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "start":
-		var data MessageDataStart
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "code":
-		var data MessageDataCode
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "score":
-		var data MessageDataScore
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "finish":
-		var data MessageDataFinish
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
-	case "watch":
-		var data MessageDataWatch
-		err = json.Unmarshal(raw["data"], &data)
-		m.Data = data
+	switch typ {
+	case playerMessageTypeC2SEntry:
+		return &playerMessageC2SEntry{
+			Type: playerMessageTypeC2SEntry,
+		}, nil
+	case playerMessageTypeC2SReady:
+		return &playerMessageC2SReady{
+			Type: playerMessageTypeC2SReady,
+		}, nil
 	default:
-		err = fmt.Errorf("unknown message type: %s", m.Type)
+		return nil, fmt.Errorf("unknown message type: %s", typ)
 	}
-
-	return err
 }
+
+type watcherMessageS2C = interface{}

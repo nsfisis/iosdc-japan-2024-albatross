@@ -64,20 +64,22 @@ func main() {
 		api.NewJWTMiddleware(),
 	}))
 
-	gameHubs := game.NewGameHubs()
-	err = gameHubs.RestoreFromDB(ctx, queries)
+	gameHubs := game.NewGameHubs(queries)
+	err = gameHubs.RestoreFromDB(ctx)
 	if err != nil {
 		log.Fatalf("Error restoring game hubs from db %v", err)
 	}
 	defer gameHubs.Close()
 	sockGroup := e.Group("/sock")
 	sockHandler := gameHubs.SockHandler()
-	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
-		return sockHandler.HandleSockGolfWatch(c)
-	})
 	sockGroup.GET("/golf/:gameId/play", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfPlay(c)
 	})
+	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
+		return sockHandler.HandleSockGolfWatch(c)
+	})
+
+	gameHubs.Run()
 
 	if err := e.Start(":80"); err != http.ErrServerClosed {
 		log.Fatal(err)

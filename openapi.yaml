@@ -87,6 +87,39 @@ paths:
                     example: "Forbidden operation"
                 required:
                   - message
+  /games/{game_id}:
+    get:
+      summary: Get a game
+      parameters:
+        - in: path
+          name: game_id
+          schema:
+            type: integer
+          required: true
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A game
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
 components:
   schemas:
     JwtPayload:

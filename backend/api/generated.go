@@ -114,6 +114,11 @@ type GetGamesParams struct {
 	Authorization string `json:"Authorization"`
 }
 
+// GetGamesGameIdParams defines parameters for GetGamesGameId.
+type GetGamesGameIdParams struct {
+	Authorization string `json:"Authorization"`
+}
+
 // PostLoginJSONBody defines parameters for PostLogin.
 type PostLoginJSONBody struct {
 	Password string `json:"password"`
@@ -314,6 +319,9 @@ type ServerInterface interface {
 	// List games
 	// (GET /games)
 	GetGames(ctx echo.Context, params GetGamesParams) error
+	// Get a game
+	// (GET /games/{game_id})
+	GetGamesGameId(ctx echo.Context, gameId int, params GetGamesGameIdParams) error
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
@@ -361,6 +369,44 @@ func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
 	return err
 }
 
+// GetGamesGameId converts echo context to params.
+func (w *ServerInterfaceWrapper) GetGamesGameId(ctx echo.Context) error {
+	var err error
+	// ------------- Path parameter "game_id" -------------
+	var gameId int
+
+	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
+	}
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetGamesGameIdParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetGamesGameId(ctx, gameId, params)
+	return err
+}
+
 // PostLogin converts echo context to params.
 func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	var err error
@@ -399,6 +445,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	}
 
 	router.GET(baseURL+"/games", wrapper.GetGames)
+	router.GET(baseURL+"/games/:game_id", wrapper.GetGamesGameId)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 
 }
@@ -427,6 +474,35 @@ type GetGames403JSONResponse struct {
 }
 
 func (response GetGames403JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGamesGameIdRequestObject struct {
+	GameId int `json:"game_id"`
+	Params GetGamesGameIdParams
+}
+
+type GetGamesGameIdResponseObject interface {
+	VisitGetGamesGameIdResponse(w http.ResponseWriter) error
+}
+
+type GetGamesGameId200JSONResponse Game
+
+func (response GetGamesGameId200JSONResponse) VisitGetGamesGameIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGamesGameId403JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetGamesGameId403JSONResponse) VisitGetGamesGameIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(403)
 
@@ -468,6 +544,9 @@ type StrictServerInterface interface {
 	// List games
 	// (GET /games)
 	GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error)
+	// Get a game
+	// (GET /games/{game_id})
+	GetGamesGameId(ctx context.Context, request GetGamesGameIdRequestObject) (GetGamesGameIdResponseObject, error)
 	// User login
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
@@ -510,6 +589,32 @@ func (sh *strictHandler) GetGames(ctx echo.Context, params GetGamesParams) error
 	return nil
 }
 
+// GetGamesGameId operation middleware
+func (sh *strictHandler) GetGamesGameId(ctx echo.Context, gameId int, params GetGamesGameIdParams) error {
+	var request GetGamesGameIdRequestObject
+
+	request.GameId = gameId
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetGamesGameId(ctx.Request().Context(), request.(GetGamesGameIdRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetGamesGameId")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetGamesGameIdResponseObject); ok {
+		return validResponse.VisitGetGamesGameIdResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // PostLogin operation middleware
 func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	var request PostLoginRequestObject
@@ -542,23 +647,24 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6xWW2+jRhT+K2jaR+RrFG15S9N2ldVWter2aRVZx3BsJoWZ2TlDsu6K/76aGQzG4Bgn",
-	"zkNC4Fy+853rdxbLXEmBwhCLvjOKU8zBPX6EHO1fpaVCbTi6twknlcFuJaqv+A1ylSGLnHwwZSEzO2X/",
-	"J6O52LIyZEmhwXApVoSxFAm19Oa3k1qFC4Nb1FZnCzmueNISnfYJKi3XGeZW8GeNGxaxn8ZNTOMqoPGi",
-	"EitDRga0wWQFpmX9l5vb2w83Hya9cMiA8fGKImfRFxZnkjBhIXsBbrjYrlAYbTlq3jg/zCJEBRpZ5dmS",
-	"4uLzDxsuOKWYsMfwgEyIDX/GLpllyDR+LbjGxKLYs7QHGLbz00P9Y21Srp8wNjY4m7lFBjvUfyIRbF2g",
-	"UuBfGxZ9eZ3Wjupyds/K8EKl+9mSlY99SOyXt4O5ny1/F0bv3oTob4RkdxqWN9zpD0+ubStBhkVMObUo",
-	"nlGETuNcSt3XQVmqMV4CQjuN64Gw+X5XtSyq7rg4RcvZ/dJ1WH+KDkx3hxgYODcwXjG4gF0mIbF8nGCa",
-	"ZnHUtP0ArkOPaSjlR0A6AV46FI8g7dWHwvF5uBrNztwwkvcz9voUt0B0QnN+L9ggR4Bq9T40n15O+z29",
-	"fj/JVAS/SexbwDyWYqXApG2VMc9hizR+kqkYPaltryqtIMm5aGluICOshddSZgjCSheEurO1Z/O+jWpF",
-	"u1FYKGfTufdyYKSz+GrcfQwvmvY4ohcp1lzZjdnG9U/KKeAUQLDvjR6uqk+DzhbDTXYUe4Wq74bq70/P",
-	"gbcUtrB3g7YmuNhItx68b3aXrcFoSRRYYFpAFrzgOrhbPLCQPaMmRwObjKajicUsFQpQnEVsPpqMJva0",
-	"AZM64sb2EnFPW3RNYVl1l8dDYm9DNB+dgFXRkKNBTW5d2MpiXwt0m9HXQ9Xf1V3j5kSz1A5bqtJOERLU",
-	"jfpdYVKp+f/OPTtkzugCe0zWLD9aYVJSkI9lNplUc8egcGGBUhmPneXxE/kqaey1i6mmhBvMacggbIYd",
-	"A61h13vv0YnstmqXfeZkArkJvEYZspvJ/B2x5M1h2BTsH1KveZKgCOpsny3dvaEhMdT2nRUq8hzsyeVj",
-	"qwIrQzbO5NYPKCWpp/gWksxnJ+KhIJlfpT+b3siGAqIXqdttXr+dzuZ90+GdA6+aa7XrfgLbtV5etZ6N",
-	"/A+PxuI3+zM6+H1+FTsjQ7K/LOIYiTZFlu0CKEyKwliomPhynl67nB/EM2Q8CWKNifUFGV21nPf299kM",
-	"pA7qdLYr/F9CHfiyLsuy/BEAAP//HvsQPaYPAAA=",
+	"H4sIAAAAAAAC/9xWUW/jNgz+K4a2RyNJ06K4+a3rtqKHGxYs29OhCBiLidXZkk6U28sK//dBkmPHsXNJ",
+	"2zwMdw851yapjx8/inxhqSq0kigtseSFUZphAf7xDgp0/2ujNBor0L/lgnQOm4Wsv+JXKHSOLPH20QWL",
+	"md1o9zdZI+SaVTHjpQErlFwQpkpy6vhdXk8aFyEtrtE4nzUUuBC8Y3oxZKiNWuZYOMMfDa5Ywn4YtzmN",
+	"64TGs9qsihlZMBb5Amwn+k9X19cfrj5MBuGQBRvylWXBks8szRUhZzF7BmGFXC9QWuM4at/4c5hDiBoM",
+	"svpkR4rPLzyshBSUIWcP8Q6ZkFrxhH0yq5gZ/FIKg9yh2LK0BRh36zNA/UMTUi0fMbUuOVe5WQ4bNL8j",
+	"Eax9okriHyuWfP42rT3X+fSWVfErnW6nc1Y9DCFxX94O5nY6/1Vas3kToj8R+OYwrBC41x+BXNdWkixL",
+	"mPZuSTqlBL3HsZL6rydVqcH4GhDGe5wPhKv3u9Qyq7vj1SWaT2/nvsOGS7QTun+JgYVjF8Y3As5gkyvg",
+	"jo8DTNM0Tdq2P4HrOGA6lfI9IL0EX3sp7kHaup8KJ9ThbDT7cKeRvL1jz09xB0QvNX/uKybIHqDGfQjN",
+	"x+fD5x4evx9VJqNfFA4NYJEqudBgs67LWBSwRho/qkyOHvV60JUWwAshO54ryAkb46VSOYJ01iWh6U3t",
+	"6eXQRHWm/SwclKPl3J6yE6Q3+BrcQwzP2vbYoxcpNUK7idnF9VcmKBIUQbTtjQGu6k8nrS1W2Hwv9xrV",
+	"0A413J+BgxAp7mDvJ+1CCLlSfjyEs9lNvgRrFFHkgBkJefSMy+hmds9i9oSGPA1sMroYTRxmpVGCFixh",
+	"l6PJaOJWG7CZJ27sNhH/tEbfFI5Vv3ncc7cbor3zBs7FQIEWDflx4ZTFvpToJ2PQQ93f9V7j74l2qO22",
+	"VO2dIXA0rftNaTNlxL/+eLbLnDUlDoRsWH5wxqSVpJDLdDKp7x2L0qcFWuci9ZHHjxRU0sbriqmhRFgs",
+	"6JSLsL3sGBgDm8F9jw5Ut6Nd9kmQjdQqCh5VzK4ml+/IpWgXw1awvymzFJyjjJpqH5XuNtApOTTxfRQq",
+	"iwLcyhVyqxOr4lp745d6Ga6OqtD93PMDWvTXZKOldsE+qqL/szCPC6/P/o2n+DuTzh3aCOrEnHRytQ6z",
+	"TSsaUMxMkf3kTQIUJPuzChv3G9nQQPSsTHdCNG8vppdDg+Wds7Ieic3RwwR21Vid9Sq06h/cm6hf3b/R",
+	"zu/xLc4HOaX68zJNkWhV5vkmgtJmKK2DijzI+eLccr6XT5ALHqUGuTsLcjqrnLfxt9WMlImacnYV/jeh",
+	"iYKsq6qq/gsAAP//bqjkD+ERAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

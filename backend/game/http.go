@@ -18,12 +18,13 @@ func newSockHandler(hubs *GameHubs) *sockHandler {
 }
 
 func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
+	// TODO: auth
 	gameId := c.Param("gameId")
 	gameIdInt, err := strconv.Atoi(gameId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 	}
-	var foundHub *GameHub
+	var foundHub *gameHub
 	for _, hub := range h.hubs.hubs {
 		if hub.game.gameID == gameIdInt {
 			foundHub = hub
@@ -37,12 +38,13 @@ func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
 }
 
 func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
+	// TODO: auth
 	gameId := c.Param("gameId")
 	gameIdInt, err := strconv.Atoi(gameId)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 	}
-	var foundHub *GameHub
+	var foundHub *gameHub
 	for _, hub := range h.hubs.hubs {
 		if hub.game.gameID == gameIdInt {
 			foundHub = hub
