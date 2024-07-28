@@ -26,6 +26,24 @@ services:
       ALBATROSS_DB_NAME: albatross
     restart: always
 
+  api-server-only:
+    build:
+      context: ./backend
+    ports:
+      - '127.0.0.1:8002:80'
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ALBATROSS_DB_HOST: db
+      ALBATROSS_DB_PORT: 5432
+      ALBATROSS_DB_USER: postgres
+      ALBATROSS_DB_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      ALBATROSS_DB_NAME: albatross
+    restart: always
+    profiles:
+      - api-server-only
+
   app-server:
     build:
       context: ./frontend

@@ -10,6 +10,10 @@ up:
 down:
 	docker compose down
 
+.PHONY: api-server-only
+api-server-only:
+	docker compose up -d api-server-only
+
 .PHONY: psql
 psql: up
 	docker compose exec db psql --user=postgres albatross
