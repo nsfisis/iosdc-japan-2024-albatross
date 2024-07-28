@@ -7,8 +7,8 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/nsfisis/iosdc-2024-albatross-backend/auth"
-	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
+	"github.com/nsfisis/iosdc-2024-albatross/backend/auth"
+	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
 )
 
 var _ StrictServerInterface = (*ApiHandler)(nil)

@@ -13,8 +13,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	oapimiddleware "github.com/oapi-codegen/echo-middleware"
 
-	"github.com/nsfisis/iosdc-2024-albatross-backend/api"
-	"github.com/nsfisis/iosdc-2024-albatross-backend/db"
+	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
+	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
 )
 
 type Config struct {
