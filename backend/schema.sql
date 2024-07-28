@@ -39,3 +39,11 @@ CREATE TABLE problems (
     title       VARCHAR(255) NOT NULL,
     description TEXT         NOT NULL
 );
+
+CREATE TABLE testcases (
+    testcase_id SERIAL PRIMARY KEY,
+    problem_id  INT    NOT NULL,
+    stdin       TEXT   NOT NULL,
+    stdout      TEXT   NOT NULL,
+    CONSTRAINT fk_problem_id FOREIGN KEY(problem_id) REFERENCES problems(problem_id)
+);

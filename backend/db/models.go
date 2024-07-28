@@ -29,6 +29,13 @@ type Problem struct {
 	Description string
 }
 
+type Testcase struct {
+	TestcaseID int32
+	ProblemID  int32
+	Stdin      string
+	Stdout     string
+}
+
 type User struct {
 	UserID      int32
 	Username    string
