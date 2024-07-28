@@ -68,7 +68,7 @@ func (hub *gameHub) run() {
 				hub.closeWatcherClient(watcher)
 			}
 		case message := <-hub.playerC2SMessages:
-			switch message.message.(type) {
+			switch msg := message.message.(type) {
 			case *playerMessageC2SEntry:
 				log.Printf("entry: %v", message.message)
 				// TODO: assert state is waiting_entries
@@ -142,11 +142,34 @@ func (hub *gameHub) run() {
 					}
 					hub.game.state = gameStateStarting
 				}
+			case *playerMessageC2SCode:
+				// TODO: assert game state is gaming
+				log.Printf("code: %v", message.message)
+				code := msg.Data.Code
+				score := len(code)
+				message.client.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  &score,
+						Status: api.Success,
+					},
+				}
 			default:
 				log.Fatalf("unexpected message type: %T", message.message)
 			}
 		case <-ticker.C:
-			if hub.game.state == gameStateGaming {
+			if hub.game.state == gameStateStarting {
+				if time.Now().After(*hub.game.startedAt) {
+					err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
+						GameID: int32(hub.game.gameID),
+						State:  string(gameStateGaming),
+					})
+					if err != nil {
+						log.Fatalf("failed to set game state: %v", err)
+					}
+					hub.game.state = gameStateGaming
+				}
+			} else if hub.game.state == gameStateGaming {
 				if time.Now().After(hub.game.startedAt.Add(time.Duration(hub.game.durationSeconds) * time.Second)) {
 					err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
 						GameID: int32(hub.game.gameID),

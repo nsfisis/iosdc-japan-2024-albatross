@@ -69,8 +69,11 @@ export default function GolfPlayApp({ game }: { game: Game }) {
   void setCurrentScore;
 
   const onCodeChange = useDebouncedCallback((code: string) => {
-    void code;
-    // sendJsonMessage({});
+    console.log("player:c2s:code");
+    sendJsonMessage({
+      type: "player:c2s:code",
+      data: { code },
+    });
   }, 1000);
 
   if (readyState === ReadyState.UNINSTANTIATED) {
@@ -104,6 +107,14 @@ export default function GolfPlayApp({ game }: { game: Game }) {
             setTimeLeftSeconds(start_at - nowSec);
             setGameState("starting");
           }
+        } else if (lastJsonMessage.type === "player:s2c:execresult") {
+          const { score } = lastJsonMessage.data;
+          if (
+            score !== null &&
+            (currentScore === null || score < currentScore)
+          ) {
+            setCurrentScore(score);
+          }
         }
       } else {
         setGameState("waiting");
@@ -111,7 +122,7 @@ export default function GolfPlayApp({ game }: { game: Game }) {
         sendJsonMessage({ type: "player:c2s:entry" });
       }
     }
-  }, [sendJsonMessage, lastJsonMessage, readyState, gameState]);
+  }, [sendJsonMessage, lastJsonMessage, readyState, gameState, currentScore]);
 
   if (gameState === "connecting") {
     return <GolfPlayAppConnecting />;
