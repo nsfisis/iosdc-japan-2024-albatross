@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	oapimiddleware "github.com/oapi-codegen/echo-middleware"
 
 	"github.com/nsfisis/iosdc-2024-albatross-backend/api"
@@ -143,6 +144,9 @@ func main() {
 	queries := db.New(conn)
 
 	e := echo.New()
+
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
 
 	{
 		apiGroup := e.Group("/api")
