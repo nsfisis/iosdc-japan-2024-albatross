@@ -23,9 +23,9 @@ import (
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
 	DisplayName string  `json:"display_name"`
-	IconPath    *string `json:"icon_path"`
+	IconPath    *string `json:"icon_path,omitempty"`
 	IsAdmin     bool    `json:"is_admin"`
-	UserId      float32 `json:"user_id"`
+	UserId      int     `json:"user_id"`
 	Username    string  `json:"username"`
 }
 
@@ -172,15 +172,14 @@ func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6RSwY7aQAz9lcjnKITdnnKj6oVVD0hVT1WFnMTA0Ik9HU+WjVb592qSEkhB2kpwAGbm",
-	"+dnv+b1DJY0TJg4KxTtodaAGh78vp7DBzgrW8eS8OPLB0PBWG3UWuy1jQ/FMb9g4S1DAixw4+SIEKYTO",
-	"xRsN3vAe+hRMJbx1GA7zkoVpcE+6OMqBs6PbQwrcWotlfA2+pXtUusW6MTxj2qHVC7gUsYQc0a2S35p6",
-	"Bl4+PU9QbpuS/Bl5KypOdiuoT8HT79Z4qqH4MTW5IknnRl2N/XNik/JIVYA+0hneSewcTBj6rmyJwYtq",
-	"YjhETpucqExWmzWk8EpejTAUkGfLLI/TiyNGZ6CA5yzPckghuj1sbIHOLKzsR8ucaIi/cacYjPC6hgI2",
-	"omHlzNcBNYojDZ+l7iK2Eg7EQxk6Z001FC6OKnxJzm1UHKqexM/Nn26XT8/3kvLgGv66PbW+7/alKoZs",
-	"uFAnrOPcT3n+gOogv2geTniLn+zq+0MpI8n94WvSyhsXxgR8a6uKVHettV2CbTgQhzgq1dHNT/nyASkN",
-	"qeL+n1Ws+RWtqZPKUx17odUP5ZyJ/kfQmf+8zUR8Mq0zwrVtGvQdFPBdySdjsvu+7/8EAAD//3hNTqrS",
-	"BAAA",
+	"H4sIAAAAAAAC/6RSzY7aQAx+lcjnKISlp9yoemHVA1LVU1Uhk5gwdDKejp1lo1XevZqkZElB2kpwIJnJ",
+	"Z/v78RuU3Hh25FSgeAMpj9Tg8Pp81i12lrGKJx/YU1BDw7fKiLfY7Rw2FM/0io23BAU889ElX5ggBe18",
+	"vBENxtXQp2BKdjuPepyXLEyDNcnixEeXnXx9t1R2WDXGzSoPaIUm8J7ZErqIboXCzlQz8PJpNUGNU6op",
+	"XKC3KiKVWxp9CoF+tyZQBcWPacpVk3TuzBXvn1M33p+oVOhjO+MOHCer0WHu2u5RA4skkWJwaJMz7ZP1",
+	"dgMpvFAQww4KyLNllkf27MmhN1DAKsuzHFKI9g4RLdCbheV69MyzaHzGEFENu00FBWxZdO3N1wE1iiPR",
+	"z1x1EVuyU3JDGXpvTTkULk7C7n1VbnfDo8iZw9z96Xb5tLqX74Mx/HV7Gn3f7fcqDS0NF+LZycj7Kc8f",
+	"UK38i+bbCa/xl139fyhlbHKffEVSBuN13IBvbVmSyKG1tkuw1SM5jVSpim5+ypcPSGlIBOt/oti4F7Sm",
+	"SspAVZyFVj6Uc2n0P4Iu/S9pJhySKc4Il7ZpMHRQwHehkIyb3fd9/ycAAP//0SNLNsMEAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

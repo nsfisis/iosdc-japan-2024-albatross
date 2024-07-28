@@ -53,7 +53,7 @@ components:
       type: object
       properties:
         user_id:
-          type: number
+          type: integer
           example: 123
         username:
           type: string
@@ -63,7 +63,6 @@ components:
           example: "John Doe"
         icon_path:
           type: string
-          nullable: true
           example: "/images/john.jpg"
         is_admin:
           type: boolean

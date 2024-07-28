@@ -76,7 +76,7 @@ export interface components {
             /** @example John Doe */
             display_name: string;
             /** @example /images/john.jpg */
-            icon_path?: string | null;
+            icon_path?: string;
             /** @example false */
             is_admin: boolean;
         };

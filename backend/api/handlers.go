@@ -53,7 +53,7 @@ func (h *ApiHandler) PostApiLogin(ctx context.Context, request PostApiLoginReque
 func _assertJwtPayloadIsCompatibleWithJWTClaims() {
 	var c auth.JWTClaims
 	var p JwtPayload
-	p.UserId = float32(c.UserID)
+	p.UserId = c.UserID
 	p.Username = c.Username
 	p.DisplayName = c.DisplayName
 	p.IconPath = c.IconPath
