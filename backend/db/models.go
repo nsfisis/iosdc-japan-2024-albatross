@@ -9,10 +9,19 @@ import (
 )
 
 type Game struct {
-	GameID    int32
-	Type      string
-	CreatedAt pgtype.Timestamp
-	State     string
+	GameID          int32
+	State           string
+	DisplayName     string
+	DurationSeconds int32
+	CreatedAt       pgtype.Timestamp
+	StartedAt       pgtype.Timestamp
+	ProblemID       pgtype.Int4
+}
+
+type Problem struct {
+	ProblemID   int32
+	Title       string
+	Description string
 }
 
 type User struct {
