@@ -42,8 +42,7 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 
 	jwt, err := auth.NewJWT(&user)
 	if err != nil {
-		// TODO
-		return nil, echo.NewHTTPError(http.StatusInternalServerError)
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return PostLogin200JSONResponse{
@@ -64,7 +63,7 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	if playerId == nil {
 		gameRows, err := h.q.ListGames(ctx)
 		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError)
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		games := make([]Game, len(gameRows))
 		for i, row := range gameRows {
@@ -99,7 +98,7 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	} else {
 		gameRows, err := h.q.ListGamesForPlayer(ctx, int32(*playerId))
 		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError)
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
 		games := make([]Game, len(gameRows))
 		for i, row := range gameRows {
