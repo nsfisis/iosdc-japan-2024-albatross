@@ -15,7 +15,7 @@ type Game struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       pgtype.Int4
+	ProblemID       *int32
 }
 
 type GamePlayer struct {
@@ -33,7 +33,7 @@ type User struct {
 	UserID      int32
 	Username    string
 	DisplayName string
-	IconPath    pgtype.Text
+	IconPath    *string
 	IsAdmin     bool
 	CreatedAt   pgtype.Timestamp
 }
@@ -42,5 +42,5 @@ type UserAuth struct {
 	UserAuthID   int32
 	UserID       int32
 	AuthType     string
-	PasswordHash pgtype.Text
+	PasswordHash *string
 }

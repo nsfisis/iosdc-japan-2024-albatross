@@ -19,15 +19,11 @@ type JWTClaims struct {
 }
 
 func NewJWT(user *db.User) (string, error) {
-	var iconPath *string
-	if user.IconPath.Valid {
-		iconPath = &user.IconPath.String
-	}
 	claims := &JWTClaims{
 		UserID:      int(user.UserID),
 		Username:    user.Username,
 		DisplayName: user.DisplayName,
-		IconPath:    iconPath,
+		IconPath:    user.IconPath,
 		IsAdmin:     user.IsAdmin,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour * 24)),

@@ -240,14 +240,14 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 			startedAt = &row.StartedAt.Time
 		}
 		var problem_ *problem
-		if row.ProblemID.Valid {
-			if !row.Title.Valid || !row.Description.Valid {
+		if row.ProblemID != nil {
+			if row.Title == nil || row.Description == nil {
 				panic("inconsistent data")
 			}
 			problem_ = &problem{
-				problemID:   int(row.ProblemID.Int32),
-				title:       row.Title.String,
-				description: row.Description.String,
+				problemID:   int(*row.ProblemID),
+				title:       *row.Title,
+				description: *row.Description,
 			}
 		}
 		hubs.hubs[int(row.GameID)] = newGameHub(ctx, &game{

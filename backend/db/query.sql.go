@@ -25,10 +25,10 @@ type GetGameByIdRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       pgtype.Int4
-	ProblemID_2     pgtype.Int4
-	Title           pgtype.Text
-	Description     pgtype.Text
+	ProblemID       *int32
+	ProblemID_2     *int32
+	Title           *string
+	Description     *string
 }
 
 func (q *Queries) GetGameById(ctx context.Context, gameID int32) (GetGameByIdRow, error) {
@@ -60,13 +60,13 @@ type GetUserAuthByUsernameRow struct {
 	UserID       int32
 	Username     string
 	DisplayName  string
-	IconPath     pgtype.Text
+	IconPath     *string
 	IsAdmin      bool
 	CreatedAt    pgtype.Timestamp
 	UserAuthID   int32
 	UserID_2     int32
 	AuthType     string
-	PasswordHash pgtype.Text
+	PasswordHash *string
 }
 
 func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (GetUserAuthByUsernameRow, error) {
@@ -119,10 +119,10 @@ type ListGamesRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       pgtype.Int4
-	ProblemID_2     pgtype.Int4
-	Title           pgtype.Text
-	Description     pgtype.Text
+	ProblemID       *int32
+	ProblemID_2     *int32
+	Title           *string
+	Description     *string
 }
 
 func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
@@ -170,10 +170,10 @@ type ListGamesForPlayerRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       pgtype.Int4
-	ProblemID_2     pgtype.Int4
-	Title           pgtype.Text
-	Description     pgtype.Text
+	ProblemID       *int32
+	ProblemID_2     *int32
+	Title           *string
+	Description     *string
 	GameID_2        int32
 	UserID          int32
 }
