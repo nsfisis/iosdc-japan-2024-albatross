@@ -118,6 +118,58 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    [path: `/games/${integer}`]: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a game */
+        get: {
+            parameters: {
+                query?: never;
+                header: {
+                    Authorization: string;
+                };
+                path: {
+                    game_id: number;
+                };
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description A game */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": components["schemas"]["Game"];
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Forbidden operation */
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -163,17 +215,19 @@ export interface components {
         GamePlayerMessageS2CPrepare: {
             /** @constant */
             type: "player:s2c:prepare";
-            data: {
-                problem: components["schemas"]["Problem"];
-            };
+            data: components["schemas"]["GamePlayerMessageS2CPreparePayload"];
+        };
+        GamePlayerMessageS2CPreparePayload: {
+            problem: components["schemas"]["Problem"];
         };
         GamePlayerMessageS2CStart: {
             /** @constant */
             type: "player:s2c:start";
-            data: {
-                /** @example 946684800 */
-                start_at: number;
-            };
+            data: components["schemas"]["GamePlayerMessageS2CStartPayload"];
+        };
+        GamePlayerMessageS2CStartPayload: {
+            /** @example 946684800 */
+            start_at: number;
         };
         GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"];
         GamePlayerMessageC2SEntry: {
