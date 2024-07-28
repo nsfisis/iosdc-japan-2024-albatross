@@ -9,7 +9,7 @@ import { components } from "./api/schema";
 export const authenticator = new Authenticator<string>(sessionStorage);
 
 async function login(username: string, password: string): Promise<string> {
-  const { data, error } = await apiClient.POST("/api/login", {
+  const { data, error } = await apiClient.POST("/login", {
     body: {
       username,
       password,
@@ -30,15 +30,7 @@ authenticator.use(
   "default",
 );
 
-type JwtPayload = components["schemas"]["JwtPayload"];
-
-export type User = {
-  userId: number;
-  username: string;
-  displayName: string;
-  iconPath: string | null;
-  isAdmin: boolean;
-};
+export type User = components["schemas"]["JwtPayload"];
 
 export async function isAuthenticated(
   request: Request | Session,
@@ -47,7 +39,7 @@ export async function isAuthenticated(
     failureRedirect?: never;
     headers?: never;
   },
-): Promise<User | null>;
+): Promise<{ user: User; token: string } | null>;
 export async function isAuthenticated(
   request: Request | Session,
   options: {
@@ -63,7 +55,7 @@ export async function isAuthenticated(
     failureRedirect: string;
     headers?: HeadersInit;
   },
-): Promise<User>;
+): Promise<{ user: User; token: string }>;
 export async function isAuthenticated(
   request: Request | Session,
   options: {
@@ -95,7 +87,7 @@ export async function isAuthenticated(
         failureRedirect: string;
         headers?: HeadersInit;
       } = {},
-): Promise<User | null> {
+): Promise<{ user: User; token: string } | null> {
   // This function's signature should be compatible with `authenticator.isAuthenticated` but TypeScript does not infer it correctly.
   let jwt;
   const { successRedirect, failureRedirect, headers } = options;
@@ -122,12 +114,9 @@ export async function isAuthenticated(
   if (!jwt) {
     return null;
   }
-  const payload = jwtDecode<JwtPayload>(jwt);
+  const user = jwtDecode<User>(jwt);
   return {
-    userId: payload.user_id,
-    username: payload.username,
-    displayName: payload.display_name,
-    iconPath: payload.icon_path ?? null,
-    isAdmin: payload.is_admin,
+    user,
+    token: jwt,
   };
 }

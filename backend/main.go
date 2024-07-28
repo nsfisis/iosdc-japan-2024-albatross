@@ -10,6 +10,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 	oapimiddleware "github.com/oapi-codegen/echo-middleware"
 
 	"github.com/nsfisis/iosdc-2024-albatross-backend/api"
@@ -126,7 +127,7 @@ func main() {
 		return
 	}
 
-	openApiSpec, err := api.GetSwagger()
+	openApiSpec, err := api.GetSwaggerWithPrefix("/api")
 	if err != nil {
 		fmt.Printf("Error loading OpenAPI spec\n: %s", err)
 		return
@@ -144,11 +145,16 @@ func main() {
 
 	e := echo.New()
 
+	e.Use(middleware.Logger())
+	e.Use(middleware.Recover())
+
 	{
 		apiGroup := e.Group("/api")
 		apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
 		apiHandler := api.NewHandler(queries)
-		api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
+		api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, []api.StrictMiddlewareFunc{
+			api.NewJWTMiddleware(),
+		}))
 	}
 
 	e.GET("/sock/golf/:gameId/watch", func(c echo.Context) error {

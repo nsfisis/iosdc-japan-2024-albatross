@@ -16,8 +16,26 @@ CREATE TABLE user_auths (
 );
 
 CREATE TABLE games (
-    game_id    SERIAL       PRIMARY KEY,
-    type       VARCHAR(255) NOT NULL,
-    created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
-    state      VARCHAR(255) NOT NULL
+    game_id          SERIAL       PRIMARY KEY,
+    state            VARCHAR(32)  NOT NULL,
+    display_name     VARCHAR(255) NOT NULL,
+    duration_seconds INT          NOT NULL,
+    created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
+    started_at       TIMESTAMP,
+    problem_id       INT,
+    CONSTRAINT fk_problem_id FOREIGN KEY(problem_id) REFERENCES problems(problem_id)
+);
+
+CREATE TABLE game_players (
+    game_id INT NOT NULL,
+    user_id INT NOT NULL,
+    PRIMARY KEY (game_id, user_id),
+    CONSTRAINT fk_game_id FOREIGN KEY(game_id) REFERENCES games(game_id),
+    CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE problems (
+    problem_id  SERIAL       PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL,
+    description TEXT         NOT NULL
 );

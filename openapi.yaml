@@ -3,7 +3,7 @@ info:
   title: Albatross internal web API
   version: 0.1.0
 paths:
-  /api/login:
+  /login:
     post:
       summary: User login
       requestBody:
@@ -47,13 +47,53 @@ paths:
                     example: "Invalid credentials"
                 required:
                   - message
+  /games:
+    get:
+      summary: List games
+      parameters:
+        - in: query
+          name: player_id
+          schema:
+            type: integer
+          required: false
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: List of games
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Game'
+                required:
+                  - games
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
 components:
   schemas:
     JwtPayload:
       type: object
       properties:
         user_id:
-          type: number
+          type: integer
           example: 123
         username:
           type: string
@@ -63,7 +103,6 @@ components:
           example: "John Doe"
         icon_path:
           type: string
-          nullable: true
           example: "/images/john.jpg"
         is_admin:
           type: boolean
@@ -73,3 +112,52 @@ components:
         - username
         - display_name
         - is_admin
+    Game:
+      type: object
+      properties:
+        game_id:
+          type: integer
+          example: 1
+        state:
+          type: string
+          example: "active"
+          enum:
+            - closed
+            - waiting_entries
+            - waiting_start
+            - prepare
+            - starting
+            - gaming
+            - finished
+        display_name:
+          type: string
+          example: "Game 1"
+        duration_seconds:
+          type: integer
+          example: 360
+        started_at:
+          type: integer
+          example: 946684800
+        problem:
+          $ref: '#/components/schemas/Problem'
+      required:
+        - game_id
+        - state
+        - display_name
+        - duration_seconds
+    Problem:
+      type: object
+      properties:
+        problem_id:
+          type: integer
+          example: 1
+        title:
+          type: string
+          example: "Problem 1"
+        description:
+          type: string
+          example: "This is a problem"
+      required:
+        - problem_id
+        - title
+        - description

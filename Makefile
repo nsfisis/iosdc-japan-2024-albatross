@@ -10,8 +10,20 @@ up:
 down:
 	docker compose down
 
+.PHONY: api-server-only-build
+api-server-only-build:
+	docker compose build api-server-only
+
+.PHONY: api-server-only-up
+api-server-only-up:
+	docker compose up -d api-server-only
+
+.PHONY: api-server-only-down
+api-server-only-down:
+	docker compose down api-server-only db
+
 .PHONY: psql
-psql: up
+psql:
 	docker compose exec db psql --user=postgres albatross
 
 .PHONY: sqldef-dryrun

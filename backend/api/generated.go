@@ -17,32 +17,73 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
+
+// Defines values for GameState.
+const (
+	Closed         GameState = "closed"
+	Finished       GameState = "finished"
+	Gaming         GameState = "gaming"
+	Prepare        GameState = "prepare"
+	Starting       GameState = "starting"
+	WaitingEntries GameState = "waiting_entries"
+	WaitingStart   GameState = "waiting_start"
+)
+
+// Game defines model for Game.
+type Game struct {
+	DisplayName     string    `json:"display_name"`
+	DurationSeconds int       `json:"duration_seconds"`
+	GameId          int       `json:"game_id"`
+	Problem         *Problem  `json:"problem,omitempty"`
+	StartedAt       *int      `json:"started_at,omitempty"`
+	State           GameState `json:"state"`
+}
+
+// GameState defines model for Game.State.
+type GameState string
 
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
 	DisplayName string  `json:"display_name"`
-	IconPath    *string `json:"icon_path"`
+	IconPath    *string `json:"icon_path,omitempty"`
 	IsAdmin     bool    `json:"is_admin"`
-	UserId      float32 `json:"user_id"`
+	UserId      int     `json:"user_id"`
 	Username    string  `json:"username"`
 }
 
-// PostApiLoginJSONBody defines parameters for PostApiLogin.
-type PostApiLoginJSONBody struct {
+// Problem defines model for Problem.
+type Problem struct {
+	Description string `json:"description"`
+	ProblemId   int    `json:"problem_id"`
+	Title       string `json:"title"`
+}
+
+// GetGamesParams defines parameters for GetGames.
+type GetGamesParams struct {
+	PlayerId      *int   `form:"player_id,omitempty" json:"player_id,omitempty"`
+	Authorization string `json:"Authorization"`
+}
+
+// PostLoginJSONBody defines parameters for PostLogin.
+type PostLoginJSONBody struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
 }
 
-// PostApiLoginJSONRequestBody defines body for PostApiLogin for application/json ContentType.
-type PostApiLoginJSONRequestBody PostApiLoginJSONBody
+// PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
+type PostLoginJSONRequestBody PostLoginJSONBody
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List games
+	// (GET /games)
+	GetGames(ctx echo.Context, params GetGamesParams) error
 	// User login
-	// (POST /api/login)
-	PostApiLogin(ctx echo.Context) error
+	// (POST /login)
+	PostLogin(ctx echo.Context) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -50,12 +91,49 @@ type ServerInterfaceWrapper struct {
 	Handler ServerInterface
 }
 
-// PostApiLogin converts echo context to params.
-func (w *ServerInterfaceWrapper) PostApiLogin(ctx echo.Context) error {
+// GetGames converts echo context to params.
+func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetGamesParams
+	// ------------- Optional query parameter "player_id" -------------
+
+	err = runtime.BindQueryParameter("form", true, false, "player_id", ctx.QueryParams(), &params.PlayerId)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter player_id: %s", err))
+	}
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetGames(ctx, params)
+	return err
+}
+
+// PostLogin converts echo context to params.
+func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	var err error
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.PostApiLogin(ctx)
+	err = w.Handler.PostLogin(ctx)
 	return err
 }
 
@@ -87,34 +165,65 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.POST(baseURL+"/api/login", wrapper.PostApiLogin)
+	router.GET(baseURL+"/games", wrapper.GetGames)
+	router.POST(baseURL+"/login", wrapper.PostLogin)
 
 }
 
-type PostApiLoginRequestObject struct {
-	Body *PostApiLoginJSONRequestBody
+type GetGamesRequestObject struct {
+	Params GetGamesParams
 }
 
-type PostApiLoginResponseObject interface {
-	VisitPostApiLoginResponse(w http.ResponseWriter) error
+type GetGamesResponseObject interface {
+	VisitGetGamesResponse(w http.ResponseWriter) error
 }
 
-type PostApiLogin200JSONResponse struct {
-	Token string `json:"token"`
+type GetGames200JSONResponse struct {
+	Games []Game `json:"games"`
 }
 
-func (response PostApiLogin200JSONResponse) VisitPostApiLoginResponse(w http.ResponseWriter) error {
+func (response GetGames200JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
 
 	return json.NewEncoder(w).Encode(response)
 }
 
-type PostApiLogin401JSONResponse struct {
+type GetGames403JSONResponse struct {
 	Message string `json:"message"`
 }
 
-func (response PostApiLogin401JSONResponse) VisitPostApiLoginResponse(w http.ResponseWriter) error {
+func (response GetGames403JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLoginRequestObject struct {
+	Body *PostLoginJSONRequestBody
+}
+
+type PostLoginResponseObject interface {
+	VisitPostLoginResponse(w http.ResponseWriter) error
+}
+
+type PostLogin200JSONResponse struct {
+	Token string `json:"token"`
+}
+
+func (response PostLogin200JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type PostLogin401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(401)
 
@@ -123,9 +232,12 @@ func (response PostApiLogin401JSONResponse) VisitPostApiLoginResponse(w http.Res
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// List games
+	// (GET /games)
+	GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error)
 	// User login
-	// (POST /api/login)
-	PostApiLogin(ctx context.Context, request PostApiLoginRequestObject) (PostApiLoginResponseObject, error)
+	// (POST /login)
+	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -140,29 +252,54 @@ type strictHandler struct {
 	middlewares []StrictMiddlewareFunc
 }
 
-// PostApiLogin operation middleware
-func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
-	var request PostApiLoginRequestObject
+// GetGames operation middleware
+func (sh *strictHandler) GetGames(ctx echo.Context, params GetGamesParams) error {
+	var request GetGamesRequestObject
 
-	var body PostApiLoginJSONRequestBody
-	if err := ctx.Bind(&body); err != nil {
-		return err
-	}
-	request.Body = &body
+	request.Params = params
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.PostApiLogin(ctx.Request().Context(), request.(PostApiLoginRequestObject))
+		return sh.ssi.GetGames(ctx.Request().Context(), request.(GetGamesRequestObject))
 	}
 	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "PostApiLogin")
+		handler = middleware(handler, "GetGames")
 	}
 
 	response, err := handler(ctx, request)
 
 	if err != nil {
 		return err
-	} else if validResponse, ok := response.(PostApiLoginResponseObject); ok {
-		return validResponse.VisitPostApiLoginResponse(ctx.Response())
+	} else if validResponse, ok := response.(GetGamesResponseObject); ok {
+		return validResponse.VisitGetGamesResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
+// PostLogin operation middleware
+func (sh *strictHandler) PostLogin(ctx echo.Context) error {
+	var request PostLoginRequestObject
+
+	var body PostLoginJSONRequestBody
+	if err := ctx.Bind(&body); err != nil {
+		return err
+	}
+	request.Body = &body
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.PostLogin(ctx.Request().Context(), request.(PostLoginRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "PostLogin")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(PostLoginResponseObject); ok {
+		return validResponse.VisitPostLoginResponse(ctx.Response())
 	} else if response != nil {
 		return fmt.Errorf("unexpected response type: %T", response)
 	}
@@ -172,15 +309,20 @@ func (sh *strictHandler) PostApiLogin(ctx echo.Context) error {
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/6RSwY7aQAz9lcjnKITdnnKj6oVVD0hVT1WFnMTA0Ik9HU+WjVb592qSEkhB2kpwAGbm",
-	"+dnv+b1DJY0TJg4KxTtodaAGh78vp7DBzgrW8eS8OPLB0PBWG3UWuy1jQ/FMb9g4S1DAixw4+SIEKYTO",
-	"xRsN3vAe+hRMJbx1GA7zkoVpcE+6OMqBs6PbQwrcWotlfA2+pXtUusW6MTxj2qHVC7gUsYQc0a2S35p6",
-	"Bl4+PU9QbpuS/Bl5KypOdiuoT8HT79Z4qqH4MTW5IknnRl2N/XNik/JIVYA+0hneSewcTBj6rmyJwYtq",
-	"YjhETpucqExWmzWk8EpejTAUkGfLLI/TiyNGZ6CA5yzPckghuj1sbIHOLKzsR8ucaIi/cacYjPC6hgI2",
-	"omHlzNcBNYojDZ+l7iK2Eg7EQxk6Z001FC6OKnxJzm1UHKqexM/Nn26XT8/3kvLgGv66PbW+7/alKoZs",
-	"uFAnrOPcT3n+gOogv2geTniLn+zq+0MpI8n94WvSyhsXxgR8a6uKVHettV2CbTgQhzgq1dHNT/nyASkN",
-	"qeL+n1Ws+RWtqZPKUx17odUP5ZyJ/kfQmf+8zUR8Mq0zwrVtGvQdFPBdySdjsvu+7/8EAAD//3hNTqrS",
-	"BAAA",
+	"H4sIAAAAAAAC/6xUTW/jNhD9K8K0R8FW4iDY+pai6CKLPRhoe1oExlgcS0wlkssZJesG+u8FqQ9btoqk",
+	"SHKIZGo+3nvzOC+Q29pZQ0YY1i/AeUk1xtfPWFN4Om8dedEUT5VmV+Fha/qv9ANrVxGsY3xyBSnIwYXf",
+	"LF6bAtoUVONRtDVbptwaxZO81W02pmgjVJAPOQXWtNVqEno1F+i83VVUh8CfPe1hDT8tj5yWPaHlpg9r",
+	"U2BBL6S2KJPqv9zc3n66+ZTNwmFB6fiapob1N8gry6QghWfUok2xJSM+aHQ8iX0gICSHnqDvHESJ/LqX",
+	"vTaaS1LwkJ6IibnoJ7oUs03B0/dGe1IBxaDSADCdzmdG+oexpN09Ui6B3Jdn2eChsqj+z7y/2NIkv1ma",
+	"m7jOrdk6lHKastQ1FsTLR1uaxaMrZlN5i6rWZpK5x4ppDN5ZWxGaEN0w+QubXK/mRhhCL1kEKK/KPHQ5",
+	"KXKh9Ih7TuHN0aRn8hLnXrswoimuP0vNieYEk8HgM1r1n950T0RLdca9RzV3ac8EOGk0VEon2C9JhxLa",
+	"7G1o2feGu2qH4i1zEoB5g1XyTLvkbnMPKTyR5ygDZIurRRYwW0cGnYY1rBbZIgt3CaWMwi2D9eNbQfEe",
+	"B1Wj1e9VWEYkn2NASPFYk5BnWH97geAs+N6QP0AKnR8gzHGYcLcwIuozDdu0zy4JFflj+l0jpfX6n9ge",
+	"TpUT39BMyVHlhxDMzhruuFxnWXjk1giZSAudq3QeKy8fuXPJsd7UTKMkWqjm1zZi3O/tODf0Hg+zC4b/",
+	"Y7oT78JXzZLYfdJltCncZKt3cKmJGYszw/5u/U4rRSYZp/2qdYdCb+Ew1o9VuKlr9IeBW0+sTWFZ2aJb",
+	"UM7yjPk2luVrDOmgEMuvVh3eoYZD5mfrp9d8PL26Xs1th3cuvH6vja3nBZx6vf1QP4v9m87W4o/wtzj5",
+	"/yqVrshbpv9Hk+fEvG+q6pBgIyUZCVBJdXa++mg735snrLRKck8q9MKKP9TOQ/1hmon1yTjOqcP/YvJJ",
+	"Z+u2bdt/AwAA//+RpToKFwoAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
