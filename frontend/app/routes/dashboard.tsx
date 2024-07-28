@@ -54,7 +54,7 @@ export default function Dashboard() {
                   </span>
                 ) : (
                   <Link
-                    to={`/game/${game.game_id}/play`}
+                    to={`/golf/${game.game_id}/play`}
                     className="inline-block px-6 py-2 text-white bg-blue-500 hover:bg-blue-700 rounded"
                   >
                     Entry
