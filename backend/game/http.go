@@ -5,7 +5,8 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
-	// "github.com/nsfisis/iosdc-2024-albatross/backend/auth"
+
+	"github.com/nsfisis/iosdc-2024-albatross/backend/auth"
 )
 
 type sockHandler struct {
@@ -19,11 +20,13 @@ func newSockHandler(hubs *GameHubs) *sockHandler {
 }
 
 func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
-	// user := c.Get("user").(*auth.JWTClaims)
-	// if user == nil {
-	// 	return echo.NewHTTPError(http.StatusUnauthorized)
-	// }
+	jwt := c.QueryParam("token")
+	claims, err := auth.ParseJWT(jwt)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	}
 	// TODO: check user permission
+
 	gameId := c.Param("gameId")
 	gameIdInt, err := strconv.Atoi(gameId)
 	if err != nil {
@@ -39,11 +42,19 @@ func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
 	if foundHub == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 	}
-	return servePlayerWs(foundHub, c.Response(), c.Request(), 1)
+	return servePlayerWs(foundHub, c.Response(), c.Request(), claims.UserID)
 }
 
 func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
-	// TODO: auth
+	jwt := c.QueryParam("token")
+	claims, err := auth.ParseJWT(jwt)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
+	}
+	if !claims.IsAdmin {
+		return echo.NewHTTPError(http.StatusForbidden, "Permission denied")
+	}
+
 	gameId := c.Param("gameId")
 	gameIdInt, err := strconv.Atoi(gameId)
 	if err != nil {

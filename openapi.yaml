@@ -47,6 +47,40 @@ paths:
                     example: "Invalid credentials"
                 required:
                   - message
+  /token:
+    get:
+      summary: Get a short-lived access token
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "xxxxx.xxxxx.xxxxx"
+                required:
+                  - token
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
   /games:
     get:
       summary: List games

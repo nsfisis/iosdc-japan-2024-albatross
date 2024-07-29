@@ -15,12 +15,18 @@ type Problem = components["schemas"]["Problem"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
-export default function GolfPlayApp({ game }: { game: Game }) {
-  // const socketUrl = `wss://t.nil.ninja/iosdc/2024/sock/golf/${game.game_id}/play`;
+export default function GolfPlayApp({
+  game,
+  sockToken,
+}: {
+  game: Game;
+  sockToken: string;
+}) {
+  // const socketUrl = `wss://t.nil.ninja/iosdc/2024/sock/golf/${game.game_id}/play?token=${sockToken}`;
   const socketUrl =
     process.env.NODE_ENV === "development"
-      ? `ws://localhost:8002/sock/golf/${game.game_id}/play`
-      : `ws://api-server/sock/golf/${game.game_id}/play`;
+      ? `ws://localhost:8002/sock/golf/${game.game_id}/play?token=${sockToken}`
+      : `ws://api-server/sock/golf/${game.game_id}/play?token=${sockToken}`;
 
   const { sendJsonMessage, lastJsonMessage, readyState } =
     useWebSocket<WebSocketMessage>(socketUrl, {});

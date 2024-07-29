@@ -8,26 +8,47 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   const { token } = await isAuthenticated(request, {
     failureRedirect: "/login",
   });
-  const { data, error } = await apiClient.GET("/games/{game_id}", {
-    params: {
-      path: {
-        game_id: Number(params.gameId),
+
+  const fetchGame = async () => {
+    const { data, error } = await apiClient.GET("/games/{game_id}", {
+      params: {
+        path: {
+          game_id: Number(params.gameId),
+        },
+        header: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-      header: {
-        Authorization: `Bearer ${token}`,
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data;
+  };
+
+  const fetchSockToken = async () => {
+    const { data, error } = await apiClient.GET("/token", {
+      params: {
+        header: {
+          Authorization: `Bearer ${token}`,
+        },
       },
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
-  }
+    });
+    if (error) {
+      throw new Error(error.message);
+    }
+    return data.token;
+  };
+
+  const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
   return {
-    game: data,
+    game,
+    sockToken,
   };
 }
 
 export default function GolfPlay() {
-  const { game } = useLoaderData<typeof loader>();
+  const { game, sockToken } = useLoaderData<typeof loader>();
 
-  return <GolfPlayApp game={game} />;
+  return <GolfPlayApp game={game} sockToken={sockToken} />;
 }

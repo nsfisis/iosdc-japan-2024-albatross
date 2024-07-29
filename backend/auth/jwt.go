@@ -33,6 +33,21 @@ func NewJWT(user *db.User) (string, error) {
 	return token.SignedString([]byte("TODO"))
 }
 
+func NewShortLivedJWT(claims *JWTClaims) (string, error) {
+	newClaims := &JWTClaims{
+		UserID:      claims.UserID,
+		Username:    claims.Username,
+		DisplayName: claims.DisplayName,
+		IconPath:    claims.IconPath,
+		IsAdmin:     claims.IsAdmin,
+		RegisteredClaims: jwt.RegisteredClaims{
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+		},
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, newClaims)
+	return token.SignedString([]byte("TODO"))
+}
+
 func ParseJWT(token string) (*JWTClaims, error) {
 	claims := new(JWTClaims)
 	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {

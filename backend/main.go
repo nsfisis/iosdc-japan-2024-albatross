@@ -71,7 +71,6 @@ func main() {
 	}
 	defer gameHubs.Close()
 	sockGroup := e.Group("/sock")
-	// sockGroup.Use(api.NewEchoJWTMiddleware())
 	sockHandler := gameHubs.SockHandler()
 	sockGroup.GET("/golf/:gameId/play", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfPlay(c)

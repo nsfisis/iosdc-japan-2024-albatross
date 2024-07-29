@@ -50,6 +50,17 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 	}, nil
 }
 
+func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error) {
+	user := ctx.Value("user").(*auth.JWTClaims)
+	newToken, err := auth.NewShortLivedJWT(user)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	return GetToken200JSONResponse{
+		Token: newToken,
+	}, nil
+}
+
 func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	playerId := request.Params.PlayerId
@@ -190,21 +201,8 @@ func setupJWTFromAuthorizationHeader(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
 	}
-	c.Set("user", claims)
 	c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
 	return nil
-}
-
-func NewEchoJWTMiddleware() echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			err := setupJWTFromAuthorizationHeader(c)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-			}
-			return next(c)
-		}
-	}
 }
 
 func NewJWTMiddleware() StrictMiddlewareFunc {

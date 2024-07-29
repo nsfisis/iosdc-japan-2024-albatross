@@ -212,6 +212,11 @@ type PostLoginJSONBody struct {
 	Username string `json:"username"`
 }
 
+// GetTokenParams defines parameters for GetToken.
+type GetTokenParams struct {
+	Authorization string `json:"Authorization"`
+}
+
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
 
@@ -588,6 +593,9 @@ type ServerInterface interface {
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
+	// Get a short-lived access token
+	// (GET /token)
+	GetToken(ctx echo.Context, params GetTokenParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -679,6 +687,37 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	return err
 }
 
+// GetToken converts echo context to params.
+func (w *ServerInterfaceWrapper) GetToken(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTokenParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetToken(ctx, params)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -710,6 +749,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/games", wrapper.GetGames)
 	router.GET(baseURL+"/games/:game_id", wrapper.GetGamesGameId)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.GET(baseURL+"/token", wrapper.GetToken)
 
 }
 
@@ -802,6 +842,36 @@ func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetTokenRequestObject struct {
+	Params GetTokenParams
+}
+
+type GetTokenResponseObject interface {
+	VisitGetTokenResponse(w http.ResponseWriter) error
+}
+
+type GetToken200JSONResponse struct {
+	Token string `json:"token"`
+}
+
+func (response GetToken200JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetToken403JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetToken403JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// List games
@@ -813,6 +883,9 @@ type StrictServerInterface interface {
 	// User login
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
+	// Get a short-lived access token
+	// (GET /token)
+	GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -907,31 +980,57 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	return nil
 }
 
+// GetToken operation middleware
+func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error {
+	var request GetTokenRequestObject
+
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetToken(ctx.Request().Context(), request.(GetTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetTokenResponseObject); ok {
+		return validResponse.VisitGetTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"/wwsoM7zwMcqy7Ls3wAAAP//jcdHSHceAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
