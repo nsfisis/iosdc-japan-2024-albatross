@@ -9,7 +9,7 @@ CREATE TABLE users (
 
 CREATE TABLE user_auths (
     user_auth_id  SERIAL      PRIMARY KEY,
-    user_id       INT         NOT NULL,
+    user_id       INT         NOT NULL UNIQUE,
     auth_type     VARCHAR(16) NOT NULL,
     password_hash VARCHAR(256),
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
