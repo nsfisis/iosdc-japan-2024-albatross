@@ -1,3 +1,12 @@
+# Architecture
+
+* Reverse proxy server (Nginx)
+* API server (Golang + Echo)
+* App server (TypeScript + Remix)
+* Database (PostgreSQL)
+* Worker (Golang + Swift + WebAssembly)
+    * WIP, not merged into `main` branch
+
 # Dependencies
 
 * Docker
