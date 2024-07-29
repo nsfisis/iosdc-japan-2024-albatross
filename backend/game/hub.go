@@ -205,8 +205,8 @@ func (hub *gameHub) run() {
 						log.Fatalf("failed to set game state: %v", err)
 					}
 					hub.game.state = gameStateFinished
+					hub.close()
 				}
-				hub.close()
 				return
 			}
 		}
