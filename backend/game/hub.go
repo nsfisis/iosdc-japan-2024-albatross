@@ -205,8 +205,8 @@ func (hub *gameHub) run() {
 						log.Fatalf("failed to set game state: %v", err)
 					}
 					hub.game.state = gameStateFinished
+					hub.close()
 				}
-				hub.close()
 				return
 			}
 		}
@@ -253,6 +253,10 @@ func (hubs *GameHubs) Close() {
 	for _, hub := range hubs.hubs {
 		hub.close()
 	}
+}
+
+func (hubs *GameHubs) getHub(gameID int) *gameHub {
+	return hubs.hubs[gameID]
 }
 
 func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
