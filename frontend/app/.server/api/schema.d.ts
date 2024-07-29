@@ -64,6 +64,59 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/token": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get a short-lived access token */
+        get: {
+            parameters: {
+                query?: never;
+                header: {
+                    Authorization: string;
+                };
+                path?: never;
+                cookie?: never;
+            };
+            requestBody?: never;
+            responses: {
+                /** @description Successfully authenticated */
+                200: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example xxxxx.xxxxx.xxxxx */
+                            token: string;
+                        };
+                    };
+                };
+                /** @description Forbidden */
+                403: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Forbidden operation */
+                            message: string;
+                        };
+                    };
+                };
+            };
+        };
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/games": {
         parameters: {
             query?: never;
@@ -260,6 +313,48 @@ export interface components {
         GamePlayerMessageC2SCodePayload: {
             /** @example print('Hello, world!') */
             code: string;
+        };
+        GameWatcherMessage: components["schemas"]["GameWatcherMessageS2C"];
+        GameWatcherMessageS2C: components["schemas"]["GameWatcherMessageS2CStart"] | components["schemas"]["GameWatcherMessageS2CCode"] | components["schemas"]["GameWatcherMessageS2CExecResult"];
+        GameWatcherMessageS2CStart: {
+            /** @constant */
+            type: "watcher:s2c:start";
+            data: components["schemas"]["GameWatcherMessageS2CStartPayload"];
+        };
+        GameWatcherMessageS2CStartPayload: {
+            /** @example 946684800 */
+            start_at: number;
+        };
+        GameWatcherMessageS2CCode: {
+            /** @constant */
+            type: "watcher:s2c:code";
+            data: components["schemas"]["GameWatcherMessageS2CCodePayload"];
+        };
+        GameWatcherMessageS2CCodePayload: {
+            /** @example 1 */
+            player_id: number;
+            /** @example print('Hello, world!') */
+            code: string;
+        };
+        GameWatcherMessageS2CExecResult: {
+            /** @constant */
+            type: "watcher:s2c:execresult";
+            data: components["schemas"]["GameWatcherMessageS2CExecResultPayload"];
+        };
+        GameWatcherMessageS2CExecResultPayload: {
+            /** @example 1 */
+            player_id: number;
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success";
+            /** @example 100 */
+            score: number | null;
+            /** @example Hello, world! */
+            stdout: string;
+            /** @example  */
+            stderr: string;
         };
     };
     responses: never;

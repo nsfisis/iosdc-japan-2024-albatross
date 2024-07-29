@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs } from "@remix-run/node";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
 import { useLoaderData } from "@remix-run/react";
-import GolfPlayApp from "../components/GolfPlayApp";
+import GolfWatchApp from "../components/GolfWatchApp";
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { token } = await isAuthenticated(request, {
@@ -47,8 +47,8 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   };
 }
 
-export default function GolfPlay() {
+export default function GolfWatch() {
   const { game, sockToken } = useLoaderData<typeof loader>();
 
-  return <GolfPlayApp game={game} sockToken={sockToken} />;
+  return <GolfWatchApp game={game} sockToken={sockToken} />;
 }

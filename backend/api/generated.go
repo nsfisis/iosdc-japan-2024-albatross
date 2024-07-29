@@ -34,7 +34,12 @@ const (
 
 // Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
 const (
-	Success GamePlayerMessageS2CExecResultPayloadStatus = "success"
+	GamePlayerMessageS2CExecResultPayloadStatusSuccess GamePlayerMessageS2CExecResultPayloadStatus = "success"
+)
+
+// Defines values for GameWatcherMessageS2CExecResultPayloadStatus.
+const (
+	GameWatcherMessageS2CExecResultPayloadStatusSuccess GameWatcherMessageS2CExecResultPayloadStatus = "success"
 )
 
 // Game defines model for Game.
@@ -123,6 +128,57 @@ type GamePlayerMessageS2CStartPayload struct {
 	StartAt int `json:"start_at"`
 }
 
+// GameWatcherMessage defines model for GameWatcherMessage.
+type GameWatcherMessage struct {
+	union json.RawMessage
+}
+
+// GameWatcherMessageS2C defines model for GameWatcherMessageS2C.
+type GameWatcherMessageS2C struct {
+	union json.RawMessage
+}
+
+// GameWatcherMessageS2CCode defines model for GameWatcherMessageS2CCode.
+type GameWatcherMessageS2CCode struct {
+	Data GameWatcherMessageS2CCodePayload `json:"data"`
+	Type string                           `json:"type"`
+}
+
+// GameWatcherMessageS2CCodePayload defines model for GameWatcherMessageS2CCodePayload.
+type GameWatcherMessageS2CCodePayload struct {
+	Code     string `json:"code"`
+	PlayerId int    `json:"player_id"`
+}
+
+// GameWatcherMessageS2CExecResult defines model for GameWatcherMessageS2CExecResult.
+type GameWatcherMessageS2CExecResult struct {
+	Data GameWatcherMessageS2CExecResultPayload `json:"data"`
+	Type string                                 `json:"type"`
+}
+
+// GameWatcherMessageS2CExecResultPayload defines model for GameWatcherMessageS2CExecResultPayload.
+type GameWatcherMessageS2CExecResultPayload struct {
+	PlayerId int                                          `json:"player_id"`
+	Score    *int                                         `json:"score"`
+	Status   GameWatcherMessageS2CExecResultPayloadStatus `json:"status"`
+	Stderr   string                                       `json:"stderr"`
+	Stdout   string                                       `json:"stdout"`
+}
+
+// GameWatcherMessageS2CExecResultPayloadStatus defines model for GameWatcherMessageS2CExecResultPayload.Status.
+type GameWatcherMessageS2CExecResultPayloadStatus string
+
+// GameWatcherMessageS2CStart defines model for GameWatcherMessageS2CStart.
+type GameWatcherMessageS2CStart struct {
+	Data GameWatcherMessageS2CStartPayload `json:"data"`
+	Type string                            `json:"type"`
+}
+
+// GameWatcherMessageS2CStartPayload defines model for GameWatcherMessageS2CStartPayload.
+type GameWatcherMessageS2CStartPayload struct {
+	StartAt int `json:"start_at"`
+}
+
 // JwtPayload defines model for JwtPayload.
 type JwtPayload struct {
 	DisplayName string  `json:"display_name"`
@@ -154,6 +210,11 @@ type GetGamesGameIdParams struct {
 type PostLoginJSONBody struct {
 	Password string `json:"password"`
 	Username string `json:"username"`
+}
+
+// GetTokenParams defines parameters for GetToken.
+type GetTokenParams struct {
+	Authorization string `json:"Authorization"`
 }
 
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
@@ -397,6 +458,130 @@ func (t *GamePlayerMessageS2C) UnmarshalJSON(b []byte) error {
 	return err
 }
 
+// AsGameWatcherMessageS2C returns the union data inside the GameWatcherMessage as a GameWatcherMessageS2C
+func (t GameWatcherMessage) AsGameWatcherMessageS2C() (GameWatcherMessageS2C, error) {
+	var body GameWatcherMessageS2C
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGameWatcherMessageS2C overwrites any union data inside the GameWatcherMessage as the provided GameWatcherMessageS2C
+func (t *GameWatcherMessage) FromGameWatcherMessageS2C(v GameWatcherMessageS2C) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGameWatcherMessageS2C performs a merge with any union data inside the GameWatcherMessage, using the provided GameWatcherMessageS2C
+func (t *GameWatcherMessage) MergeGameWatcherMessageS2C(v GameWatcherMessageS2C) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GameWatcherMessage) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GameWatcherMessage) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
+// AsGameWatcherMessageS2CStart returns the union data inside the GameWatcherMessageS2C as a GameWatcherMessageS2CStart
+func (t GameWatcherMessageS2C) AsGameWatcherMessageS2CStart() (GameWatcherMessageS2CStart, error) {
+	var body GameWatcherMessageS2CStart
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGameWatcherMessageS2CStart overwrites any union data inside the GameWatcherMessageS2C as the provided GameWatcherMessageS2CStart
+func (t *GameWatcherMessageS2C) FromGameWatcherMessageS2CStart(v GameWatcherMessageS2CStart) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGameWatcherMessageS2CStart performs a merge with any union data inside the GameWatcherMessageS2C, using the provided GameWatcherMessageS2CStart
+func (t *GameWatcherMessageS2C) MergeGameWatcherMessageS2CStart(v GameWatcherMessageS2CStart) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGameWatcherMessageS2CCode returns the union data inside the GameWatcherMessageS2C as a GameWatcherMessageS2CCode
+func (t GameWatcherMessageS2C) AsGameWatcherMessageS2CCode() (GameWatcherMessageS2CCode, error) {
+	var body GameWatcherMessageS2CCode
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGameWatcherMessageS2CCode overwrites any union data inside the GameWatcherMessageS2C as the provided GameWatcherMessageS2CCode
+func (t *GameWatcherMessageS2C) FromGameWatcherMessageS2CCode(v GameWatcherMessageS2CCode) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGameWatcherMessageS2CCode performs a merge with any union data inside the GameWatcherMessageS2C, using the provided GameWatcherMessageS2CCode
+func (t *GameWatcherMessageS2C) MergeGameWatcherMessageS2CCode(v GameWatcherMessageS2CCode) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGameWatcherMessageS2CExecResult returns the union data inside the GameWatcherMessageS2C as a GameWatcherMessageS2CExecResult
+func (t GameWatcherMessageS2C) AsGameWatcherMessageS2CExecResult() (GameWatcherMessageS2CExecResult, error) {
+	var body GameWatcherMessageS2CExecResult
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGameWatcherMessageS2CExecResult overwrites any union data inside the GameWatcherMessageS2C as the provided GameWatcherMessageS2CExecResult
+func (t *GameWatcherMessageS2C) FromGameWatcherMessageS2CExecResult(v GameWatcherMessageS2CExecResult) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGameWatcherMessageS2CExecResult performs a merge with any union data inside the GameWatcherMessageS2C, using the provided GameWatcherMessageS2CExecResult
+func (t *GameWatcherMessageS2C) MergeGameWatcherMessageS2CExecResult(v GameWatcherMessageS2CExecResult) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+func (t GameWatcherMessageS2C) MarshalJSON() ([]byte, error) {
+	b, err := t.union.MarshalJSON()
+	return b, err
+}
+
+func (t *GameWatcherMessageS2C) UnmarshalJSON(b []byte) error {
+	err := t.union.UnmarshalJSON(b)
+	return err
+}
+
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// List games
@@ -408,6 +593,9 @@ type ServerInterface interface {
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
+	// Get a short-lived access token
+	// (GET /token)
+	GetToken(ctx echo.Context, params GetTokenParams) error
 }
 
 // ServerInterfaceWrapper converts echo contexts to parameters.
@@ -499,6 +687,37 @@ func (w *ServerInterfaceWrapper) PostLogin(ctx echo.Context) error {
 	return err
 }
 
+// GetToken converts echo context to params.
+func (w *ServerInterfaceWrapper) GetToken(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetTokenParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetToken(ctx, params)
+	return err
+}
+
 // This is a simple interface which specifies echo.Route addition functions which
 // are present on both echo.Echo and echo.Group, since we want to allow using
 // either of them for path registration
@@ -530,6 +749,7 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 	router.GET(baseURL+"/games", wrapper.GetGames)
 	router.GET(baseURL+"/games/:game_id", wrapper.GetGamesGameId)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
+	router.GET(baseURL+"/token", wrapper.GetToken)
 
 }
 
@@ -622,6 +842,36 @@ func (response PostLogin401JSONResponse) VisitPostLoginResponse(w http.ResponseW
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetTokenRequestObject struct {
+	Params GetTokenParams
+}
+
+type GetTokenResponseObject interface {
+	VisitGetTokenResponse(w http.ResponseWriter) error
+}
+
+type GetToken200JSONResponse struct {
+	Token string `json:"token"`
+}
+
+func (response GetToken200JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetToken403JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetToken403JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// List games
@@ -633,6 +883,9 @@ type StrictServerInterface interface {
 	// User login
 	// (POST /login)
 	PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error)
+	// Get a short-lived access token
+	// (GET /token)
+	GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error)
 }
 
 type StrictHandlerFunc = strictecho.StrictEchoHandlerFunc
@@ -727,29 +980,57 @@ func (sh *strictHandler) PostLogin(ctx echo.Context) error {
 	return nil
 }
 
+// GetToken operation middleware
+func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error {
+	var request GetTokenRequestObject
+
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetToken(ctx.Request().Context(), request.(GetTokenRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetToken")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetTokenResponseObject); ok {
+		return validResponse.VisitGetTokenResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
+}
+
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"/wwsoM7zwMcqy7Ls3wAAAP//jcdHSHceAAA=",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

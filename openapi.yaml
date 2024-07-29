@@ -47,6 +47,40 @@ paths:
                     example: "Invalid credentials"
                 required:
                   - message
+  /token:
+    get:
+      summary: Get a short-lived access token
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Successfully authenticated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "xxxxx.xxxxx.xxxxx"
+                required:
+                  - token
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
   /games:
     get:
       summary: List games
@@ -306,11 +340,94 @@ components:
           example: "print('Hello, world!')"
       required:
         - code
-    # GameWatcherMessage:
-    #   oneOf:
-    #     - $ref: '#/components/schemas/GameWatcherMessageS2C'
-    #     - $ref: '#/components/schemas/GameWatcherMessageC2S'
-    # GameWatcherMessageS2C:
-    #   oneOf:
+    GameWatcherMessage:
+      oneOf:
+        - $ref: '#/components/schemas/GameWatcherMessageS2C'
+        # - $ref: '#/components/schemas/GameWatcherMessageC2S'
+    GameWatcherMessageS2C:
+      oneOf:
+        - $ref: '#/components/schemas/GameWatcherMessageS2CStart'
+        - $ref: '#/components/schemas/GameWatcherMessageS2CCode'
+        - $ref: '#/components/schemas/GameWatcherMessageS2CExecResult'
+    GameWatcherMessageS2CStart:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "watcher:s2c:start"
+        data:
+          $ref: '#/components/schemas/GameWatcherMessageS2CStartPayload'
+      required:
+        - type
+        - data
+    GameWatcherMessageS2CStartPayload:
+      type: object
+      properties:
+        start_at:
+          type: integer
+          example: 946684800
+      required:
+        - start_at
+    GameWatcherMessageS2CCode:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "watcher:s2c:code"
+        data:
+          $ref: '#/components/schemas/GameWatcherMessageS2CCodePayload'
+      required:
+        - type
+        - data
+    GameWatcherMessageS2CCodePayload:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          example: 1
+        code:
+          type: string
+          example: "print('Hello, world!')"
+      required:
+        - player_id
+        - code
+    GameWatcherMessageS2CExecResult:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "watcher:s2c:execresult"
+        data:
+          $ref: '#/components/schemas/GameWatcherMessageS2CExecResultPayload'
+      required:
+        - type
+        - data
+    GameWatcherMessageS2CExecResultPayload:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          example: "success"
+          enum:
+            - success
+        score:
+          type: integer
+          nullable: true
+          example: 100
+        stdout:
+          type: string
+          example: "Hello, world!"
+        stderr:
+          type: string
+          example: ""
+      required:
+        - player_id
+        - status
+        - score
+        - stdout
+        - stderr
     # GameWatcherMessageC2S:
     #   oneOf:

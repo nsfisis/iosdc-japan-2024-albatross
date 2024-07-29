@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func servePlayerWs(hub *gameHub, w http.ResponseWriter, r *http.Request, team string) error {
+func servePlayerWs(hub *gameHub, w http.ResponseWriter, r *http.Request, playerID int) error {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		return err
@@ -32,6 +32,7 @@ func servePlayerWs(hub *gameHub, w http.ResponseWriter, r *http.Request, team st
 		hub:         hub,
 		conn:        conn,
 		s2cMessages: make(chan playerMessageS2C),
+		playerID:    playerID,
 	}
 	hub.registerPlayer <- player
 
