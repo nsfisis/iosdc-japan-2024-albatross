@@ -9,10 +9,16 @@ CREATE TABLE users (
 
 CREATE TABLE user_auths (
     user_auth_id  SERIAL      PRIMARY KEY,
-    user_id       INT         NOT NULL,
+    user_id       INT         NOT NULL UNIQUE,
     auth_type     VARCHAR(16) NOT NULL,
     password_hash VARCHAR(256),
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE problems (
+    problem_id  SERIAL       PRIMARY KEY,
+    title       VARCHAR(255) NOT NULL,
+    description TEXT         NOT NULL
 );
 
 CREATE TABLE games (
@@ -32,12 +38,6 @@ CREATE TABLE game_players (
     PRIMARY KEY (game_id, user_id),
     CONSTRAINT fk_game_id FOREIGN KEY(game_id) REFERENCES games(game_id),
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
-);
-
-CREATE TABLE problems (
-    problem_id  SERIAL       PRIMARY KEY,
-    title       VARCHAR(255) NOT NULL,
-    description TEXT         NOT NULL
 );
 
 CREATE TABLE testcases (
