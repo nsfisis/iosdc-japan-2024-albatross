@@ -255,6 +255,10 @@ func (hubs *GameHubs) Close() {
 	}
 }
 
+func (hubs *GameHubs) getHub(gameID int) *gameHub {
+	return hubs.hubs[gameID]
+}
+
 func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 	games, err := hubs.q.ListGames(ctx)
 	if err != nil {
