@@ -145,8 +145,8 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 }
 
 func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdRequestObject) (GetGamesGameIdResponseObject, error) {
-	// TODO: user permission
-	// user := ctx.Value("user").(*auth.JWTClaims)
+	user := ctx.Value("user").(*auth.JWTClaims)
+	// TODO: check user permission
 	gameId := request.GameId
 	row, err := h.q.GetGameById(ctx, int32(gameId))
 	if err != nil {
@@ -158,14 +158,16 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 		startedAt = &startedAtTimestamp
 	}
 	var problem *Problem
-	if row.ProblemID != nil && GameState(row.State) != Closed && GameState(row.State) != WaitingEntries {
+	if row.ProblemID != nil {
 		if row.Title == nil || row.Description == nil {
 			panic("inconsistent data")
 		}
-		problem = &Problem{
-			ProblemId:   int(*row.ProblemID),
-			Title:       *row.Title,
-			Description: *row.Description,
+		if user.IsAdmin || (GameState(row.State) != Closed && GameState(row.State) != WaitingEntries) {
+			problem = &Problem{
+				ProblemId:   int(*row.ProblemID),
+				Title:       *row.Title,
+				Description: *row.Description,
+			}
 		}
 	}
 	game := Game{

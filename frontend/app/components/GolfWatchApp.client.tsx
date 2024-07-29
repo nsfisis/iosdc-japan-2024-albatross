@@ -10,7 +10,6 @@ import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
 type WebSocketMessage = components["schemas"]["GameWatcherMessageS2C"];
 
 type Game = components["schemas"]["Game"];
-type Problem = components["schemas"]["Problem"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
@@ -33,8 +32,6 @@ export default function GolfWatchApp({
   );
 
   const [gameState, setGameState] = useState<GameState>("connecting");
-
-  const [problem, setProblem] = useState<Problem | null>(null);
 
   const [startedAt, setStartedAt] = useState<number | null>(null);
 
@@ -127,7 +124,7 @@ export default function GolfWatchApp({
   } else if (gameState === "gaming") {
     return (
       <GolfWatchAppGaming
-        problem={problem!.description}
+        problem={game.problem!.description}
         codeA={codeA}
         scoreA={scoreA}
         codeB={codeB}
