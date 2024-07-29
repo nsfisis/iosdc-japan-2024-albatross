@@ -1,8 +1,10 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { ClientOnly } from "remix-utils/client-only";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
-import { useLoaderData } from "@remix-run/react";
-import GolfPlayApp from "../components/GolfPlayApp";
+import GolfPlayApp from "../components/GolfPlayApp.client";
+import GolfPlayAppConnecting from "../components/GolfPlayApps/GolfPlayAppConnecting";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -60,5 +62,9 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 export default function GolfPlay() {
   const { game, sockToken } = useLoaderData<typeof loader>();
 
-  return <GolfPlayApp game={game} sockToken={sockToken} />;
+  return (
+    <ClientOnly fallback={<GolfPlayAppConnecting />}>
+      {() => <GolfPlayApp game={game} sockToken={sockToken} />}
+    </ClientOnly>
+  );
 }
