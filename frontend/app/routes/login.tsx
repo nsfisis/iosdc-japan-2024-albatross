@@ -1,6 +1,14 @@
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  MetaFunction,
+} from "@remix-run/node";
 import { Form } from "@remix-run/react";
 import { authenticator } from "../.server/auth";
+
+export const meta: MetaFunction = () => {
+  return [{ title: "Login | iOSDC 2024 Albatross.swift" }];
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   return await authenticator.isAuthenticated(request, {

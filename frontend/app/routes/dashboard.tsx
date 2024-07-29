@@ -1,7 +1,11 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
+
+export const meta: MetaFunction = () => {
+  return [{ title: "Dashboard | iOSDC 2024 Albatross.swift" }];
+};
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const { user, token } = await isAuthenticated(request, {

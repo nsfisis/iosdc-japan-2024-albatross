@@ -1,8 +1,18 @@
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
 import { useLoaderData } from "@remix-run/react";
 import GolfWatchApp from "../components/GolfWatchApp";
+
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  return [
+    {
+      title: data
+        ? `Golf Watching ${data.game.display_name} | iOSDC 2024 Albatross.swift`
+        : "Golf Watching | iOSDC 2024 Albatross.swift",
+    },
+  ];
+};
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
   const { token } = await isAuthenticated(request, {

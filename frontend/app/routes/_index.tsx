@@ -2,7 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Albatross.swift" }];
+  return [{ title: "iOSDC 2024 Albatross.swift" }];
 };
 
 export default function Index() {
