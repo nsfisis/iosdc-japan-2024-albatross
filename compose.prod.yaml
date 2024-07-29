@@ -1,0 +1,63 @@
+services:
+  reverse-proxy:
+    image: nginx:1.27
+    ports:
+      - '127.0.0.1:8002:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-server
+      - app-server
+    restart: always
+
+  api-server:
+    build:
+      context: ./backend
+    expose:
+      - 80
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ALBATROSS_DB_HOST: db
+      ALBATROSS_DB_PORT: 5432
+      ALBATROSS_DB_USER: postgres
+      ALBATROSS_DB_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      ALBATROSS_DB_NAME: albatross
+    restart: always
+
+  app-server:
+    build:
+      context: ./frontend
+      args:
+        ALBATROSS_HOST: localhost
+    expose:
+      - 80
+    restart: always
+
+  db:
+    image: postgres:16.3
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
+      POSTGRES_DB: albatross
+    expose:
+      - 5432
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    restart: always
+
+  worker:
+    build:
+      context: ./worker
+    expose:
+      - 80
+    restart: always
+
+volumes:
+  db-data:
