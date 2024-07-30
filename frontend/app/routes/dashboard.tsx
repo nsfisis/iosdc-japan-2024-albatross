@@ -1,4 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Link, useLoaderData, Form } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
@@ -11,6 +12,9 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const { user, token } = await isAuthenticated(request, {
     failureRedirect: "/login",
   });
+  if (user.is_admin) {
+    return redirect("/admin/dashboard");
+  }
   const { data, error } = await apiClient.GET("/games", {
     params: {
       query: {
