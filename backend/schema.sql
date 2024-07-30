@@ -6,6 +6,7 @@ CREATE TABLE users (
     is_admin     BOOLEAN     NOT NULL,
     created_at   TIMESTAMP   NOT NULL DEFAULT NOW()
 );
+CREATE INDEX idx_users_username ON users(username);
 
 CREATE TABLE user_auths (
     user_auth_id  SERIAL      PRIMARY KEY,
@@ -14,6 +15,7 @@ CREATE TABLE user_auths (
     password_hash VARCHAR(256),
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
+CREATE INDEX idx_user_auths_user_id ON user_auths(user_id);
 
 CREATE TABLE problems (
     problem_id  SERIAL       PRIMARY KEY,
@@ -31,6 +33,7 @@ CREATE TABLE games (
     problem_id       INT,
     CONSTRAINT fk_problem_id FOREIGN KEY(problem_id) REFERENCES problems(problem_id)
 );
+CREATE INDEX idx_games_problem_id ON games(problem_id);
 
 CREATE TABLE game_players (
     game_id INT NOT NULL,
@@ -47,3 +50,4 @@ CREATE TABLE testcases (
     stdout      TEXT   NOT NULL,
     CONSTRAINT fk_problem_id FOREIGN KEY(problem_id) REFERENCES problems(problem_id)
 );
+CREATE INDEX idx_testcases_problem_id ON testcases(problem_id);
