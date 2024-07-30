@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useLoaderData, Form } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
 
@@ -67,6 +67,16 @@ export default function Dashboard() {
               </li>
             ))}
           </ul>
+        </div>
+        <div>
+          <Form method="post" action="/logout">
+            <button
+              className="mt-6 px-6 py-2 text-white bg-red-500 hover:bg-red-700 rounded"
+              type="submit"
+            >
+              Logout
+            </button>
+          </Form>
         </div>
       </div>
     </div>
