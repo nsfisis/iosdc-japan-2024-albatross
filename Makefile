@@ -18,6 +18,10 @@ down:
 logs:
 	${DOCKER_COMPOSE} logs
 
+.PHONY: logsf
+logsf:
+	${DOCKER_COMPOSE} logs -f
+
 .PHONY: psql
 psql:
 	${DOCKER_COMPOSE} up --wait db

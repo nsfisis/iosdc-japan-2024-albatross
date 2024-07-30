@@ -6,11 +6,11 @@ VALUES
     ('c', 'TEST C', NULL, TRUE);
 
 INSERT INTO user_auths
-(user_id, auth_type)
+(user_id, auth_type, password_hash)
 VALUES
-    (1, 'bypass'),
-    (2, 'bypass'),
-    (3, 'bypass');
+    (1, 'password', '$2a$10$5FzjoitnZSFFpIPHEqmnXOQkSKWTLwpR.gqPy50iFg5itOZcqARHq'),
+    (2, 'password', '$2a$10$4Wl1M4jQs.GwkB4oT32KvuMQtF.EdqKuOc8z8KKOupnuMJRAVk32W'),
+    (3, 'password', '$2a$10$F/TePpu1pyJRWgn0e6A14.VL9D/17sRxT/2DyZ2Oi4Eg/lR6n7JcK');
 
 INSERT INTO problems
 (title, description)
