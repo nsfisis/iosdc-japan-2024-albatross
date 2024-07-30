@@ -211,6 +211,37 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 	return items, nil
 }
 
+const listUsers = `-- name: ListUsers :many
+SELECT user_id, username, display_name, icon_path, is_admin, created_at FROM users
+`
+
+func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
+	rows, err := q.db.Query(ctx, listUsers)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []User
+	for rows.Next() {
+		var i User
+		if err := rows.Scan(
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.IconPath,
+			&i.IsAdmin,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateGameStartedAt = `-- name: UpdateGameStartedAt :exec
 UPDATE games
 SET started_at = $2

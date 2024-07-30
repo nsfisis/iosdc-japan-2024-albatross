@@ -30,7 +30,7 @@ authenticator.use(
   "default",
 );
 
-export type User = components["schemas"]["JwtPayload"];
+export type User = components["schemas"]["User"];
 
 export async function isAuthenticated(
   request: Request | Session,

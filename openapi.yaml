@@ -154,9 +154,44 @@ paths:
                     example: "Forbidden operation"
                 required:
                   - message
+  /admin/users:
+    get:
+      summary: List all users
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  users:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                required:
+                  - users
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
 components:
   schemas:
-    JwtPayload:
+    User:
       type: object
       properties:
         user_id:

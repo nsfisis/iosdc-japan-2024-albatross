@@ -179,8 +179,15 @@ type GameWatcherMessageS2CStartPayload struct {
 	StartAt int `json:"start_at"`
 }
 
-// JwtPayload defines model for JwtPayload.
-type JwtPayload struct {
+// Problem defines model for Problem.
+type Problem struct {
+	Description string `json:"description"`
+	ProblemId   int    `json:"problem_id"`
+	Title       string `json:"title"`
+}
+
+// User defines model for User.
+type User struct {
 	DisplayName string  `json:"display_name"`
 	IconPath    *string `json:"icon_path,omitempty"`
 	IsAdmin     bool    `json:"is_admin"`
@@ -188,11 +195,9 @@ type JwtPayload struct {
 	Username    string  `json:"username"`
 }
 
-// Problem defines model for Problem.
-type Problem struct {
-	Description string `json:"description"`
-	ProblemId   int    `json:"problem_id"`
-	Title       string `json:"title"`
+// GetAdminUsersParams defines parameters for GetAdminUsers.
+type GetAdminUsersParams struct {
+	Authorization string `json:"Authorization"`
 }
 
 // GetGamesParams defines parameters for GetGames.
@@ -584,6 +589,9 @@ func (t *GameWatcherMessageS2C) UnmarshalJSON(b []byte) error {
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// List all users
+	// (GET /admin/users)
+	GetAdminUsers(ctx echo.Context, params GetAdminUsersParams) error
 	// List games
 	// (GET /games)
 	GetGames(ctx echo.Context, params GetGamesParams) error
@@ -601,6 +609,37 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
+}
+
+// GetAdminUsers converts echo context to params.
+func (w *ServerInterfaceWrapper) GetAdminUsers(ctx echo.Context) error {
+	var err error
+
+	// Parameter object where we will unmarshal all parameters from the context
+	var params GetAdminUsersParams
+
+	headers := ctx.Request().Header
+	// ------------- Required header parameter "Authorization" -------------
+	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
+		var Authorization string
+		n := len(valueList)
+		if n != 1 {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
+		}
+
+		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
+		}
+
+		params.Authorization = Authorization
+	} else {
+		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
+	}
+
+	// Invoke the callback with all the unmarshaled arguments
+	err = w.Handler.GetAdminUsers(ctx, params)
+	return err
 }
 
 // GetGames converts echo context to params.
@@ -746,11 +785,42 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
+	router.GET(baseURL+"/admin/users", wrapper.GetAdminUsers)
 	router.GET(baseURL+"/games", wrapper.GetGames)
 	router.GET(baseURL+"/games/:game_id", wrapper.GetGamesGameId)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
 	router.GET(baseURL+"/token", wrapper.GetToken)
 
+}
+
+type GetAdminUsersRequestObject struct {
+	Params GetAdminUsersParams
+}
+
+type GetAdminUsersResponseObject interface {
+	VisitGetAdminUsersResponse(w http.ResponseWriter) error
+}
+
+type GetAdminUsers200JSONResponse struct {
+	Users []User `json:"users"`
+}
+
+func (response GetAdminUsers200JSONResponse) VisitGetAdminUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAdminUsers403JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetAdminUsers403JSONResponse) VisitGetAdminUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(403)
+
+	return json.NewEncoder(w).Encode(response)
 }
 
 type GetGamesRequestObject struct {
@@ -874,6 +944,9 @@ func (response GetToken403JSONResponse) VisitGetTokenResponse(w http.ResponseWri
 
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
+	// List all users
+	// (GET /admin/users)
+	GetAdminUsers(ctx context.Context, request GetAdminUsersRequestObject) (GetAdminUsersResponseObject, error)
 	// List games
 	// (GET /games)
 	GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error)
@@ -898,6 +971,31 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
+}
+
+// GetAdminUsers operation middleware
+func (sh *strictHandler) GetAdminUsers(ctx echo.Context, params GetAdminUsersParams) error {
+	var request GetAdminUsersRequestObject
+
+	request.Params = params
+
+	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
+		return sh.ssi.GetAdminUsers(ctx.Request().Context(), request.(GetAdminUsersRequestObject))
+	}
+	for _, middleware := range sh.middlewares {
+		handler = middleware(handler, "GetAdminUsers")
+	}
+
+	response, err := handler(ctx, request)
+
+	if err != nil {
+		return err
+	} else if validResponse, ok := response.(GetAdminUsersResponseObject); ok {
+		return validResponse.VisitGetAdminUsersResponse(ctx.Response())
+	} else if response != nil {
+		return fmt.Errorf("unexpected response type: %T", response)
+	}
+	return nil
 }
 
 // GetGames operation middleware
@@ -1008,29 +1106,30 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"H4sIAAAAAAAC/9xYbW/bNhD+Kxo3oBugxY5TFJ2/ZVmXpegwo+mwD0Vg0OLZZkaRKo9q4hX67wNJvViW",
-	"bMmOsAXthzSR7o7P3T33In4hkYoTJUEaJNMvBKM1xNT9ek1jsP8nWiWgDQf3lHFMBN3MZf4WHmmcCCBT",
-	"Jx+ck5CYTWL/RqO5XJEsJCzV1HAl5wiRkgxrehevxqUKlwZWoK3OisYw56wmet4mmGi1EBBbwe80LMmU",
-	"fDuqfBrlDo1muVgWEjRUG2BzamrWf3r56tXrl6/HrXDQUOP9lWlMph9JJBQCIyF5oNxwuZqDNNrGqHri",
-	"ziEWISRUA8lPtkFx/vlfllxyXAMjd+FWMEvzO8HMQqLhU8o1MIuiiFIBMKznpyX0d6VJtbiHyFjnbOZm",
-	"gm5A/w6IdOUcVRL+WJLpx8NhbajeTq5IFh6pdDW5JdldGxL75nQwV5PbN9LozUmI3gNlp2leKQb7/XFv",
-	"m3VFDe3i8D5rM7oRijKbSp9bW9USDZmSxIlPowlOI3tuF6Hc29Cj6UWVHQgNv6Lc24raiebSfP/iNxBC",
-	"hcGD0oJ98+KHTmTOUF9IPusNMAeiA06jV3j6gvAEOgaEdhrDgbDF+KRSnuWt6+gquJ1c3br2d4rmm0eI",
-	"3gOmwuyporrMMLVUs9ldUTiJpvAIkfYYBq+rVjgNTzFSul5e53Z+yVQIurB/Gp3CvnmW4vZAwzSKALE+",
-	"hoqHXe7l5sIcUF8PC3oNlsHcYL/0VXN5+NztAGk4eOzWsgOpUO8Lx9fiYGF25voFuViChg9xDUSzMuzb",
-	"I1a8JqG9+j40f1ETrU9cmOq6bmO6azV7dP9uqPdvwg1Vv8WcotnWv9vNn8zIVnMHGPng5R0lB1uEDoIY",
-	"cBMK84Lq8T202ydKvfDwAnUoh8MlqdeA3U7VwBO2B6Bmp+4b+vD/m8bWAgOt6/TaI6fSelMkNf51xnmb",
-	"UjtjvzRf4umdiCcOqHZ7PUk23Ig6DOM/nVFvH/afu/8O561ay+AXBW3U4ZGS84SadV1lxGO6Ahzdq7U8",
-	"u09Wrao4pyzmsqa5pAKralgoJYBKK51iS71NLtoKx4o2vbBQOvNZnLJlpHF7UuJui/CsWuF2wgsYaZ4Y",
-	"ruoOkw9rjgHHgAbF/tbW6v2rXg3HcCN2fM9RtV3Ete+QPgbeUljD3nTamuByqdxnrD+bXIoFNVohBhaY",
-	"llQED7AILmc3JCSfQaMLAxmfnZ+NLWaVgKQJJ1NycTY+G5OQWE65wI1WNPYhXIErChtVd311w8iUXIO5",
-	"dgJWRdMYDGh0a5FlFvmUgvuC93yo9ynXKqqP7+2SyrXXQBnoSv0yNWul+T/ueLIdOd/EGybLKN9ZYUyU",
-	"RO/LZDzOO48B6dyiSSJ45CyP7tGzpLJXJ1MZEm4gxj69sGp3hGpNN62XhrgnuzXuknccTaCWgdfIQvJy",
-	"fPEEX+JqWa4I+6vSC84YyKDMdid1C0N9fCjtOyuYxjHVm8K33LEszLk3+pLfqGadLLQ/btgeLro2WXKp",
-	"uqXtZNFzJmY38ZrRv3Qh/sqocw0moLljljpCrfxsSxS2MGam0LxzIh4KoPlZ+ZvBE6ORUMQHpdnO50T+",
-	"9Hxy0TZYnjgr85FYHt0ewDobs0FboVF/w85EfbT/zrZ+dq9xzkif7N/6bXuZCrEJaGrWII2FCszT+Xxo",
-	"Ot/Iz1RwFkQamD2LChyUzoX9IpuB0kGZzjrD/0TQgae1Y3gZ+n0t8YMTaG+Gz3W0PjM+fWXtEddKmx8F",
-	"/wwsoM7zwMcqy7Ls3wAAAP//jcdHSHceAAA=",
+	"H4sIAAAAAAAC/9xYb2/bthP+KvrxN6AboPlfiqLzuyzrsgwdZtQt9qIIDFo828woUiWpJl6g7z6Q1B/L",
+	"oi3ZEbYsfZHa1t3pueeeO570iCIRJ4ID1wpNH5GKNhBj+/Eax2D+T6RIQGoK9ldCVcLwdsHzq/CA44QB",
+	"mlr7YIxCpLeJ+a60pHyNshCRVGJNBV8oiAQnquZ38WZUulCuYQ3S+KxxDAtKaqZjn2EixZJBbAy/kbBC",
+	"U/T/YZXTME9oOMvNshApjaUGssC6Fv2H12/evH39duSFozTWLl+exmj6GUVMKCAoRPeYasrXC+BaGo6q",
+	"X+x9kEEICZaA8jsbUmx+7sOKcqo2QNBtuENmGX6PzCxEEr6kVAIxKAqWCoBhvT4e6m/LkGJ5B5E2yZnK",
+	"zRjegvwNlMJrm6jg8PsKTT8fp7XhOp9coSw80elqMkfZrQ+JuXI+mKvJ/B3XcnsWog+AyXmeV4LA4Xzs",
+	"1WZfYY3bNHwo2gxvmcDElNLV1nQ1VxpNUWLNp9FETSNz3zZB2auhQ9NJKnsQGnlFebaVtBNJuf721S/A",
+	"mAiDeyEZ+d+r71qR2UBdIbmqN8AcYQesRyd6uoJwAjoFhLQe/YEwzfikVp7lo+vkLphPruZ2/J3j+e4B",
+	"og+gUqYPdFHdpp9eqsVs7yg1iabwAJF0GHrvKy+cRqYqErLeXmNzfvGUMbw0X7VM4dB5lqrdA02lUQRK",
+	"1Y+h4se29PJwYQ6oa4aFvHqrYB6wW/mqc7n/2u0BaSR46tayB6lw7wrH9WJvNNtw3UgulqD+Ka6BaHaG",
+	"uXrCitcUtHM/hOYPrKPNmQtT3dduTLfesCfP74Z79yHccHVbzDmevvntD3+2Ir3hjijy3tlbSfa2CB0F",
+	"0eMmFOYN1eF5aH9OlH7h8QXqWA37K1KnA3a3VD2fsB0ANSd1V+rDf+80NhEISFmX1wE7kdaHIqrpr5Xn",
+	"XUntHftl+BJP50I88YDyx+sosv6OqOMw/tEzalYtGHuUgookTTQVvC6DjxuqAqoCHBTbhW8QuUud2kFT",
+	"zfYmXo7K95rIv+E4nblIYQ27L+lPCuQpr6x+FRse/CTAlymNBF8kWG/qLkMa4zWo4Z3Y8MFdsva6qgUm",
+	"Ma3zu8JMVc2/FIIB5sY6VZ7xMrnwMWpMm1kYKK18FnfZCdJ4WVTibnJrwlG+EvYB1tUVXbIl1lIoFRiI",
+	"kmMW3MMyuJzdoBB9BamsxNBoMB6MDHqRAMcJRVN0MRgNRihEhl5boqG979BAs9/XYJvCVNG+vrohaIqu",
+	"QV8as0/WynhLHIO2Lp8fkeEbbQATkChEjiZ0meqNkPQvGwXtUuJmsRsi1WN5Rd+tMVaJ4MqpaDIa5QNE",
+	"A7focJIwGtnIwzvl2qmKV9dgmRnVEKu2kWZ1XE4thKXEW29F1YFS1ZocvadKB2IVOI8sRK9HF0/IJa52",
+	"3kqEPwu5pIQAD8qitWqyCNQlhzK+jaLSOMZyW+SGGSuSy0I0XOMYjsro2hr4FfQlBfsiKBdQ7bjbF8vO",
+	"ZH7m+isp6aQ/++q/TX8u5Cn6cx4vUH95YqX2ho/5i/msVYXmzw05oEV7/JRaql72t6roOQuzXXhN9i8t",
+	"xS9MOtegA5wnZqTDxNrtDIlQHsXMhNLvrYmDAkr/KNwL5jPZSLBS90KSvafS/Nfx5MK33DxxB8lXjfLW",
+	"fgLrasx6HYVa/Al7q++D+TfY+dv+NGCDdKn+3D20rVLGtgFO9Qa4NlCBODmP+5bzDf+KGSVBJIGYe2Gm",
+	"epVzEb+oZiBkUJazrnCzxwRO1lbhJfWHRuJHa/DfWu2emZ5e2HhUGyH194x+BRJgm3nguMqyLPs7AAD/",
+	"/w9tU0K+IAAA",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

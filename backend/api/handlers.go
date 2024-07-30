@@ -23,6 +23,32 @@ func NewHandler(queries *db.Queries) *ApiHandler {
 	}
 }
 
+func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersRequestObject) (GetAdminUsersResponseObject, error) {
+	user := ctx.Value("user").(*auth.JWTClaims)
+	if !user.IsAdmin {
+		return GetAdminUsers403JSONResponse{
+			Message: "Forbidden",
+		}, nil
+	}
+	users, err := h.q.ListUsers(ctx)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	responseUsers := make([]User, len(users))
+	for i, u := range users {
+		responseUsers[i] = User{
+			UserId:      int(u.UserID),
+			Username:    u.Username,
+			DisplayName: u.DisplayName,
+			IconPath:    u.IconPath,
+			IsAdmin:     u.IsAdmin,
+		}
+	}
+	return GetAdminUsers200JSONResponse{
+		Users: responseUsers,
+	}, nil
+}
+
 func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
@@ -181,15 +207,15 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 	return GetGamesGameId200JSONResponse(game), nil
 }
 
-func _assertJwtPayloadIsCompatibleWithJWTClaims() {
+func _assertUserResponseIsCompatibleWithJWTClaims() {
 	var c auth.JWTClaims
-	var p JwtPayload
-	p.UserId = c.UserID
-	p.Username = c.Username
-	p.DisplayName = c.DisplayName
-	p.IconPath = c.IconPath
-	p.IsAdmin = c.IsAdmin
-	_ = p
+	var u User
+	u.UserId = c.UserID
+	u.Username = c.Username
+	u.DisplayName = c.DisplayName
+	u.IconPath = c.IconPath
+	u.IsAdmin = c.IsAdmin
+	_ = u
 }
 
 func setupJWTFromAuthorizationHeader(c echo.Context) error {
