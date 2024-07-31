@@ -18,12 +18,18 @@ import (
 var _ StrictServerInterface = (*ApiHandler)(nil)
 
 type ApiHandler struct {
-	q *db.Queries
+	q    *db.Queries
+	hubs GameHubsInterface
 }
 
-func NewHandler(queries *db.Queries) *ApiHandler {
+type GameHubsInterface interface {
+	StartGame(gameID int) error
+}
+
+func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandler {
 	return &ApiHandler{
-		q: queries,
+		q:    queries,
+		hubs: hubs,
 	}
 }
 
@@ -145,6 +151,10 @@ func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGa
 	var changedState string
 	if state != nil {
 		changedState = string(*state)
+		// TODO:
+		if changedState != game.State && changedState == "prepare" {
+			h.hubs.StartGame(int(gameID))
+		}
 	} else {
 		changedState = game.State
 	}
