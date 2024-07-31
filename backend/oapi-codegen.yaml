@@ -7,3 +7,4 @@ generate:
 output: api/generated.go
 output-options:
   skip-prune: true
+  nullable-type: true

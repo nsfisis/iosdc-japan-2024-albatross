@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
+	"github.com/oapi-codegen/nullable"
 
 	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
 	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
@@ -158,7 +159,7 @@ func (hub *gameHub) run() {
 				message.client.s2cMessages <- &playerMessageS2CExecResult{
 					Type: playerMessageTypeS2CExecResult,
 					Data: playerMessageS2CExecResultPayload{
-						Score:  &score,
+						Score:  nullable.NewNullableWithValue(score),
 						Status: api.GamePlayerMessageS2CExecResultPayloadStatusSuccess,
 					},
 				}
@@ -174,7 +175,7 @@ func (hub *gameHub) run() {
 						Type: watcherMessageTypeS2CExecResult,
 						Data: watcherMessageS2CExecResultPayload{
 							PlayerId: message.client.playerID,
-							Score:    &score,
+							Score:    nullable.NewNullableWithValue(score),
 							Stdout:   "",
 							Stderr:   "",
 						},

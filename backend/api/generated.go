@@ -17,6 +17,7 @@ import (
 
 	"github.com/getkin/kin-openapi/openapi3"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/nullable"
 	"github.com/oapi-codegen/runtime"
 	strictecho "github.com/oapi-codegen/runtime/strictmiddleware/echo"
 )
@@ -99,7 +100,7 @@ type GamePlayerMessageS2CExecResult struct {
 
 // GamePlayerMessageS2CExecResultPayload defines model for GamePlayerMessageS2CExecResultPayload.
 type GamePlayerMessageS2CExecResultPayload struct {
-	Score  *int                                        `json:"score"`
+	Score  nullable.Nullable[int]                      `json:"score"`
 	Status GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
 }
 
@@ -159,7 +160,7 @@ type GameWatcherMessageS2CExecResult struct {
 // GameWatcherMessageS2CExecResultPayload defines model for GameWatcherMessageS2CExecResultPayload.
 type GameWatcherMessageS2CExecResultPayload struct {
 	PlayerId int                                          `json:"player_id"`
-	Score    *int                                         `json:"score"`
+	Score    nullable.Nullable[int]                       `json:"score"`
 	Status   GameWatcherMessageS2CExecResultPayloadStatus `json:"status"`
 	Stderr   string                                       `json:"stderr"`
 	Stdout   string                                       `json:"stdout"`
