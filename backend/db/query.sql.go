@@ -242,6 +242,38 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 	return items, nil
 }
 
+const updateGame = `-- name: UpdateGame :exec
+UPDATE games
+SET
+    state = $2,
+    display_name = $3,
+    duration_seconds = $4,
+    started_at = $5,
+    problem_id = $6
+WHERE game_id = $1
+`
+
+type UpdateGameParams struct {
+	GameID          int32
+	State           string
+	DisplayName     string
+	DurationSeconds int32
+	StartedAt       pgtype.Timestamp
+	ProblemID       *int32
+}
+
+func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) error {
+	_, err := q.db.Exec(ctx, updateGame,
+		arg.GameID,
+		arg.State,
+		arg.DisplayName,
+		arg.DurationSeconds,
+		arg.StartedAt,
+		arg.ProblemID,
+	)
+	return err
+}
+
 const updateGameStartedAt = `-- name: UpdateGameStartedAt :exec
 UPDATE games
 SET started_at = $2

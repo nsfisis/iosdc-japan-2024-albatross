@@ -37,3 +37,13 @@ SELECT * FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1;
+
+-- name: UpdateGame :exec
+UPDATE games
+SET
+    state = $2,
+    display_name = $3,
+    duration_seconds = $4,
+    started_at = $5,
+    problem_id = $6
+WHERE game_id = $1;

@@ -5,8 +5,10 @@ import (
 	"errors"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 
 	"github.com/nsfisis/iosdc-2024-albatross/backend/auth"
@@ -23,6 +25,179 @@ func NewHandler(queries *db.Queries) *ApiHandler {
 	return &ApiHandler{
 		q: queries,
 	}
+}
+
+func (h *ApiHandler) GetAdminGames(ctx context.Context, request GetAdminGamesRequestObject) (GetAdminGamesResponseObject, error) {
+	user := ctx.Value("user").(*auth.JWTClaims)
+	if !user.IsAdmin {
+		return GetAdminGames403JSONResponse{
+			Message: "Forbidden",
+		}, nil
+	}
+	gameRows, err := h.q.ListGames(ctx)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	games := make([]Game, len(gameRows))
+	for i, row := range gameRows {
+		var startedAt *int
+		if row.StartedAt.Valid {
+			startedAtTimestamp := int(row.StartedAt.Time.Unix())
+			startedAt = &startedAtTimestamp
+		}
+		var problem *Problem
+		if row.ProblemID != nil {
+			if row.Title == nil || row.Description == nil {
+				panic("inconsistent data")
+			}
+			problem = &Problem{
+				ProblemId:   int(*row.ProblemID),
+				Title:       *row.Title,
+				Description: *row.Description,
+			}
+		}
+		games[i] = Game{
+			GameId:          int(row.GameID),
+			State:           GameState(row.State),
+			DisplayName:     row.DisplayName,
+			DurationSeconds: int(row.DurationSeconds),
+			StartedAt:       startedAt,
+			Problem:         problem,
+		}
+	}
+	return GetAdminGames200JSONResponse{
+		Games: games,
+	}, nil
+}
+
+func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGamesGameIdRequestObject) (GetAdminGamesGameIdResponseObject, error) {
+	user := ctx.Value("user").(*auth.JWTClaims)
+	if !user.IsAdmin {
+		return GetAdminGamesGameId403JSONResponse{
+			Message: "Forbidden",
+		}, nil
+	}
+	gameId := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameId))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetAdminGamesGameId404JSONResponse{
+				Message: "Game not found",
+			}, nil
+		} else {
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+	}
+	var startedAt *int
+	if row.StartedAt.Valid {
+		startedAtTimestamp := int(row.StartedAt.Time.Unix())
+		startedAt = &startedAtTimestamp
+	}
+	var problem *Problem
+	if row.ProblemID != nil {
+		if row.Title == nil || row.Description == nil {
+			panic("inconsistent data")
+		}
+		problem = &Problem{
+			ProblemId:   int(*row.ProblemID),
+			Title:       *row.Title,
+			Description: *row.Description,
+		}
+	}
+	game := Game{
+		GameId:          int(row.GameID),
+		State:           GameState(row.State),
+		DisplayName:     row.DisplayName,
+		DurationSeconds: int(row.DurationSeconds),
+		StartedAt:       startedAt,
+		Problem:         problem,
+	}
+	return GetAdminGamesGameId200JSONResponse{
+		Game: game,
+	}, nil
+}
+
+func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGamesGameIdRequestObject) (PutAdminGamesGameIdResponseObject, error) {
+	user := ctx.Value("user").(*auth.JWTClaims)
+	if !user.IsAdmin {
+		return PutAdminGamesGameId403JSONResponse{
+			Message: "Forbidden",
+		}, nil
+	}
+	gameID := request.GameId
+	displayName := request.Body.DisplayName
+	durationSeconds := request.Body.DurationSeconds
+	problemID := request.Body.ProblemId
+	startedAt := request.Body.StartedAt
+	state := request.Body.State
+
+	game, err := h.q.GetGameById(ctx, int32(gameID))
+	if err != nil {
+		if err == pgx.ErrNoRows {
+			return PutAdminGamesGameId404JSONResponse{
+				Message: "Game not found",
+			}, nil
+		} else {
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
+	}
+
+	var changedState string
+	if state != nil {
+		changedState = string(*state)
+	} else {
+		changedState = game.State
+	}
+	var changedDisplayName string
+	if displayName != nil {
+		changedDisplayName = *displayName
+	} else {
+		changedDisplayName = game.DisplayName
+	}
+	var changedDurationSeconds int32
+	if durationSeconds != nil {
+		changedDurationSeconds = int32(*durationSeconds)
+	} else {
+		changedDurationSeconds = game.DurationSeconds
+	}
+	var changedStartedAt pgtype.Timestamp
+	if startedAt != nil {
+		startedAtValue, err := startedAt.Get()
+		if err == nil {
+			changedStartedAt = pgtype.Timestamp{
+				Time:  time.Unix(int64(startedAtValue), 0),
+				Valid: true,
+			}
+		}
+	} else {
+		changedStartedAt = game.StartedAt
+	}
+	var changedProblemID *int32
+	if problemID != nil {
+		problemIDValue, err := problemID.Get()
+		if err == nil {
+			changedProblemID = new(int32)
+			*changedProblemID = int32(problemIDValue)
+		}
+	} else {
+		changedProblemID = game.ProblemID
+	}
+
+	err = h.q.UpdateGame(ctx, db.UpdateGameParams{
+		GameID:          int32(gameID),
+		State:           changedState,
+		DisplayName:     changedDisplayName,
+		DurationSeconds: changedDurationSeconds,
+		StartedAt:       changedStartedAt,
+		ProblemID:       changedProblemID,
+	})
+	if err != nil {
+		return PutAdminGamesGameId400JSONResponse{
+			Message: err.Error(),
+		}, nil
+	}
+
+	return PutAdminGamesGameId204Response{}, nil
 }
 
 func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersRequestObject) (GetAdminUsersResponseObject, error) {
@@ -196,7 +371,7 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 		if row.Title == nil || row.Description == nil {
 			panic("inconsistent data")
 		}
-		if user.IsAdmin || (GameState(row.State) != Closed && GameState(row.State) != WaitingEntries) {
+		if user.IsAdmin || (GameState(row.State) != GameStateClosed && GameState(row.State) != GameStateWaitingEntries) {
 			problem = &Problem{
 				ProblemId:   int(*row.ProblemID),
 				Title:       *row.Title,
@@ -212,7 +387,9 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 		StartedAt:       startedAt,
 		Problem:         problem,
 	}
-	return GetGamesGameId200JSONResponse(game), nil
+	return GetGamesGameId200JSONResponse{
+		Game: game,
+	}, nil
 }
 
 func _assertUserResponseIsCompatibleWithJWTClaims() {
