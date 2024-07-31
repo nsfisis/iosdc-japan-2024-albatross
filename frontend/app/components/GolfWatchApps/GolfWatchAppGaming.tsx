@@ -1,16 +1,18 @@
+type Props = {
+  problem: string;
+  codeA: string;
+  scoreA: number | null;
+  codeB: string;
+  scoreB: number | null;
+};
+
 export default function GolfWatchAppGaming({
   problem,
   codeA,
   scoreA,
   codeB,
   scoreB,
-}: {
-  problem: string;
-  codeA: string;
-  scoreA: number | null;
-  codeB: string;
-  scoreB: number | null;
-}) {
+}: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column" }}>
       <div style={{ display: "flex", flex: 1, justifyContent: "center" }}>
