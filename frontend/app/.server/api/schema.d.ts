@@ -213,6 +213,18 @@ export interface paths {
                         };
                     };
                 };
+                /** @description Not found */
+                404: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Not found */
+                            message: string;
+                        };
+                    };
+                };
             };
         };
         put?: never;

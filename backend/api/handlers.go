@@ -2,9 +2,11 @@ package api
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
 
 	"github.com/nsfisis/iosdc-2024-albatross/backend/auth"
@@ -176,7 +178,13 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 	gameId := request.GameId
 	row, err := h.q.GetGameById(ctx, int32(gameId))
 	if err != nil {
-		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetGamesGameId404JSONResponse{
+				Message: "Game not found",
+			}, nil
+		} else {
+			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+		}
 	}
 	var startedAt *int
 	if row.StartedAt.Valid {

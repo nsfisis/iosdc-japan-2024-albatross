@@ -154,6 +154,18 @@ paths:
                     example: "Forbidden operation"
                 required:
                   - message
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not found"
+                required:
+                  - message
   /admin/users:
     get:
       summary: List all users
