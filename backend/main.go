@@ -57,13 +57,6 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	apiGroup := e.Group("/api")
-	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
-	apiHandler := api.NewHandler(queries)
-	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, []api.StrictMiddlewareFunc{
-		api.NewJWTMiddleware(),
-	}))
-
 	gameHubs := game.NewGameHubs(queries)
 	err = gameHubs.RestoreFromDB(ctx)
 	if err != nil {
@@ -78,6 +71,13 @@ func main() {
 	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfWatch(c)
 	})
+
+	apiGroup := e.Group("/api")
+	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
+	apiHandler := api.NewHandler(queries, gameHubs)
+	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, []api.StrictMiddlewareFunc{
+		api.NewJWTMiddleware(),
+	}))
 
 	gameHubs.Run()
 

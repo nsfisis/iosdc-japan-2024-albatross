@@ -57,7 +57,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
     action === "open"
       ? "waiting_entries"
       : action === "start"
-        ? "waiting_start"
+        ? "prepare"
         : null;
   if (!nextState) {
     throw new Error("Invalid action");
@@ -79,6 +79,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
   if (error) {
     throw new Error(error.message);
   }
+  return null;
 }
 
 export default function AdminGameEdit() {
@@ -103,22 +104,26 @@ export default function AdminGameEdit() {
         </ul>
         <div>
           <Form method="post">
-            <button
-              type="submit"
-              name="action"
-              value="open"
-              disabled={game.state !== "closed"}
-            >
-              Open
-            </button>
-            <button
-              type="submit"
-              name="action"
-              value="start"
-              disabled={game.state !== "waiting_start"}
-            >
-              Start
-            </button>
+            <div>
+              <button
+                type="submit"
+                name="action"
+                value="open"
+                disabled={game.state !== "closed"}
+              >
+                Open
+              </button>
+            </div>
+            <div>
+              <button
+                type="submit"
+                name="action"
+                value="start"
+                disabled={game.state !== "waiting_start"}
+              >
+                Start
+              </button>
+            </div>
           </Form>
         </div>
       </div>

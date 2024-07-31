@@ -2,6 +2,7 @@ package game
 
 import (
 	"context"
+	"errors"
 	"log"
 	"time"
 
@@ -81,26 +82,14 @@ func (hub *gameHub) run() {
 					}
 				}
 				if entriedPlayerCount == 2 {
-					for player := range hub.players {
-						player.s2cMessages <- &playerMessageS2CPrepare{
-							Type: playerMessageTypeS2CPrepare,
-							Data: playerMessageS2CPreparePayload{
-								Problem: api.Problem{
-									ProblemId:   1,
-									Title:       "the answer",
-									Description: "print 42",
-								},
-							},
-						}
-					}
 					err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
 						GameID: int32(hub.game.gameID),
-						State:  string(gameStatePrepare),
+						State:  string(gameStateWaitingStart),
 					})
 					if err != nil {
 						log.Fatalf("failed to set game state: %v", err)
 					}
-					hub.game.state = gameStatePrepare
+					hub.game.state = gameStateWaitingStart
 				}
 			case *playerMessageC2SReady:
 				log.Printf("ready: %v", message.message)
@@ -214,6 +203,31 @@ func (hub *gameHub) run() {
 	}
 }
 
+func (hub *gameHub) startGame() error {
+	for player := range hub.players {
+		player.s2cMessages <- &playerMessageS2CPrepare{
+			Type: playerMessageTypeS2CPrepare,
+			Data: playerMessageS2CPreparePayload{
+				Problem: api.Problem{
+					ProblemId:   1,
+					Title:       "the answer",
+					Description: "print 42",
+				},
+			},
+		}
+	}
+
+	err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
+		GameID: int32(hub.game.gameID),
+		State:  string(gameStatePrepare),
+	})
+	if err != nil {
+		return err
+	}
+	hub.game.state = gameStatePrepare
+	return nil
+}
+
 func (hub *gameHub) close() {
 	for client := range hub.players {
 		hub.closePlayerClient(client)
@@ -301,4 +315,12 @@ func (hubs *GameHubs) Run() {
 
 func (hubs *GameHubs) SockHandler() *sockHandler {
 	return newSockHandler(hubs)
+}
+
+func (hubs *GameHubs) StartGame(gameID int) error {
+	hub := hubs.getHub(gameID)
+	if hub == nil {
+		return errors.New("no such game")
+	}
+	return hub.startGame()
 }
