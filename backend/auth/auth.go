@@ -6,7 +6,7 @@ import (
 
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
 func Login(ctx context.Context, queries *db.Queries, username, password string) (int, error) {

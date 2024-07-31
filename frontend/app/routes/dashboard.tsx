@@ -5,7 +5,7 @@ import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Dashboard | iOSDC 2024 Albatross.swift" }];
+  return [{ title: "Dashboard | iOSDC Japan 2024 Albatross.swift" }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

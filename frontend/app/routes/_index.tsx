@@ -2,7 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "iOSDC 2024 Albatross.swift" }];
+  return [{ title: "iOSDC Japan 2024 Albatross.swift" }];
 };
 
 export default function Index() {
@@ -10,7 +10,7 @@ export default function Index() {
     <div className="min-h-screen bg-gray-100 flex items-center justify-center">
       <div className="text-center">
         <h1 className="text-4xl font-bold text-blue-600 mb-4">
-          iOSDC 2024 Albatross.swift
+          iOSDC Japan 2024 Albatross.swift
         </h1>
         <p>
           <Link

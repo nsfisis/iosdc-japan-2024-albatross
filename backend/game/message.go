@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 )
 
 const (

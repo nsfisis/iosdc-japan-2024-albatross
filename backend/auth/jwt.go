@@ -6,7 +6,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
 type JWTClaims struct {

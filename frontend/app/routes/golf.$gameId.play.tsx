@@ -10,8 +10,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     {
       title: data
-        ? `Golf Playing ${data.game.display_name} | iOSDC 2024 Albatross.swift`
-        : "Golf Playing | iOSDC 2024 Albatross.swift",
+        ? `Golf Playing ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
+        : "Golf Playing | iOSDC Japan 2024 Albatross.swift",
     },
   ];
 };

@@ -7,7 +7,7 @@ import { Form } from "@remix-run/react";
 import { authenticator } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "Login | iOSDC 2024 Albatross.swift" }];
+  return [{ title: "Login | iOSDC Japan 2024 Albatross.swift" }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

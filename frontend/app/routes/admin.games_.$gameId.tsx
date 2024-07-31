@@ -11,8 +11,8 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
     {
       title: data
-        ? `[Admin] Game Edit ${data.game.display_name} | iOSDC 2024 Albatross.swift`
-        : "[Admin] Game Edit | iOSDC 2024 Albatross.swift",
+        ? `[Admin] Game Edit ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
+        : "[Admin] Game Edit | iOSDC Japan 2024 Albatross.swift",
     },
   ];
 };

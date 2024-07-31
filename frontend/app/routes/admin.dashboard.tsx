@@ -3,7 +3,7 @@ import { Link } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "[Admin] Dashboard | iOSDC 2024 Albatross.swift" }];
+  return [{ title: "[Admin] Dashboard | iOSDC Japan 2024 Albatross.swift" }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {

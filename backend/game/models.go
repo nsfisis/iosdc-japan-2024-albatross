@@ -3,7 +3,7 @@ package game
 import (
 	"time"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 )
 
 type gameState = api.GameState

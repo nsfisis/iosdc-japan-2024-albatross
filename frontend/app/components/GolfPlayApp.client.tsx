@@ -22,7 +22,7 @@ export default function GolfPlayApp({
   game: Game;
   sockToken: string;
 }) {
-  // const socketUrl = `wss://t.nil.ninja/iosdc/2024/sock/golf/${game.game_id}/play?token=${sockToken}`;
+  // const socketUrl = `wss://t.nil.ninja/iosdc-japan/2024/sock/golf/${game.game_id}/play?token=${sockToken}`;
   const socketUrl =
     process.env.NODE_ENV === "development"
       ? `ws://localhost:8002/sock/golf/${game.game_id}/play?token=${sockToken}`

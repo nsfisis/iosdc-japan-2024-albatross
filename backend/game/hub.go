@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/oapi-codegen/nullable"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/api"
-	"github.com/nsfisis/iosdc-2024-albatross/backend/db"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
 type playerClientState int

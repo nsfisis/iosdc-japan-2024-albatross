@@ -6,7 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
-	"github.com/nsfisis/iosdc-2024-albatross/backend/auth"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 )
 
 type sockHandler struct {
