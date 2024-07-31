@@ -1,10 +1,10 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useLoaderData, Link } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
 import { apiClient } from "../.server/api/client";
 
 export const meta: MetaFunction = () => {
-  return [{ title: "[Admin] Users | iOSDC 2024 Albatross.swift" }];
+  return [{ title: "[Admin] Games | iOSDC 2024 Albatross.swift" }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!user.is_admin) {
     throw new Error("Unauthorized");
   }
-  const { data, error } = await apiClient.GET("/admin/users", {
+  const { data, error } = await apiClient.GET("/admin/games", {
     params: {
       header: {
         Authorization: `Bearer ${token}`,
@@ -24,21 +24,22 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (error) {
     throw new Error(error.message);
   }
-  return { users: data.users };
+  return { games: data.games };
 }
 
-export default function AdminUsers() {
-  const { users } = useLoaderData<typeof loader>()!;
+export default function AdminGames() {
+  const { games } = useLoaderData<typeof loader>()!;
 
   return (
     <div>
       <div>
-        <h1>[Admin] Users</h1>
+        <h1>[Admin] Games</h1>
         <ul>
-          {users.map((user) => (
-            <li key={user.user_id}>
-              {user.display_name} (id={user.user_id} username={user.username})
-              {user.is_admin && <span> admin</span>}
+          {games.map((game) => (
+            <li key={game.game_id}>
+              <Link to={`/admin/games/${game.game_id}`}>
+                {game.display_name} (id={game.game_id})
+              </Link>
             </li>
           ))}
         </ul>

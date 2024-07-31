@@ -9,13 +9,13 @@ import (
 type gameState = api.GameState
 
 const (
-	gameStateClosed         gameState = api.Closed
-	gameStateWaitingEntries gameState = api.WaitingEntries
-	gameStateWaitingStart   gameState = api.WaitingStart
-	gameStatePrepare        gameState = api.Prepare
-	gameStateStarting       gameState = api.Starting
-	gameStateGaming         gameState = api.Gaming
-	gameStateFinished       gameState = api.Finished
+	gameStateClosed         gameState = api.GameStateClosed
+	gameStateWaitingEntries gameState = api.GameStateWaitingEntries
+	gameStateWaitingStart   gameState = api.GameStateWaitingStart
+	gameStatePrepare        gameState = api.GameStatePrepare
+	gameStateStarting       gameState = api.GameStateStarting
+	gameStateGaming         gameState = api.GameStateGaming
+	gameStateFinished       gameState = api.GameStateFinished
 )
 
 type game struct {

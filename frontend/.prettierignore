@@ -1,2 +1,3 @@
 /.cache
 /build
+/app/.server/api/schema.d.ts

@@ -141,7 +141,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/Game'
+                type: object
+                properties:
+                  game:
+                    $ref: '#/components/schemas/Game'
+                required:
+                  - game
         '403':
           description: Forbidden
           content:
@@ -199,6 +204,175 @@ paths:
                   message:
                     type: string
                     example: "Forbidden operation"
+                required:
+                  - message
+  /admin/games:
+    get:
+      summary: List games
+      parameters:
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: List of games
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  games:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Game'
+                required:
+                  - games
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
+  /admin/games/{game_id}:
+    get:
+      summary: Get a game
+      parameters:
+        - in: path
+          name: game_id
+          schema:
+            type: integer
+          required: true
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: A game
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  game:
+                    $ref: '#/components/schemas/Game'
+                required:
+                  - game
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not found"
+                required:
+                  - message
+    put:
+      summary: Update a game
+      parameters:
+        - in: path
+          name: game_id
+          schema:
+            type: integer
+          required: true
+        - in: header
+          name: Authorization
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                state:
+                  type: string
+                  example: "closed"
+                  enum:
+                    - closed
+                    - waiting_entries
+                    - waiting_start
+                    - prepare
+                    - starting
+                    - gaming
+                    - finished
+                display_name:
+                  type: string
+                  example: "Game 1"
+                duration_seconds:
+                  type: integer
+                  example: 360
+                started_at:
+                  nullable: true
+                  type: integer
+                  example: 946684800
+                problem_id:
+                  nullable: true
+                  type: integer
+                  example: 1
+      responses:
+        '204':
+          description: Successfully updated
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Invalid request"
+                required:
+                  - message
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Forbidden operation"
+                required:
+                  - message
+        '404':
+          description: Not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not found"
                 required:
                   - message
 components:

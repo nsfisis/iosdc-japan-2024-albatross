@@ -52,6 +52,9 @@ initdb:
 	make psql-query < ./backend/schema.sql
 	make psql-query < ./backend/fixtures/dev.sql
 
+.PHONY: openapi
+openapi: oapi-codegen openapi-typescript
+
 .PHONY: oapi-codegen
 oapi-codegen:
 	cd backend; make oapi-codegen

@@ -35,7 +35,7 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
     if (error) {
       throw new Error(error.message);
     }
-    return data;
+    return data.game;
   };
 
   const fetchSockToken = async () => {

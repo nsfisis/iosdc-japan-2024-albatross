@@ -23,6 +23,9 @@ export default function AdminDashboard() {
       <p>
         <Link to="/admin/users">Users</Link>
       </p>
+      <p>
+        <Link to="/admin/games">Games</Link>
+      </p>
     </div>
   );
 }
