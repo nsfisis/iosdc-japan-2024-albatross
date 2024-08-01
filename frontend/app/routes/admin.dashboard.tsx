@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
+import { Form, Link } from "@remix-run/react";
 import { ensureAdminUserLoggedIn } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
@@ -21,6 +21,9 @@ export default function AdminDashboard() {
 			<p>
 				<Link to="/admin/games">Games</Link>
 			</p>
+			<Form method="post" action="/logout">
+				<button type="submit">Logout</button>
+			</Form>
 		</div>
 	);
 }
