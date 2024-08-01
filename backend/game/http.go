@@ -27,7 +27,7 @@ func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
 	}
 	// TODO: check user permission
 
-	gameID, err := strconv.Atoi(c.Param("gameId"))
+	gameID, err := strconv.Atoi(c.Param("gameID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 	}
@@ -48,7 +48,7 @@ func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusForbidden, "Permission denied")
 	}
 
-	gameID, err := strconv.Atoi(c.Param("gameId"))
+	gameID, err := strconv.Atoi(c.Param("gameID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
 	}
