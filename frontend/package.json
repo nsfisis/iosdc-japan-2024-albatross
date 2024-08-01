@@ -5,12 +5,13 @@
 	"type": "module",
 	"scripts": {
 		"build": "remix vite:build",
-		"check": "biome check --write",
+		"check": "npm run check:biome && npm run check:ts && npm run check:eslint",
+		"check:biome": "biome check --write",
+		"check:eslint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
+		"check:ts": "tsc",
 		"dev": "remix vite:dev",
-		"lint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
 		"openapi-typescript": "openapi-typescript --output ./app/.server/api/schema.d.ts ../openapi.yaml",
-		"start": "remix-serve ./build/server/index.js",
-		"typecheck": "tsc"
+		"start": "remix-serve ./build/server/index.js"
 	},
 	"dependencies": {
 		"@remix-run/node": "^2.10.3",
