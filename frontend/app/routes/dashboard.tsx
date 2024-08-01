@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
-import { Link, useLoaderData, Form } from "@remix-run/react";
-import { isAuthenticated } from "../.server/auth";
+import { Form, Link, useLoaderData } from "@remix-run/react";
 import { apiGetGames } from "../.server/api/client";
+import { isAuthenticated } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Dashboard | iOSDC Japan 2024 Albatross.swift" }];

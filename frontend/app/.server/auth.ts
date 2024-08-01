@@ -1,10 +1,10 @@
+import type { Session } from "@remix-run/server-runtime";
+import { jwtDecode } from "jwt-decode";
 import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
-import { jwtDecode } from "jwt-decode";
-import type { Session } from "@remix-run/server-runtime";
-import { sessionStorage } from "./session";
 import { apiPostLogin } from "./api/client";
 import { components } from "./api/schema";
+import { sessionStorage } from "./session";
 
 export const authenticator = new Authenticator<string>(sessionStorage);
 

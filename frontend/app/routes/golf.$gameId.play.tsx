@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ClientOnly } from "remix-utils/client-only";
-import { isAuthenticated } from "../.server/auth";
 import { apiGetGame, apiGetToken } from "../.server/api/client";
+import { isAuthenticated } from "../.server/auth";
 import GolfPlayApp from "../components/GolfPlayApp.client";
 import GolfPlayAppConnecting from "../components/GolfPlayApps/GolfPlayAppConnecting";
 

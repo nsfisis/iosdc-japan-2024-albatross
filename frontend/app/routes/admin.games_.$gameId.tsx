@@ -1,11 +1,11 @@
 import type {
+  ActionFunctionArgs,
   LoaderFunctionArgs,
   MetaFunction,
-  ActionFunctionArgs,
 } from "@remix-run/node";
-import { useLoaderData, Form } from "@remix-run/react";
+import { Form, useLoaderData } from "@remix-run/react";
+import { adminApiGetGame, adminApiPutGame } from "../.server/api/client";
 import { isAuthenticated } from "../.server/auth";
-import { adminApiPutGame, adminApiGetGame } from "../.server/api/client";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [

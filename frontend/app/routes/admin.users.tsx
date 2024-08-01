@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { isAuthenticated } from "../.server/auth";
 import { adminApiGetUsers } from "../.server/api/client";
+import { isAuthenticated } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
   return [{ title: "[Admin] Users | iOSDC Japan 2024 Albatross.swift" }];

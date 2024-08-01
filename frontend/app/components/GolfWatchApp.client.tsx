@@ -1,11 +1,11 @@
-import type { components } from "../.server/api/schema";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
+import type { components } from "../.server/api/schema";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
-import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
-import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
-import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
 import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
+import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
+import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
+import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
 
 type WebSocketMessage = components["schemas"]["GameWatcherMessageS2C"];
 

@@ -1,12 +1,12 @@
-import type { components } from "../.server/api/schema";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import { useDebouncedCallback } from "use-debounce";
+import type { components } from "../.server/api/schema";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
-import GolfPlayAppWaiting from "./GolfPlayApps/GolfPlayAppWaiting";
-import GolfPlayAppStarting from "./GolfPlayApps/GolfPlayAppStarting";
-import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
+import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
+import GolfPlayAppStarting from "./GolfPlayApps/GolfPlayAppStarting";
+import GolfPlayAppWaiting from "./GolfPlayApps/GolfPlayAppWaiting";
 
 type WebSocketMessage = components["schemas"]["GamePlayerMessageS2C"];
 
