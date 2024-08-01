@@ -5,6 +5,7 @@ info:
 paths:
   /login:
     post:
+      operationId: postLogin
       summary: User login
       requestBody:
         required: true
@@ -36,26 +37,13 @@ paths:
                 required:
                   - token
         '401':
-          description: Invalid username or password
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Invalid credentials"
-                required:
-                  - message
+          $ref: '#/components/responses/Unauthorized'
   /token:
     get:
+      operationId: getToken
       summary: Get a short-lived access token
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: Successfully authenticated
@@ -69,32 +57,14 @@ paths:
                     example: "xxxxx.xxxxx.xxxxx"
                 required:
                   - token
-        '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+        '401':
+          $ref: '#/components/responses/Unauthorized'
   /games:
     get:
+      operationId: getGames
       summary: List games
       parameters:
-        - in: query
-          name: player_id
-          schema:
-            type: integer
-          required: false
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of games
@@ -109,32 +79,17 @@ paths:
                       $ref: '#/components/schemas/Game'
                 required:
                   - games
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
   /games/{game_id}:
     get:
+      operationId: getGame
       summary: Get a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       responses:
         '200':
           description: A game
@@ -147,39 +102,18 @@ paths:
                     $ref: '#/components/schemas/Game'
                 required:
                   - game
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Not found"
-                required:
-                  - message
+          $ref: '#/components/responses/NotFound'
   /admin/users:
     get:
+      operationId: adminGetUsers
       summary: List all users
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of users
@@ -194,27 +128,16 @@ paths:
                       $ref: '#/components/schemas/User'
                 required:
                   - users
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
   /admin/games:
     get:
+      operationId: adminGetGames
       summary: List games
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of games
@@ -229,32 +152,17 @@ paths:
                       $ref: '#/components/schemas/Game'
                 required:
                   - games
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
   /admin/games/{game_id}:
     get:
+      operationId: adminGetGame
       summary: Get a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       responses:
         '200':
           description: A game
@@ -267,43 +175,18 @@ paths:
                     $ref: '#/components/schemas/Game'
                 required:
                   - game
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Not found"
-                required:
-                  - message
+          $ref: '#/components/responses/NotFound'
     put:
+      operationId: adminPutGame
       summary: Update a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       requestBody:
         required: true
         content:
@@ -340,43 +223,61 @@ paths:
         '204':
           description: Successfully updated
         '400':
-          description: Invalid request
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Invalid request"
-                required:
-                  - message
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
         '403':
-          description: Forbidden
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Forbidden operation"
-                required:
-                  - message
+          $ref: '#/components/responses/Forbidden'
         '404':
-          description: Not found
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Not found"
-                required:
-                  - message
+          $ref: '#/components/responses/NotFound'
 components:
+  parameters:
+    header_authorization:
+      in: header
+      name: Authorization
+      schema:
+        type: string
+      required: true
+    path_game_id:
+      in: path
+      name: game_id
+      schema:
+        type: integer
+      required: true
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
   schemas:
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Invalid request"
+      required:
+        - message
     User:
       type: object
       properties:

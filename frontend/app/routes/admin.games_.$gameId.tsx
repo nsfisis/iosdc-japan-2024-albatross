@@ -5,7 +5,7 @@ import type {
 } from "@remix-run/node";
 import { useLoaderData, Form } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
-import { apiClient } from "../.server/api/client";
+import { adminApiPutGame, adminApiGetGame } from "../.server/api/client";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   return [
@@ -25,20 +25,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Error("Unauthorized");
   }
   const { gameId } = params;
-  const { data, error } = await apiClient.GET("/admin/games/{game_id}", {
-    params: {
-      path: {
-        game_id: Number(gameId),
-      },
-      header: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
-  }
-  return { game: data.game };
+  const { game } = await adminApiGetGame(token, Number(gameId));
+  return { game };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -63,22 +51,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
     throw new Error("Invalid action");
   }
 
-  const { error } = await apiClient.PUT("/admin/games/{game_id}", {
-    params: {
-      path: {
-        game_id: Number(gameId),
-      },
-      header: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-    body: {
-      state: nextState,
-    },
+  await adminApiPutGame(token, Number(gameId), {
+    state: nextState,
   });
-  if (error) {
-    throw new Error(error.message);
-  }
   return null;
 }
 

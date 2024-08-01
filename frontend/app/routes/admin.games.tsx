@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData, Link } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
-import { apiClient } from "../.server/api/client";
+import { adminApiGetGames } from "../.server/api/client";
 
 export const meta: MetaFunction = () => {
   return [{ title: "[Admin] Games | iOSDC Japan 2024 Albatross.swift" }];
@@ -14,17 +14,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (!user.is_admin) {
     throw new Error("Unauthorized");
   }
-  const { data, error } = await apiClient.GET("/admin/games", {
-    params: {
-      header: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
-  }
-  return { games: data.games };
+  const { games } = await adminApiGetGames(token);
+  return { games };
 }
 
 export default function AdminGames() {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -15,8 +14,6 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
-var _ StrictServerInterface = (*ApiHandler)(nil)
-
 type ApiHandler struct {
 	q    *db.Queries
 	hubs GameHubsInterface
@@ -26,20 +23,7 @@ type GameHubsInterface interface {
 	StartGame(gameID int) error
 }
 
-func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandler {
-	return &ApiHandler{
-		q:    queries,
-		hubs: hubs,
-	}
-}
-
-func (h *ApiHandler) GetAdminGames(ctx context.Context, request GetAdminGamesRequestObject) (GetAdminGamesResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return GetAdminGames403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesRequestObject, user *auth.JWTClaims) (AdminGetGamesResponseObject, error) {
 	gameRows, err := h.q.ListGames(ctx)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -71,24 +55,20 @@ func (h *ApiHandler) GetAdminGames(ctx context.Context, request GetAdminGamesReq
 			Problem:         problem,
 		}
 	}
-	return GetAdminGames200JSONResponse{
+	return AdminGetGames200JSONResponse{
 		Games: games,
 	}, nil
 }
 
-func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGamesGameIdRequestObject) (GetAdminGamesGameIdResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return GetAdminGamesGameId403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
-	gameId := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameId))
+func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject, user *auth.JWTClaims) (AdminGetGameResponseObject, error) {
+	gameID := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return GetAdminGamesGameId404JSONResponse{
-				Message: "Game not found",
+			return AdminGetGame404JSONResponse{
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -118,18 +98,12 @@ func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGa
 		StartedAt:       startedAt,
 		Problem:         problem,
 	}
-	return GetAdminGamesGameId200JSONResponse{
+	return AdminGetGame200JSONResponse{
 		Game: game,
 	}, nil
 }
 
-func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGamesGameIdRequestObject) (PutAdminGamesGameIdResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return PutAdminGamesGameId403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameRequestObject, user *auth.JWTClaims) (AdminPutGameResponseObject, error) {
 	gameID := request.GameId
 	displayName := request.Body.DisplayName
 	durationSeconds := request.Body.DurationSeconds
@@ -140,8 +114,10 @@ func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGa
 	game, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return PutAdminGamesGameId404JSONResponse{
-				Message: "Game not found",
+			return AdminPutGame404JSONResponse{
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -202,21 +178,17 @@ func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGa
 		ProblemID:       changedProblemID,
 	})
 	if err != nil {
-		return PutAdminGamesGameId400JSONResponse{
-			Message: err.Error(),
+		return AdminPutGame400JSONResponse{
+			BadRequestJSONResponse: BadRequestJSONResponse{
+				Message: err.Error(),
+			},
 		}, nil
 	}
 
-	return PutAdminGamesGameId204Response{}, nil
+	return AdminPutGame204Response{}, nil
 }
 
-func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersRequestObject) (GetAdminUsersResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return GetAdminUsers403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersRequestObject, user *auth.JWTClaims) (AdminGetUsersResponseObject, error) {
 	users, err := h.q.ListUsers(ctx)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -231,7 +203,7 @@ func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersReq
 			IsAdmin:     u.IsAdmin,
 		}
 	}
-	return GetAdminUsers200JSONResponse{
+	return AdminGetUsers200JSONResponse{
 		Users: responseUsers,
 	}, nil
 }
@@ -239,17 +211,21 @@ func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersReq
 func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
-	userId, err := auth.Login(ctx, h.q, username, password)
+	userID, err := auth.Login(ctx, h.q, username, password)
 	if err != nil {
 		return PostLogin401JSONResponse{
-			Message: "Invalid username or password",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Invalid username or password",
+			},
 		}, nil
 	}
 
-	user, err := h.q.GetUserById(ctx, int32(userId))
+	user, err := h.q.GetUserById(ctx, int32(userID))
 	if err != nil {
 		return PostLogin401JSONResponse{
-			Message: "Invalid username or password",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Invalid username or password",
+			},
 		}, nil
 	}
 
@@ -263,8 +239,7 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 	}, nil
 }
 
-func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
+func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject, user *auth.JWTClaims) (GetTokenResponseObject, error) {
 	newToken, err := auth.NewShortLivedJWT(user)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -274,98 +249,53 @@ func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject
 	}, nil
 }
 
-func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	playerId := request.Params.PlayerId
-	if !user.IsAdmin {
-		if playerId == nil || *playerId != user.UserID {
-			return GetGames403JSONResponse{
-				Message: "Forbidden",
-			}, nil
+func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
+	gameRows, err := h.q.ListGamesForPlayer(ctx, int32(user.UserID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	games := make([]Game, len(gameRows))
+	for i, row := range gameRows {
+		var startedAt *int
+		if row.StartedAt.Valid {
+			startedAtTimestamp := int(row.StartedAt.Time.Unix())
+			startedAt = &startedAtTimestamp
+		}
+		var problem *Problem
+		if row.ProblemID != nil {
+			if row.Title == nil || row.Description == nil {
+				panic("inconsistent data")
+			}
+			problem = &Problem{
+				ProblemId:   int(*row.ProblemID),
+				Title:       *row.Title,
+				Description: *row.Description,
+			}
+		}
+		games[i] = Game{
+			GameId:          int(row.GameID),
+			State:           GameState(row.State),
+			DisplayName:     row.DisplayName,
+			DurationSeconds: int(row.DurationSeconds),
+			StartedAt:       startedAt,
+			Problem:         problem,
 		}
 	}
-	if playerId == nil {
-		gameRows, err := h.q.ListGames(ctx)
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-		games := make([]Game, len(gameRows))
-		for i, row := range gameRows {
-			var startedAt *int
-			if row.StartedAt.Valid {
-				startedAtTimestamp := int(row.StartedAt.Time.Unix())
-				startedAt = &startedAtTimestamp
-			}
-			var problem *Problem
-			if row.ProblemID != nil {
-				if row.Title == nil || row.Description == nil {
-					panic("inconsistent data")
-				}
-				problem = &Problem{
-					ProblemId:   int(*row.ProblemID),
-					Title:       *row.Title,
-					Description: *row.Description,
-				}
-			}
-			games[i] = Game{
-				GameId:          int(row.GameID),
-				State:           GameState(row.State),
-				DisplayName:     row.DisplayName,
-				DurationSeconds: int(row.DurationSeconds),
-				StartedAt:       startedAt,
-				Problem:         problem,
-			}
-		}
-		return GetGames200JSONResponse{
-			Games: games,
-		}, nil
-	} else {
-		gameRows, err := h.q.ListGamesForPlayer(ctx, int32(*playerId))
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-		games := make([]Game, len(gameRows))
-		for i, row := range gameRows {
-			var startedAt *int
-			if row.StartedAt.Valid {
-				startedAtTimestamp := int(row.StartedAt.Time.Unix())
-				startedAt = &startedAtTimestamp
-			}
-			var problem *Problem
-			if row.ProblemID != nil {
-				if row.Title == nil || row.Description == nil {
-					panic("inconsistent data")
-				}
-				problem = &Problem{
-					ProblemId:   int(*row.ProblemID),
-					Title:       *row.Title,
-					Description: *row.Description,
-				}
-			}
-			games[i] = Game{
-				GameId:          int(row.GameID),
-				State:           GameState(row.State),
-				DisplayName:     row.DisplayName,
-				DurationSeconds: int(row.DurationSeconds),
-				StartedAt:       startedAt,
-				Problem:         problem,
-			}
-		}
-		return GetGames200JSONResponse{
-			Games: games,
-		}, nil
-	}
+	return GetGames200JSONResponse{
+		Games: games,
+	}, nil
 }
 
-func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdRequestObject) (GetGamesGameIdResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
+func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
-	gameId := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameId))
+	gameID := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return GetGamesGameId404JSONResponse{
-				Message: "Game not found",
+			return GetGame404JSONResponse{
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -397,49 +327,7 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 		StartedAt:       startedAt,
 		Problem:         problem,
 	}
-	return GetGamesGameId200JSONResponse{
+	return GetGame200JSONResponse{
 		Game: game,
 	}, nil
-}
-
-func _assertUserResponseIsCompatibleWithJWTClaims() {
-	var c auth.JWTClaims
-	var u User
-	u.UserId = c.UserID
-	u.Username = c.Username
-	u.DisplayName = c.DisplayName
-	u.IconPath = c.IconPath
-	u.IsAdmin = c.IsAdmin
-	_ = u
-}
-
-func setupJWTFromAuthorizationHeader(c echo.Context) error {
-	authorization := c.Request().Header.Get("Authorization")
-	const prefix = "Bearer "
-	if !strings.HasPrefix(authorization, prefix) {
-		return echo.NewHTTPError(http.StatusUnauthorized)
-	}
-	token := authorization[len(prefix):]
-	claims, err := auth.ParseJWT(token)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-	c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
-	return nil
-}
-
-func NewJWTMiddleware() StrictMiddlewareFunc {
-	return func(handler StrictHandlerFunc, operationID string) StrictHandlerFunc {
-		if operationID == "PostLogin" {
-			return handler
-		}
-
-		return func(c echo.Context, request interface{}) (interface{}, error) {
-			err := setupJWTFromAuthorizationHeader(c)
-			if err != nil {
-				return nil, echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-			}
-			return handler(c, request)
-		}
-	}
 }

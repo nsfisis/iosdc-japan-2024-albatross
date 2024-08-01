@@ -75,9 +75,7 @@ func main() {
 	apiGroup := e.Group("/api")
 	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
 	apiHandler := api.NewHandler(queries, gameHubs)
-	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, []api.StrictMiddlewareFunc{
-		api.NewJWTMiddleware(),
-	}))
+	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
 
 	gameHubs.Run()
 
