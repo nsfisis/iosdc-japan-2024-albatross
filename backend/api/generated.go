@@ -973,6 +973,17 @@ func (response GetAdminGames200JSONResponse) VisitGetAdminGamesResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetAdminGames401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetAdminGames401JSONResponse) VisitGetAdminGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetAdminGames403JSONResponse struct {
 	Message string `json:"message"`
 }
@@ -1000,6 +1011,17 @@ type GetAdminGamesGameId200JSONResponse struct {
 func (response GetAdminGamesGameId200JSONResponse) VisitGetAdminGamesGameIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetAdminGamesGameId401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetAdminGamesGameId401JSONResponse) VisitGetAdminGamesGameIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1055,6 +1077,17 @@ func (response PutAdminGamesGameId400JSONResponse) VisitPutAdminGamesGameIdRespo
 	return json.NewEncoder(w).Encode(response)
 }
 
+type PutAdminGamesGameId401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response PutAdminGamesGameId401JSONResponse) VisitPutAdminGamesGameIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type PutAdminGamesGameId403JSONResponse struct {
 	Message string `json:"message"`
 }
@@ -1096,6 +1129,17 @@ func (response GetAdminUsers200JSONResponse) VisitGetAdminUsersResponse(w http.R
 	return json.NewEncoder(w).Encode(response)
 }
 
+type GetAdminUsers401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetAdminUsers401JSONResponse) VisitGetAdminUsersResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
 type GetAdminUsers403JSONResponse struct {
 	Message string `json:"message"`
 }
@@ -1122,6 +1166,17 @@ type GetGames200JSONResponse struct {
 func (response GetGames200JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGames401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetGames401JSONResponse) VisitGetGamesResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1153,6 +1208,17 @@ type GetGamesGameId200JSONResponse struct {
 func (response GetGamesGameId200JSONResponse) VisitGetGamesGameIdResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(200)
+
+	return json.NewEncoder(w).Encode(response)
+}
+
+type GetGamesGameId401JSONResponse struct {
+	Message string `json:"message"`
+}
+
+func (response GetGamesGameId401JSONResponse) VisitGetGamesGameIdResponse(w http.ResponseWriter) error {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1228,13 +1294,13 @@ func (response GetToken200JSONResponse) VisitGetTokenResponse(w http.ResponseWri
 	return json.NewEncoder(w).Encode(response)
 }
 
-type GetToken403JSONResponse struct {
+type GetToken401JSONResponse struct {
 	Message string `json:"message"`
 }
 
-func (response GetToken403JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
+func (response GetToken401JSONResponse) VisitGetTokenResponse(w http.ResponseWriter) error {
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
+	w.WriteHeader(401)
 
 	return json.NewEncoder(w).Encode(response)
 }
@@ -1495,32 +1561,32 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"LMuy/wIAAP//vgYmOHMsAAA=",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

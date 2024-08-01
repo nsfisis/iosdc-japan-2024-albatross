@@ -95,14 +95,14 @@ export interface paths {
                         };
                     };
                 };
-                /** @description Forbidden */
-                403: {
+                /** @description Unauthorized */
+                401: {
                     headers: {
                         [name: string]: unknown;
                     };
                     content: {
                         "application/json": {
-                            /** @example Forbidden operation */
+                            /** @example Unauthorized */
                             message: string;
                         };
                     };
@@ -146,6 +146,18 @@ export interface paths {
                     content: {
                         "application/json": {
                             games: components["schemas"]["Game"][];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
+                            message: string;
                         };
                     };
                 };
@@ -200,6 +212,18 @@ export interface paths {
                     content: {
                         "application/json": {
                             game: components["schemas"]["Game"];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
+                            message: string;
                         };
                     };
                 };
@@ -267,6 +291,18 @@ export interface paths {
                         };
                     };
                 };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
+                            message: string;
+                        };
+                    };
+                };
                 /** @description Forbidden */
                 403: {
                     headers: {
@@ -316,6 +352,18 @@ export interface paths {
                     content: {
                         "application/json": {
                             games: components["schemas"]["Game"][];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
+                            message: string;
                         };
                     };
                 };
@@ -370,6 +418,18 @@ export interface paths {
                     content: {
                         "application/json": {
                             game: components["schemas"]["Game"];
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
+                            message: string;
                         };
                     };
                 };
@@ -446,6 +506,18 @@ export interface paths {
                     content: {
                         "application/json": {
                             /** @example Invalid request */
+                            message: string;
+                        };
+                    };
+                };
+                /** @description Unauthorized */
+                401: {
+                    headers: {
+                        [name: string]: unknown;
+                    };
+                    content: {
+                        "application/json": {
+                            /** @example Unauthorized */
                             message: string;
                         };
                     };

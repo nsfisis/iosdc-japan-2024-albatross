@@ -69,8 +69,8 @@ paths:
                     example: "xxxxx.xxxxx.xxxxx"
                 required:
                   - token
-        '403':
-          description: Forbidden
+        '401':
+          description: Unauthorized
           content:
             application/json:
               schema:
@@ -78,7 +78,7 @@ paths:
                 properties:
                   message:
                     type: string
-                    example: "Forbidden operation"
+                    example: "Unauthorized"
                 required:
                   - message
   /games:
@@ -109,6 +109,18 @@ paths:
                       $ref: '#/components/schemas/Game'
                 required:
                   - games
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                required:
+                  - message
         '403':
           description: Forbidden
           content:
@@ -147,6 +159,18 @@ paths:
                     $ref: '#/components/schemas/Game'
                 required:
                   - game
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                required:
+                  - message
         '403':
           description: Forbidden
           content:
@@ -194,6 +218,18 @@ paths:
                       $ref: '#/components/schemas/User'
                 required:
                   - users
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                required:
+                  - message
         '403':
           description: Forbidden
           content:
@@ -229,6 +265,18 @@ paths:
                       $ref: '#/components/schemas/Game'
                 required:
                   - games
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                required:
+                  - message
         '403':
           description: Forbidden
           content:
@@ -267,6 +315,18 @@ paths:
                     $ref: '#/components/schemas/Game'
                 required:
                   - game
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
+                required:
+                  - message
         '403':
           description: Forbidden
           content:
@@ -349,6 +409,18 @@ paths:
                   message:
                     type: string
                     example: "Invalid request"
+                required:
+                  - message
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Unauthorized"
                 required:
                   - message
         '403':
