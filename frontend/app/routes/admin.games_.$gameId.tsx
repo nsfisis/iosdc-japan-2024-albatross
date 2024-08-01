@@ -5,7 +5,7 @@ import type {
 } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { adminApiGetGame, adminApiPutGame } from "../.server/api/client";
-import { isAuthenticated } from "../.server/auth";
+import { ensureAdminUserLoggedIn } from "../.server/auth";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
 	return [
@@ -18,24 +18,14 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
-	const { user, token } = await isAuthenticated(request, {
-		failureRedirect: "/login",
-	});
-	if (!user.is_admin) {
-		throw new Error("Unauthorized");
-	}
+	const { token } = await ensureAdminUserLoggedIn(request);
 	const { gameId } = params;
 	const { game } = await adminApiGetGame(token, Number(gameId));
 	return { game };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
-	const { user, token } = await isAuthenticated(request, {
-		failureRedirect: "/login",
-	});
-	if (!user.is_admin) {
-		throw new Error("Unauthorized");
-	}
+	const { token } = await ensureAdminUserLoggedIn(request);
 	const { gameId } = params;
 
 	const formData = await request.formData();
