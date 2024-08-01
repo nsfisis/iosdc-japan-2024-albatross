@@ -156,14 +156,14 @@ func (hub *gameHub) run() {
 					watcher.s2cMessages <- &watcherMessageS2CCode{
 						Type: watcherMessageTypeS2CCode,
 						Data: watcherMessageS2CCodePayload{
-							PlayerId: message.client.playerID,
+							PlayerID: message.client.playerID,
 							Code:     code,
 						},
 					}
 					watcher.s2cMessages <- &watcherMessageS2CExecResult{
 						Type: watcherMessageTypeS2CExecResult,
 						Data: watcherMessageS2CExecResultPayload{
-							PlayerId: message.client.playerID,
+							PlayerID: message.client.playerID,
 							Score:    nullable.NewNullableWithValue(score),
 							Stdout:   "",
 							Stderr:   "",
@@ -209,7 +209,7 @@ func (hub *gameHub) startGame() error {
 			Type: playerMessageTypeS2CPrepare,
 			Data: playerMessageS2CPreparePayload{
 				Problem: api.Problem{
-					ProblemId:   1,
+					ProblemID:   1,
 					Title:       "the answer",
 					Description: "print 42",
 				},

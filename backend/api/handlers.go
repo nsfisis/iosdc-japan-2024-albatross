@@ -41,13 +41,13 @@ func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesReq
 				panic("inconsistent data")
 			}
 			problem = &Problem{
-				ProblemId:   int(*row.ProblemID),
+				ProblemID:   int(*row.ProblemID),
 				Title:       *row.Title,
 				Description: *row.Description,
 			}
 		}
 		games[i] = Game{
-			GameId:          int(row.GameID),
+			GameID:          int(row.GameID),
 			State:           GameState(row.State),
 			DisplayName:     row.DisplayName,
 			DurationSeconds: int(row.DurationSeconds),
@@ -61,8 +61,8 @@ func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesReq
 }
 
 func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject, user *auth.JWTClaims) (AdminGetGameResponseObject, error) {
-	gameID := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameID))
+	gameID := request.GameID
+	row, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return AdminGetGame404JSONResponse{
@@ -85,13 +85,13 @@ func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameReque
 			panic("inconsistent data")
 		}
 		problem = &Problem{
-			ProblemId:   int(*row.ProblemID),
+			ProblemID:   int(*row.ProblemID),
 			Title:       *row.Title,
 			Description: *row.Description,
 		}
 	}
 	game := Game{
-		GameId:          int(row.GameID),
+		GameID:          int(row.GameID),
 		State:           GameState(row.State),
 		DisplayName:     row.DisplayName,
 		DurationSeconds: int(row.DurationSeconds),
@@ -104,14 +104,14 @@ func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameReque
 }
 
 func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameRequestObject, user *auth.JWTClaims) (AdminPutGameResponseObject, error) {
-	gameID := request.GameId
+	gameID := request.GameID
 	displayName := request.Body.DisplayName
 	durationSeconds := request.Body.DurationSeconds
-	problemID := request.Body.ProblemId
+	problemID := request.Body.ProblemID
 	startedAt := request.Body.StartedAt
 	state := request.Body.State
 
-	game, err := h.q.GetGameById(ctx, int32(gameID))
+	game, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return AdminPutGame404JSONResponse{
@@ -196,7 +196,7 @@ func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersReq
 	responseUsers := make([]User, len(users))
 	for i, u := range users {
 		responseUsers[i] = User{
-			UserId:      int(u.UserID),
+			UserID:      int(u.UserID),
 			Username:    u.Username,
 			DisplayName: u.DisplayName,
 			IconPath:    u.IconPath,
@@ -220,7 +220,7 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 		}, nil
 	}
 
-	user, err := h.q.GetUserById(ctx, int32(userID))
+	user, err := h.q.GetUserByID(ctx, int32(userID))
 	if err != nil {
 		return PostLogin401JSONResponse{
 			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
@@ -267,13 +267,13 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 				panic("inconsistent data")
 			}
 			problem = &Problem{
-				ProblemId:   int(*row.ProblemID),
+				ProblemID:   int(*row.ProblemID),
 				Title:       *row.Title,
 				Description: *row.Description,
 			}
 		}
 		games[i] = Game{
-			GameId:          int(row.GameID),
+			GameID:          int(row.GameID),
 			State:           GameState(row.State),
 			DisplayName:     row.DisplayName,
 			DurationSeconds: int(row.DurationSeconds),
@@ -288,8 +288,8 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 
 func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
-	gameID := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameID))
+	gameID := request.GameID
+	row, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return GetGame404JSONResponse{
@@ -313,14 +313,14 @@ func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, 
 		}
 		if user.IsAdmin || (GameState(row.State) != GameStateClosed && GameState(row.State) != GameStateWaitingEntries) {
 			problem = &Problem{
-				ProblemId:   int(*row.ProblemID),
+				ProblemID:   int(*row.ProblemID),
 				Title:       *row.Title,
 				Description: *row.Description,
 			}
 		}
 	}
 	game := Game{
-		GameId:          int(row.GameID),
+		GameID:          int(row.GameID),
 		State:           GameState(row.State),
 		DisplayName:     row.DisplayName,
 		DurationSeconds: int(row.DurationSeconds),

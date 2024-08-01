@@ -1,4 +1,4 @@
--- name: GetUserById :one
+-- name: GetUserByID :one
 SELECT * FROM users
 WHERE users.user_id = $1
 LIMIT 1;
@@ -32,7 +32,7 @@ UPDATE games
 SET started_at = $2
 WHERE game_id = $1;
 
--- name: GetGameById :one
+-- name: GetGameByID :one
 SELECT * FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1

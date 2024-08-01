@@ -65,10 +65,10 @@ func main() {
 	defer gameHubs.Close()
 	sockGroup := e.Group("/sock")
 	sockHandler := gameHubs.SockHandler()
-	sockGroup.GET("/golf/:gameId/play", func(c echo.Context) error {
+	sockGroup.GET("/golf/:gameID/play", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfPlay(c)
 	})
-	sockGroup.GET("/golf/:gameId/watch", func(c echo.Context) error {
+	sockGroup.GET("/golf/:gameID/watch", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfWatch(c)
 	})
 

@@ -11,14 +11,14 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
-const getGameById = `-- name: GetGameById :one
+const getGameByID = `-- name: GetGameByID :one
 SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1
 `
 
-type GetGameByIdRow struct {
+type GetGameByIDRow struct {
 	GameID          int32
 	State           string
 	DisplayName     string
@@ -31,9 +31,9 @@ type GetGameByIdRow struct {
 	Description     *string
 }
 
-func (q *Queries) GetGameById(ctx context.Context, gameID int32) (GetGameByIdRow, error) {
-	row := q.db.QueryRow(ctx, getGameById, gameID)
-	var i GetGameByIdRow
+func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow, error) {
+	row := q.db.QueryRow(ctx, getGameByID, gameID)
+	var i GetGameByIDRow
 	err := row.Scan(
 		&i.GameID,
 		&i.State,
@@ -87,14 +87,14 @@ func (q *Queries) GetUserAuthByUsername(ctx context.Context, username string) (G
 	return i, err
 }
 
-const getUserById = `-- name: GetUserById :one
+const getUserByID = `-- name: GetUserByID :one
 SELECT user_id, username, display_name, icon_path, is_admin, created_at FROM users
 WHERE users.user_id = $1
 LIMIT 1
 `
 
-func (q *Queries) GetUserById(ctx context.Context, userID int32) (User, error) {
-	row := q.db.QueryRow(ctx, getUserById, userID)
+func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
+	row := q.db.QueryRow(ctx, getUserByID, userID)
 	var i User
 	err := row.Scan(
 		&i.UserID,
