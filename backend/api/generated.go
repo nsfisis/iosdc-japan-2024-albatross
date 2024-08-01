@@ -207,14 +207,20 @@ type User struct {
 	Username    string  `json:"username"`
 }
 
+// HeaderAuthorization defines model for header_authorization.
+type HeaderAuthorization = string
+
+// PathGameId defines model for path_game_id.
+type PathGameId = int
+
 // AdminGetGamesParams defines parameters for AdminGetGames.
 type AdminGetGamesParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // AdminGetGameParams defines parameters for AdminGetGame.
 type AdminGetGameParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // AdminPutGameJSONBody defines parameters for AdminPutGame.
@@ -228,7 +234,7 @@ type AdminPutGameJSONBody struct {
 
 // AdminPutGameParams defines parameters for AdminPutGame.
 type AdminPutGameParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // AdminPutGameJSONBodyState defines parameters for AdminPutGame.
@@ -236,17 +242,17 @@ type AdminPutGameJSONBodyState string
 
 // AdminGetUsersParams defines parameters for AdminGetUsers.
 type AdminGetUsersParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // GetGamesParams defines parameters for GetGames.
 type GetGamesParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // GetGameParams defines parameters for GetGame.
 type GetGameParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // PostLoginJSONBody defines parameters for PostLogin.
@@ -257,7 +263,7 @@ type PostLoginJSONBody struct {
 
 // GetTokenParams defines parameters for GetToken.
 type GetTokenParams struct {
-	Authorization string `json:"Authorization"`
+	Authorization HeaderAuthorization `json:"Authorization"`
 }
 
 // AdminPutGameJSONRequestBody defines body for AdminPutGame for application/json ContentType.
@@ -635,10 +641,10 @@ type ServerInterface interface {
 	AdminGetGames(ctx echo.Context, params AdminGetGamesParams) error
 	// Get a game
 	// (GET /admin/games/{game_id})
-	AdminGetGame(ctx echo.Context, gameId int, params AdminGetGameParams) error
+	AdminGetGame(ctx echo.Context, gameId PathGameId, params AdminGetGameParams) error
 	// Update a game
 	// (PUT /admin/games/{game_id})
-	AdminPutGame(ctx echo.Context, gameId int, params AdminPutGameParams) error
+	AdminPutGame(ctx echo.Context, gameId PathGameId, params AdminPutGameParams) error
 	// List all users
 	// (GET /admin/users)
 	AdminGetUsers(ctx echo.Context, params AdminGetUsersParams) error
@@ -647,7 +653,7 @@ type ServerInterface interface {
 	GetGames(ctx echo.Context, params GetGamesParams) error
 	// Get a game
 	// (GET /games/{game_id})
-	GetGame(ctx echo.Context, gameId int, params GetGameParams) error
+	GetGame(ctx echo.Context, gameId PathGameId, params GetGameParams) error
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
@@ -671,7 +677,7 @@ func (w *ServerInterfaceWrapper) AdminGetGames(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -696,7 +702,7 @@ func (w *ServerInterfaceWrapper) AdminGetGames(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId int
+	var gameId PathGameId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -709,7 +715,7 @@ func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -734,7 +740,7 @@ func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) AdminPutGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId int
+	var gameId PathGameId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -747,7 +753,7 @@ func (w *ServerInterfaceWrapper) AdminPutGame(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -778,7 +784,7 @@ func (w *ServerInterfaceWrapper) AdminGetUsers(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -809,7 +815,7 @@ func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -834,7 +840,7 @@ func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId int
+	var gameId PathGameId
 
 	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
@@ -847,7 +853,7 @@ func (w *ServerInterfaceWrapper) GetGame(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -887,7 +893,7 @@ func (w *ServerInterfaceWrapper) GetToken(ctx echo.Context) error {
 	headers := ctx.Request().Header
 	// ------------- Required header parameter "Authorization" -------------
 	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization string
+		var Authorization HeaderAuthorization
 		n := len(valueList)
 		if n != 1 {
 			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
@@ -989,7 +995,7 @@ func (response AdminGetGames403JSONResponse) VisitAdminGetGamesResponse(w http.R
 }
 
 type AdminGetGameRequestObject struct {
-	GameId int `json:"game_id"`
+	GameId PathGameId `json:"game_id"`
 	Params AdminGetGameParams
 }
 
@@ -1042,7 +1048,7 @@ func (response AdminGetGame404JSONResponse) VisitAdminGetGameResponse(w http.Res
 }
 
 type AdminPutGameRequestObject struct {
-	GameId int `json:"game_id"`
+	GameId PathGameId `json:"game_id"`
 	Params AdminPutGameParams
 	Body   *AdminPutGameJSONRequestBody
 }
@@ -1186,7 +1192,7 @@ func (response GetGames403JSONResponse) VisitGetGamesResponse(w http.ResponseWri
 }
 
 type GetGameRequestObject struct {
-	GameId int `json:"game_id"`
+	GameId PathGameId `json:"game_id"`
 	Params GetGameParams
 }
 
@@ -1364,7 +1370,7 @@ func (sh *strictHandler) AdminGetGames(ctx echo.Context, params AdminGetGamesPar
 }
 
 // AdminGetGame operation middleware
-func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameId int, params AdminGetGameParams) error {
+func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameId PathGameId, params AdminGetGameParams) error {
 	var request AdminGetGameRequestObject
 
 	request.GameId = gameId
@@ -1390,7 +1396,7 @@ func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameId int, params Admin
 }
 
 // AdminPutGame operation middleware
-func (sh *strictHandler) AdminPutGame(ctx echo.Context, gameId int, params AdminPutGameParams) error {
+func (sh *strictHandler) AdminPutGame(ctx echo.Context, gameId PathGameId, params AdminPutGameParams) error {
 	var request AdminPutGameRequestObject
 
 	request.GameId = gameId
@@ -1472,7 +1478,7 @@ func (sh *strictHandler) GetGames(ctx echo.Context, params GetGamesParams) error
 }
 
 // GetGame operation middleware
-func (sh *strictHandler) GetGame(ctx echo.Context, gameId int, params GetGameParams) error {
+func (sh *strictHandler) GetGame(ctx echo.Context, gameId PathGameId, params GetGameParams) error {
 	var request GetGameRequestObject
 
 	request.GameId = gameId
@@ -1554,32 +1560,32 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"2FgdWD/leZ7/FwAA///GgvoRhDAAAA==",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

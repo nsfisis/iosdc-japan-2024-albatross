@@ -259,7 +259,10 @@ export interface components {
         };
     };
     responses: never;
-    parameters: never;
+    parameters: {
+        header_authorization: string;
+        path_game_id: number;
+    };
     requestBodies: never;
     headers: never;
     pathItems: never;
@@ -314,7 +317,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path?: never;
             cookie?: never;
@@ -351,7 +354,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path?: never;
             cookie?: never;
@@ -399,10 +402,10 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path: {
-                game_id: number;
+                game_id: components["parameters"]["path_game_id"];
             };
             cookie?: never;
         };
@@ -461,7 +464,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path?: never;
             cookie?: never;
@@ -509,7 +512,7 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path?: never;
             cookie?: never;
@@ -557,10 +560,10 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path: {
-                game_id: number;
+                game_id: components["parameters"]["path_game_id"];
             };
             cookie?: never;
         };
@@ -619,10 +622,10 @@ export interface operations {
         parameters: {
             query?: never;
             header: {
-                Authorization: string;
+                Authorization: components["parameters"]["header_authorization"];
             };
             path: {
-                game_id: number;
+                game_id: components["parameters"]["path_game_id"];
             };
             cookie?: never;
         };

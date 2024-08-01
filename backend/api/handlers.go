@@ -61,8 +61,8 @@ func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesReq
 }
 
 func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject, user *auth.JWTClaims) (AdminGetGameResponseObject, error) {
-	gameId := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameId))
+	gameID := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return AdminGetGame404JSONResponse{
@@ -205,14 +205,14 @@ func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersReq
 func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
-	userId, err := auth.Login(ctx, h.q, username, password)
+	userID, err := auth.Login(ctx, h.q, username, password)
 	if err != nil {
 		return PostLogin401JSONResponse{
 			Message: "Invalid username or password",
 		}, nil
 	}
 
-	user, err := h.q.GetUserById(ctx, int32(userId))
+	user, err := h.q.GetUserById(ctx, int32(userID))
 	if err != nil {
 		return PostLogin401JSONResponse{
 			Message: "Invalid username or password",
@@ -278,8 +278,8 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 
 func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
-	gameId := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameId))
+	gameID := request.GameId
+	row, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return GetGame404JSONResponse{

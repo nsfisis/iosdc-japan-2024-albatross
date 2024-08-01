@@ -53,11 +53,7 @@ paths:
       operationId: getToken
       summary: Get a short-lived access token
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: Successfully authenticated
@@ -88,11 +84,7 @@ paths:
       operationId: getGames
       summary: List games
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of games
@@ -136,16 +128,8 @@ paths:
       operationId: getGame
       summary: Get a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       responses:
         '200':
           description: A game
@@ -199,11 +183,7 @@ paths:
       operationId: adminGetUsers
       summary: List all users
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of users
@@ -247,11 +227,7 @@ paths:
       operationId: adminGetGames
       summary: List games
       parameters:
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
       responses:
         '200':
           description: List of games
@@ -295,16 +271,8 @@ paths:
       operationId: adminGetGame
       summary: Get a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       responses:
         '200':
           description: A game
@@ -357,16 +325,8 @@ paths:
       operationId: adminPutGame
       summary: Update a game
       parameters:
-        - in: path
-          name: game_id
-          schema:
-            type: integer
-          required: true
-        - in: header
-          name: Authorization
-          schema:
-            type: string
-          required: true
+        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/path_game_id'
       requestBody:
         required: true
         content:
@@ -451,6 +411,19 @@ paths:
                 required:
                   - message
 components:
+  parameters:
+    header_authorization:
+      in: header
+      name: Authorization
+      schema:
+        type: string
+      required: true
+    path_game_id:
+      in: path
+      name: game_id
+      schema:
+        type: integer
+      required: true
   schemas:
     User:
       type: object
