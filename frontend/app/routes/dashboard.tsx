@@ -17,9 +17,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
   const { data, error } = await apiClient.GET("/games", {
     params: {
-      query: {
-        player_id: user.user_id,
-      },
       header: {
         Authorization: `Bearer ${token}`,
       },

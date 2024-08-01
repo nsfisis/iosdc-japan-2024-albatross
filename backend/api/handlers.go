@@ -240,85 +240,40 @@ func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject
 }
 
 func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
-	playerId := request.Params.PlayerId
-	if !user.IsAdmin {
-		if playerId == nil || *playerId != user.UserID {
-			return GetGames403JSONResponse{
-				Message: "Forbidden",
-			}, nil
+	gameRows, err := h.q.ListGamesForPlayer(ctx, int32(user.UserID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	games := make([]Game, len(gameRows))
+	for i, row := range gameRows {
+		var startedAt *int
+		if row.StartedAt.Valid {
+			startedAtTimestamp := int(row.StartedAt.Time.Unix())
+			startedAt = &startedAtTimestamp
+		}
+		var problem *Problem
+		if row.ProblemID != nil {
+			if row.Title == nil || row.Description == nil {
+				panic("inconsistent data")
+			}
+			problem = &Problem{
+				ProblemId:   int(*row.ProblemID),
+				Title:       *row.Title,
+				Description: *row.Description,
+			}
+		}
+		games[i] = Game{
+			GameId:          int(row.GameID),
+			State:           GameState(row.State),
+			DisplayName:     row.DisplayName,
+			DurationSeconds: int(row.DurationSeconds),
+			StartedAt:       startedAt,
+			Problem:         problem,
 		}
 	}
-	if playerId == nil {
-		gameRows, err := h.q.ListGames(ctx)
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-		games := make([]Game, len(gameRows))
-		for i, row := range gameRows {
-			var startedAt *int
-			if row.StartedAt.Valid {
-				startedAtTimestamp := int(row.StartedAt.Time.Unix())
-				startedAt = &startedAtTimestamp
-			}
-			var problem *Problem
-			if row.ProblemID != nil {
-				if row.Title == nil || row.Description == nil {
-					panic("inconsistent data")
-				}
-				problem = &Problem{
-					ProblemId:   int(*row.ProblemID),
-					Title:       *row.Title,
-					Description: *row.Description,
-				}
-			}
-			games[i] = Game{
-				GameId:          int(row.GameID),
-				State:           GameState(row.State),
-				DisplayName:     row.DisplayName,
-				DurationSeconds: int(row.DurationSeconds),
-				StartedAt:       startedAt,
-				Problem:         problem,
-			}
-		}
-		return GetGames200JSONResponse{
-			Games: games,
-		}, nil
-	} else {
-		gameRows, err := h.q.ListGamesForPlayer(ctx, int32(*playerId))
-		if err != nil {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-		}
-		games := make([]Game, len(gameRows))
-		for i, row := range gameRows {
-			var startedAt *int
-			if row.StartedAt.Valid {
-				startedAtTimestamp := int(row.StartedAt.Time.Unix())
-				startedAt = &startedAtTimestamp
-			}
-			var problem *Problem
-			if row.ProblemID != nil {
-				if row.Title == nil || row.Description == nil {
-					panic("inconsistent data")
-				}
-				problem = &Problem{
-					ProblemId:   int(*row.ProblemID),
-					Title:       *row.Title,
-					Description: *row.Description,
-				}
-			}
-			games[i] = Game{
-				GameId:          int(row.GameID),
-				State:           GameState(row.State),
-				DisplayName:     row.DisplayName,
-				DurationSeconds: int(row.DurationSeconds),
-				StartedAt:       startedAt,
-				Problem:         problem,
-			}
-		}
-		return GetGames200JSONResponse{
-			Games: games,
-		}, nil
-	}
+	return GetGames200JSONResponse{
+		Games: games,
+	}, nil
 }
 
 func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {

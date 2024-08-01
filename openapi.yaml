@@ -88,11 +88,6 @@ paths:
       operationId: getGames
       summary: List games
       parameters:
-        - in: query
-          name: player_id
-          schema:
-            type: integer
-          required: false
         - in: header
           name: Authorization
           schema:

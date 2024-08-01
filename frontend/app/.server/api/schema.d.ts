@@ -349,9 +349,7 @@ export interface operations {
     };
     getGames: {
         parameters: {
-            query?: {
-                player_id?: number;
-            };
+            query?: never;
             header: {
                 Authorization: string;
             };
