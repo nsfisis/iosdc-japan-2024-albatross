@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ClientOnly } from "remix-utils/client-only";
 import { apiGetGame, apiGetToken } from "../.server/api/client";
-import { isAuthenticated } from "../.server/auth";
+import { ensureUserLoggedIn } from "../.server/auth";
 import GolfPlayApp from "../components/GolfPlayApp.client";
 import GolfPlayAppConnecting from "../components/GolfPlayApps/GolfPlayAppConnecting";
 
@@ -17,9 +17,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-	const { token } = await isAuthenticated(request, {
-		failureRedirect: "/login",
-	});
+	const { token } = await ensureUserLoggedIn(request);
 
 	const fetchGame = async () => {
 		return (await apiGetGame(token, Number(params.gameId))).game;

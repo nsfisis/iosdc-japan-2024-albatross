@@ -4,23 +4,19 @@ import type {
 	MetaFunction,
 } from "@remix-run/node";
 import { Form } from "@remix-run/react";
-import { authenticator } from "../.server/auth";
+import { ensureUserNotLoggedIn, login } from "../.server/auth";
 
 export const meta: MetaFunction = () => {
 	return [{ title: "Login | iOSDC Japan 2024 Albatross.swift" }];
 };
 
 export async function loader({ request }: LoaderFunctionArgs) {
-	return await authenticator.isAuthenticated(request, {
-		successRedirect: "/dashboard",
-	});
+	return await ensureUserNotLoggedIn(request);
 }
 
 export async function action({ request }: ActionFunctionArgs) {
-	return await authenticator.authenticate("default", request, {
-		successRedirect: "/dashboard",
-		failureRedirect: "/login",
-	});
+	await login(request);
+	return null;
 }
 
 export default function Login() {
