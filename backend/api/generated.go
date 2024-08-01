@@ -63,7 +63,7 @@ type Error struct {
 type Game struct {
 	DisplayName     string    `json:"display_name"`
 	DurationSeconds int       `json:"duration_seconds"`
-	GameId          int       `json:"game_id"`
+	GameID          int       `json:"game_id"`
 	Problem         *Problem  `json:"problem,omitempty"`
 	StartedAt       *int      `json:"started_at,omitempty"`
 	State           GameState `json:"state"`
@@ -164,7 +164,7 @@ type GameWatcherMessageS2CCode struct {
 // GameWatcherMessageS2CCodePayload defines model for GameWatcherMessageS2CCodePayload.
 type GameWatcherMessageS2CCodePayload struct {
 	Code     string `json:"code"`
-	PlayerId int    `json:"player_id"`
+	PlayerID int    `json:"player_id"`
 }
 
 // GameWatcherMessageS2CExecResult defines model for GameWatcherMessageS2CExecResult.
@@ -175,7 +175,7 @@ type GameWatcherMessageS2CExecResult struct {
 
 // GameWatcherMessageS2CExecResultPayload defines model for GameWatcherMessageS2CExecResultPayload.
 type GameWatcherMessageS2CExecResultPayload struct {
-	PlayerId int                                          `json:"player_id"`
+	PlayerID int                                          `json:"player_id"`
 	Score    nullable.Nullable[int]                       `json:"score"`
 	Status   GameWatcherMessageS2CExecResultPayloadStatus `json:"status"`
 	Stderr   string                                       `json:"stderr"`
@@ -199,7 +199,7 @@ type GameWatcherMessageS2CStartPayload struct {
 // Problem defines model for Problem.
 type Problem struct {
 	Description string `json:"description"`
-	ProblemId   int    `json:"problem_id"`
+	ProblemID   int    `json:"problem_id"`
 	Title       string `json:"title"`
 }
 
@@ -208,15 +208,15 @@ type User struct {
 	DisplayName string  `json:"display_name"`
 	IconPath    *string `json:"icon_path,omitempty"`
 	IsAdmin     bool    `json:"is_admin"`
-	UserId      int     `json:"user_id"`
+	UserID      int     `json:"user_id"`
 	Username    string  `json:"username"`
 }
 
 // HeaderAuthorization defines model for header_authorization.
 type HeaderAuthorization = string
 
-// PathGameId defines model for path_game_id.
-type PathGameId = int
+// PathGameID defines model for path_game_id.
+type PathGameID = int
 
 // BadRequest defines model for BadRequest.
 type BadRequest = Error
@@ -244,7 +244,7 @@ type AdminGetGameParams struct {
 type AdminPutGameJSONBody struct {
 	DisplayName     *string                    `json:"display_name,omitempty"`
 	DurationSeconds *int                       `json:"duration_seconds,omitempty"`
-	ProblemId       nullable.Nullable[int]     `json:"problem_id,omitempty"`
+	ProblemID       nullable.Nullable[int]     `json:"problem_id,omitempty"`
 	StartedAt       nullable.Nullable[int]     `json:"started_at,omitempty"`
 	State           *AdminPutGameJSONBodyState `json:"state,omitempty"`
 }
@@ -658,10 +658,10 @@ type ServerInterface interface {
 	AdminGetGames(ctx echo.Context, params AdminGetGamesParams) error
 	// Get a game
 	// (GET /admin/games/{game_id})
-	AdminGetGame(ctx echo.Context, gameId PathGameId, params AdminGetGameParams) error
+	AdminGetGame(ctx echo.Context, gameID PathGameID, params AdminGetGameParams) error
 	// Update a game
 	// (PUT /admin/games/{game_id})
-	AdminPutGame(ctx echo.Context, gameId PathGameId, params AdminPutGameParams) error
+	AdminPutGame(ctx echo.Context, gameID PathGameID, params AdminPutGameParams) error
 	// List all users
 	// (GET /admin/users)
 	AdminGetUsers(ctx echo.Context, params AdminGetUsersParams) error
@@ -670,7 +670,7 @@ type ServerInterface interface {
 	GetGames(ctx echo.Context, params GetGamesParams) error
 	// Get a game
 	// (GET /games/{game_id})
-	GetGame(ctx echo.Context, gameId PathGameId, params GetGameParams) error
+	GetGame(ctx echo.Context, gameID PathGameID, params GetGameParams) error
 	// User login
 	// (POST /login)
 	PostLogin(ctx echo.Context) error
@@ -719,9 +719,9 @@ func (w *ServerInterfaceWrapper) AdminGetGames(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId PathGameId
+	var gameID PathGameID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
 	}
@@ -749,7 +749,7 @@ func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminGetGame(ctx, gameId, params)
+	err = w.Handler.AdminGetGame(ctx, gameID, params)
 	return err
 }
 
@@ -757,9 +757,9 @@ func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) AdminPutGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId PathGameId
+	var gameID PathGameID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
 	}
@@ -787,7 +787,7 @@ func (w *ServerInterfaceWrapper) AdminPutGame(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutGame(ctx, gameId, params)
+	err = w.Handler.AdminPutGame(ctx, gameID, params)
 	return err
 }
 
@@ -857,9 +857,9 @@ func (w *ServerInterfaceWrapper) GetGames(ctx echo.Context) error {
 func (w *ServerInterfaceWrapper) GetGame(ctx echo.Context) error {
 	var err error
 	// ------------- Path parameter "game_id" -------------
-	var gameId PathGameId
+	var gameID PathGameID
 
-	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameId, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
+	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
 	}
@@ -887,7 +887,7 @@ func (w *ServerInterfaceWrapper) GetGame(ctx echo.Context) error {
 	}
 
 	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.GetGame(ctx, gameId, params)
+	err = w.Handler.GetGame(ctx, gameID, params)
 	return err
 }
 
@@ -1016,7 +1016,7 @@ func (response AdminGetGames403JSONResponse) VisitAdminGetGamesResponse(w http.R
 }
 
 type AdminGetGameRequestObject struct {
-	GameId PathGameId `json:"game_id"`
+	GameID PathGameID `json:"game_id"`
 	Params AdminGetGameParams
 }
 
@@ -1063,7 +1063,7 @@ func (response AdminGetGame404JSONResponse) VisitAdminGetGameResponse(w http.Res
 }
 
 type AdminPutGameRequestObject struct {
-	GameId PathGameId `json:"game_id"`
+	GameID PathGameID `json:"game_id"`
 	Params AdminPutGameParams
 	Body   *AdminPutGameJSONRequestBody
 }
@@ -1191,7 +1191,7 @@ func (response GetGames403JSONResponse) VisitGetGamesResponse(w http.ResponseWri
 }
 
 type GetGameRequestObject struct {
-	GameId PathGameId `json:"game_id"`
+	GameID PathGameID `json:"game_id"`
 	Params GetGameParams
 }
 
@@ -1359,10 +1359,10 @@ func (sh *strictHandler) AdminGetGames(ctx echo.Context, params AdminGetGamesPar
 }
 
 // AdminGetGame operation middleware
-func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameId PathGameId, params AdminGetGameParams) error {
+func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameID PathGameID, params AdminGetGameParams) error {
 	var request AdminGetGameRequestObject
 
-	request.GameId = gameId
+	request.GameID = gameID
 	request.Params = params
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
@@ -1385,10 +1385,10 @@ func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameId PathGameId, param
 }
 
 // AdminPutGame operation middleware
-func (sh *strictHandler) AdminPutGame(ctx echo.Context, gameId PathGameId, params AdminPutGameParams) error {
+func (sh *strictHandler) AdminPutGame(ctx echo.Context, gameID PathGameID, params AdminPutGameParams) error {
 	var request AdminPutGameRequestObject
 
-	request.GameId = gameId
+	request.GameID = gameID
 	request.Params = params
 
 	var body AdminPutGameJSONRequestBody
@@ -1467,10 +1467,10 @@ func (sh *strictHandler) GetGames(ctx echo.Context, params GetGamesParams) error
 }
 
 // GetGame operation middleware
-func (sh *strictHandler) GetGame(ctx echo.Context, gameId PathGameId, params GetGameParams) error {
+func (sh *strictHandler) GetGame(ctx echo.Context, gameID PathGameID, params GetGameParams) error {
 	var request GetGameRequestObject
 
-	request.GameId = gameId
+	request.GameID = gameID
 	request.Params = params
 
 	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
