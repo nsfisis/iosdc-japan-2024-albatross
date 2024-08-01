@@ -18,6 +18,11 @@ module.exports = {
 	// Base config
 	extends: ["eslint:recommended"],
 
+	rules: {
+		// It conflicts with Biome.
+		"no-mixed-spaces-and-tabs": "off",
+	},
+
 	overrides: [
 		// React
 		{
