@@ -62,7 +62,7 @@ func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesReq
 
 func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject, user *auth.JWTClaims) (AdminGetGameResponseObject, error) {
 	gameID := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameID))
+	row, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return AdminGetGame404JSONResponse{
@@ -111,7 +111,7 @@ func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameReque
 	startedAt := request.Body.StartedAt
 	state := request.Body.State
 
-	game, err := h.q.GetGameById(ctx, int32(gameID))
+	game, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return AdminPutGame404JSONResponse{
@@ -220,7 +220,7 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 		}, nil
 	}
 
-	user, err := h.q.GetUserById(ctx, int32(userID))
+	user, err := h.q.GetUserByID(ctx, int32(userID))
 	if err != nil {
 		return PostLogin401JSONResponse{
 			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
@@ -289,7 +289,7 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
 	gameID := request.GameId
-	row, err := h.q.GetGameById(ctx, int32(gameID))
+	row, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return GetGame404JSONResponse{
