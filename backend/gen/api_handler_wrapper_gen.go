@@ -145,13 +145,17 @@ func parseJWTClaimsFromAuthorizationHeader(authorization string) (*auth.JWTClaim
 			user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 			if err != nil {
 				return {{ .Name }}401JSONResponse{
-					Message: "Unauthorized",
+					UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+						Message: "Unauthorized",
+					},
 				}, nil
 			}
 			{{ if .RequiresAdminRole -}}
 				if !user.IsAdmin {
 					return {{ .Name }}403JSONResponse{
-						Message: "Forbidden",
+						ForbiddenJSONResponse: ForbiddenJSONResponse{
+							Message: "Forbidden",
+						},
 					}, nil
 				}
 			{{ end -}}

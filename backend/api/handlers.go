@@ -66,7 +66,9 @@ func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameReque
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return AdminGetGame404JSONResponse{
-				Message: "Game not found",
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -113,7 +115,9 @@ func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameReque
 	if err != nil {
 		if err == pgx.ErrNoRows {
 			return AdminPutGame404JSONResponse{
-				Message: "Game not found",
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -175,7 +179,9 @@ func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameReque
 	})
 	if err != nil {
 		return AdminPutGame400JSONResponse{
-			Message: err.Error(),
+			BadRequestJSONResponse: BadRequestJSONResponse{
+				Message: err.Error(),
+			},
 		}, nil
 	}
 
@@ -208,14 +214,18 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 	userID, err := auth.Login(ctx, h.q, username, password)
 	if err != nil {
 		return PostLogin401JSONResponse{
-			Message: "Invalid username or password",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Invalid username or password",
+			},
 		}, nil
 	}
 
 	user, err := h.q.GetUserById(ctx, int32(userID))
 	if err != nil {
 		return PostLogin401JSONResponse{
-			Message: "Invalid username or password",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Invalid username or password",
+			},
 		}, nil
 	}
 
@@ -283,7 +293,9 @@ func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, 
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return GetGame404JSONResponse{
-				Message: "Game not found",
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
 			}, nil
 		} else {
 			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())

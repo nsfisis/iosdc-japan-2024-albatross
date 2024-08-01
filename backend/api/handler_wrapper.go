@@ -43,12 +43,16 @@ func (h *ApiHandlerWrapper) AdminGetGame(ctx context.Context, request AdminGetGa
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return AdminGetGame401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	if !user.IsAdmin {
 		return AdminGetGame403JSONResponse{
-			Message: "Forbidden",
+			ForbiddenJSONResponse: ForbiddenJSONResponse{
+				Message: "Forbidden",
+			},
 		}, nil
 	}
 	return h.innerHandler.AdminGetGame(ctx, request, user)
@@ -58,12 +62,16 @@ func (h *ApiHandlerWrapper) AdminGetGames(ctx context.Context, request AdminGetG
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return AdminGetGames401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	if !user.IsAdmin {
 		return AdminGetGames403JSONResponse{
-			Message: "Forbidden",
+			ForbiddenJSONResponse: ForbiddenJSONResponse{
+				Message: "Forbidden",
+			},
 		}, nil
 	}
 	return h.innerHandler.AdminGetGames(ctx, request, user)
@@ -73,12 +81,16 @@ func (h *ApiHandlerWrapper) AdminGetUsers(ctx context.Context, request AdminGetU
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return AdminGetUsers401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	if !user.IsAdmin {
 		return AdminGetUsers403JSONResponse{
-			Message: "Forbidden",
+			ForbiddenJSONResponse: ForbiddenJSONResponse{
+				Message: "Forbidden",
+			},
 		}, nil
 	}
 	return h.innerHandler.AdminGetUsers(ctx, request, user)
@@ -88,12 +100,16 @@ func (h *ApiHandlerWrapper) AdminPutGame(ctx context.Context, request AdminPutGa
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return AdminPutGame401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	if !user.IsAdmin {
 		return AdminPutGame403JSONResponse{
-			Message: "Forbidden",
+			ForbiddenJSONResponse: ForbiddenJSONResponse{
+				Message: "Forbidden",
+			},
 		}, nil
 	}
 	return h.innerHandler.AdminPutGame(ctx, request, user)
@@ -103,7 +119,9 @@ func (h *ApiHandlerWrapper) GetGame(ctx context.Context, request GetGameRequestO
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetGame401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	return h.innerHandler.GetGame(ctx, request, user)
@@ -113,7 +131,9 @@ func (h *ApiHandlerWrapper) GetGames(ctx context.Context, request GetGamesReques
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetGames401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	return h.innerHandler.GetGames(ctx, request, user)
@@ -123,7 +143,9 @@ func (h *ApiHandlerWrapper) GetToken(ctx context.Context, request GetTokenReques
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetToken401JSONResponse{
-			Message: "Unauthorized",
+			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
+				Message: "Unauthorized",
+			},
 		}, nil
 	}
 	return h.innerHandler.GetToken(ctx, request, user)
