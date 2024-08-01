@@ -1,3 +1,3 @@
 export default function GolfWatchAppWaiting() {
-  return <div>Waiting...</div>;
+	return <div>Waiting...</div>;
 }

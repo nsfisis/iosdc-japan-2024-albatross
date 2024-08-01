@@ -7,40 +7,40 @@ import GolfWatchApp from "../components/GolfWatchApp.client";
 import GolfWatchAppConnecting from "../components/GolfWatchApps/GolfWatchAppConnecting";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  return [
-    {
-      title: data
-        ? `Golf Watching ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
-        : "Golf Watching | iOSDC Japan 2024 Albatross.swift",
-    },
-  ];
+	return [
+		{
+			title: data
+				? `Golf Watching ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
+				: "Golf Watching | iOSDC Japan 2024 Albatross.swift",
+		},
+	];
 };
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-  const { token } = await isAuthenticated(request, {
-    failureRedirect: "/login",
-  });
+	const { token } = await isAuthenticated(request, {
+		failureRedirect: "/login",
+	});
 
-  const fetchGame = async () => {
-    return (await apiGetGame(token, Number(params.gameId))).game;
-  };
-  const fetchSockToken = async () => {
-    return (await apiGetToken(token)).token;
-  };
+	const fetchGame = async () => {
+		return (await apiGetGame(token, Number(params.gameId))).game;
+	};
+	const fetchSockToken = async () => {
+		return (await apiGetToken(token)).token;
+	};
 
-  const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
-  return {
-    game,
-    sockToken,
-  };
+	const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
+	return {
+		game,
+		sockToken,
+	};
 }
 
 export default function GolfWatch() {
-  const { game, sockToken } = useLoaderData<typeof loader>();
+	const { game, sockToken } = useLoaderData<typeof loader>();
 
-  return (
-    <ClientOnly fallback={<GolfWatchAppConnecting />}>
-      {() => <GolfWatchApp game={game} sockToken={sockToken} />}
-    </ClientOnly>
-  );
+	return (
+		<ClientOnly fallback={<GolfWatchAppConnecting />}>
+			{() => <GolfWatchApp game={game} sockToken={sockToken} />}
+		</ClientOnly>
+	);
 }
