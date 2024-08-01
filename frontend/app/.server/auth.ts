@@ -3,22 +3,13 @@ import { FormStrategy } from "remix-auth-form";
 import { jwtDecode } from "jwt-decode";
 import type { Session } from "@remix-run/server-runtime";
 import { sessionStorage } from "./session";
-import { apiClient } from "./api/client";
+import { apiPostLogin } from "./api/client";
 import { components } from "./api/schema";
 
 export const authenticator = new Authenticator<string>(sessionStorage);
 
 async function login(username: string, password: string): Promise<string> {
-  const { data, error } = await apiClient.POST("/login", {
-    body: {
-      username,
-      password,
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
-  }
-  return data.token;
+  return (await apiPostLogin(username, password)).token;
 }
 
 authenticator.use(

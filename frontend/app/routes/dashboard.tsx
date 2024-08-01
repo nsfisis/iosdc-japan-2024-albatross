@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { redirect } from "@remix-run/node";
 import { Link, useLoaderData, Form } from "@remix-run/react";
 import { isAuthenticated } from "../.server/auth";
-import { apiClient } from "../.server/api/client";
+import { apiGetGames } from "../.server/api/client";
 
 export const meta: MetaFunction = () => {
   return [{ title: "Dashboard | iOSDC Japan 2024 Albatross.swift" }];
@@ -15,19 +15,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
   if (user.is_admin) {
     return redirect("/admin/dashboard");
   }
-  const { data, error } = await apiClient.GET("/games", {
-    params: {
-      header: {
-        Authorization: `Bearer ${token}`,
-      },
-    },
-  });
-  if (error) {
-    throw new Error(error.message);
-  }
+  const { games } = await apiGetGames(token);
   return {
     user,
-    games: data.games,
+    games,
   };
 }
 

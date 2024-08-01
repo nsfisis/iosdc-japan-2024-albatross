@@ -2,7 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { ClientOnly } from "remix-utils/client-only";
 import { isAuthenticated } from "../.server/auth";
-import { apiClient } from "../.server/api/client";
+import { apiGetGame, apiGetToken } from "../.server/api/client";
 import GolfWatchApp from "../components/GolfWatchApp.client";
 import GolfWatchAppConnecting from "../components/GolfWatchApps/GolfWatchAppConnecting";
 
@@ -22,34 +22,10 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
   });
 
   const fetchGame = async () => {
-    const { data, error } = await apiClient.GET("/games/{game_id}", {
-      params: {
-        path: {
-          game_id: Number(params.gameId),
-        },
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-    if (error) {
-      throw new Error(error.message);
-    }
-    return data.game;
+    return (await apiGetGame(token, Number(params.gameId))).game;
   };
-
   const fetchSockToken = async () => {
-    const { data, error } = await apiClient.GET("/token", {
-      params: {
-        header: {
-          Authorization: `Bearer ${token}`,
-        },
-      },
-    });
-    if (error) {
-      throw new Error(error.message);
-    }
-    return data.token;
+    return (await apiGetToken(token)).token;
   };
 
   const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
