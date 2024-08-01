@@ -55,7 +55,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    [path: `/games/${integer}`]: {
+    "/games/{game_id}": {
         parameters: {
             query?: never;
             header?: never;
@@ -106,7 +106,7 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    [path: `/admin/games/${integer}`]: {
+    "/admin/games/{game_id}": {
         parameters: {
             query?: never;
             header?: never;
