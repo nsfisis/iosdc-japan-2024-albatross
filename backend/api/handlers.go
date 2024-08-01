@@ -33,10 +33,10 @@ func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandler {
 	}
 }
 
-func (h *ApiHandler) GetAdminGames(ctx context.Context, request GetAdminGamesRequestObject) (GetAdminGamesResponseObject, error) {
+func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesRequestObject) (AdminGetGamesResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	if !user.IsAdmin {
-		return GetAdminGames403JSONResponse{
+		return AdminGetGames403JSONResponse{
 			Message: "Forbidden",
 		}, nil
 	}
@@ -71,15 +71,15 @@ func (h *ApiHandler) GetAdminGames(ctx context.Context, request GetAdminGamesReq
 			Problem:         problem,
 		}
 	}
-	return GetAdminGames200JSONResponse{
+	return AdminGetGames200JSONResponse{
 		Games: games,
 	}, nil
 }
 
-func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGamesGameIdRequestObject) (GetAdminGamesGameIdResponseObject, error) {
+func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject) (AdminGetGameResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	if !user.IsAdmin {
-		return GetAdminGamesGameId403JSONResponse{
+		return AdminGetGame403JSONResponse{
 			Message: "Forbidden",
 		}, nil
 	}
@@ -87,7 +87,7 @@ func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGa
 	row, err := h.q.GetGameById(ctx, int32(gameId))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return GetAdminGamesGameId404JSONResponse{
+			return AdminGetGame404JSONResponse{
 				Message: "Game not found",
 			}, nil
 		} else {
@@ -118,15 +118,15 @@ func (h *ApiHandler) GetAdminGamesGameId(ctx context.Context, request GetAdminGa
 		StartedAt:       startedAt,
 		Problem:         problem,
 	}
-	return GetAdminGamesGameId200JSONResponse{
+	return AdminGetGame200JSONResponse{
 		Game: game,
 	}, nil
 }
 
-func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGamesGameIdRequestObject) (PutAdminGamesGameIdResponseObject, error) {
+func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameRequestObject) (AdminPutGameResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	if !user.IsAdmin {
-		return PutAdminGamesGameId403JSONResponse{
+		return AdminPutGame403JSONResponse{
 			Message: "Forbidden",
 		}, nil
 	}
@@ -140,7 +140,7 @@ func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGa
 	game, err := h.q.GetGameById(ctx, int32(gameID))
 	if err != nil {
 		if err == pgx.ErrNoRows {
-			return PutAdminGamesGameId404JSONResponse{
+			return AdminPutGame404JSONResponse{
 				Message: "Game not found",
 			}, nil
 		} else {
@@ -202,18 +202,18 @@ func (h *ApiHandler) PutAdminGamesGameId(ctx context.Context, request PutAdminGa
 		ProblemID:       changedProblemID,
 	})
 	if err != nil {
-		return PutAdminGamesGameId400JSONResponse{
+		return AdminPutGame400JSONResponse{
 			Message: err.Error(),
 		}, nil
 	}
 
-	return PutAdminGamesGameId204Response{}, nil
+	return AdminPutGame204Response{}, nil
 }
 
-func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersRequestObject) (GetAdminUsersResponseObject, error) {
+func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersRequestObject) (AdminGetUsersResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	if !user.IsAdmin {
-		return GetAdminUsers403JSONResponse{
+		return AdminGetUsers403JSONResponse{
 			Message: "Forbidden",
 		}, nil
 	}
@@ -231,7 +231,7 @@ func (h *ApiHandler) GetAdminUsers(ctx context.Context, request GetAdminUsersReq
 			IsAdmin:     u.IsAdmin,
 		}
 	}
-	return GetAdminUsers200JSONResponse{
+	return AdminGetUsers200JSONResponse{
 		Users: responseUsers,
 	}, nil
 }
@@ -357,14 +357,14 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	}
 }
 
-func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdRequestObject) (GetGamesGameIdResponseObject, error) {
+func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject) (GetGameResponseObject, error) {
 	user := ctx.Value("user").(*auth.JWTClaims)
 	// TODO: check user permission
 	gameId := request.GameId
 	row, err := h.q.GetGameById(ctx, int32(gameId))
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
-			return GetGamesGameId404JSONResponse{
+			return GetGame404JSONResponse{
 				Message: "Game not found",
 			}, nil
 		} else {
@@ -397,7 +397,7 @@ func (h *ApiHandler) GetGamesGameId(ctx context.Context, request GetGamesGameIdR
 		StartedAt:       startedAt,
 		Problem:         problem,
 	}
-	return GetGamesGameId200JSONResponse{
+	return GetGame200JSONResponse{
 		Game: game,
 	}, nil
 }
