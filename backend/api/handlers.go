@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -15,8 +14,6 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
-var _ StrictServerInterface = (*ApiHandler)(nil)
-
 type ApiHandler struct {
 	q    *db.Queries
 	hubs GameHubsInterface
@@ -26,20 +23,7 @@ type GameHubsInterface interface {
 	StartGame(gameID int) error
 }
 
-func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandler {
-	return &ApiHandler{
-		q:    queries,
-		hubs: hubs,
-	}
-}
-
-func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesRequestObject) (AdminGetGamesResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return AdminGetGames403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesRequestObject, user *auth.JWTClaims) (AdminGetGamesResponseObject, error) {
 	gameRows, err := h.q.ListGames(ctx)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -76,13 +60,7 @@ func (h *ApiHandler) AdminGetGames(ctx context.Context, request AdminGetGamesReq
 	}, nil
 }
 
-func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject) (AdminGetGameResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return AdminGetGame403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameRequestObject, user *auth.JWTClaims) (AdminGetGameResponseObject, error) {
 	gameId := request.GameId
 	row, err := h.q.GetGameById(ctx, int32(gameId))
 	if err != nil {
@@ -123,13 +101,7 @@ func (h *ApiHandler) AdminGetGame(ctx context.Context, request AdminGetGameReque
 	}, nil
 }
 
-func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameRequestObject) (AdminPutGameResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return AdminPutGame403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameRequestObject, user *auth.JWTClaims) (AdminPutGameResponseObject, error) {
 	gameID := request.GameId
 	displayName := request.Body.DisplayName
 	durationSeconds := request.Body.DurationSeconds
@@ -210,13 +182,7 @@ func (h *ApiHandler) AdminPutGame(ctx context.Context, request AdminPutGameReque
 	return AdminPutGame204Response{}, nil
 }
 
-func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersRequestObject) (AdminGetUsersResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
-	if !user.IsAdmin {
-		return AdminGetUsers403JSONResponse{
-			Message: "Forbidden",
-		}, nil
-	}
+func (h *ApiHandler) AdminGetUsers(ctx context.Context, request AdminGetUsersRequestObject, user *auth.JWTClaims) (AdminGetUsersResponseObject, error) {
 	users, err := h.q.ListUsers(ctx)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -263,8 +229,7 @@ func (h *ApiHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 	}, nil
 }
 
-func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
+func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject, user *auth.JWTClaims) (GetTokenResponseObject, error) {
 	newToken, err := auth.NewShortLivedJWT(user)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -274,8 +239,7 @@ func (h *ApiHandler) GetToken(ctx context.Context, request GetTokenRequestObject
 	}, nil
 }
 
-func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
+func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
 	playerId := request.Params.PlayerId
 	if !user.IsAdmin {
 		if playerId == nil || *playerId != user.UserID {
@@ -357,8 +321,7 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	}
 }
 
-func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject) (GetGameResponseObject, error) {
-	user := ctx.Value("user").(*auth.JWTClaims)
+func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
 	gameId := request.GameId
 	row, err := h.q.GetGameById(ctx, int32(gameId))
@@ -400,46 +363,4 @@ func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject) 
 	return GetGame200JSONResponse{
 		Game: game,
 	}, nil
-}
-
-func _assertUserResponseIsCompatibleWithJWTClaims() {
-	var c auth.JWTClaims
-	var u User
-	u.UserId = c.UserID
-	u.Username = c.Username
-	u.DisplayName = c.DisplayName
-	u.IconPath = c.IconPath
-	u.IsAdmin = c.IsAdmin
-	_ = u
-}
-
-func setupJWTFromAuthorizationHeader(c echo.Context) error {
-	authorization := c.Request().Header.Get("Authorization")
-	const prefix = "Bearer "
-	if !strings.HasPrefix(authorization, prefix) {
-		return echo.NewHTTPError(http.StatusUnauthorized)
-	}
-	token := authorization[len(prefix):]
-	claims, err := auth.ParseJWT(token)
-	if err != nil {
-		return echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-	}
-	c.SetRequest(c.Request().WithContext(context.WithValue(c.Request().Context(), "user", claims)))
-	return nil
-}
-
-func NewJWTMiddleware() StrictMiddlewareFunc {
-	return func(handler StrictHandlerFunc, operationID string) StrictHandlerFunc {
-		if operationID == "PostLogin" {
-			return handler
-		}
-
-		return func(c echo.Context, request interface{}) (interface{}, error) {
-			err := setupJWTFromAuthorizationHeader(c)
-			if err != nil {
-				return nil, echo.NewHTTPError(http.StatusUnauthorized, err.Error())
-			}
-			return handler(c, request)
-		}
-	}
 }
