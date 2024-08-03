@@ -14,6 +14,7 @@ const (
 	playerMessageTypeC2SEntry      = "player:c2s:entry"
 	playerMessageTypeC2SReady      = "player:c2s:ready"
 	playerMessageTypeC2SCode       = "player:c2s:code"
+	playerMessageTypeC2SSubmit     = "player:c2s:submit"
 )
 
 type playerMessageC2SWithClient struct {
@@ -36,6 +37,8 @@ type playerMessageC2SEntry = api.GamePlayerMessageC2SEntry
 type playerMessageC2SReady = api.GamePlayerMessageC2SReady
 type playerMessageC2SCode = api.GamePlayerMessageC2SCode
 type playerMessageC2SCodePayload = api.GamePlayerMessageC2SCodePayload
+type playerMessageC2SSubmit = api.GamePlayerMessageC2SSubmit
+type playerMessageC2SSubmitPayload = api.GamePlayerMessageC2SSubmitPayload
 
 func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error) {
 	var typ string
@@ -59,6 +62,15 @@ func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error
 		}
 		return &playerMessageC2SCode{
 			Type: playerMessageTypeC2SCode,
+			Data: payload,
+		}, nil
+	case playerMessageTypeC2SSubmit:
+		var payload playerMessageC2SSubmitPayload
+		if err := json.Unmarshal(raw["data"], &payload); err != nil {
+			return nil, err
+		}
+		return &playerMessageC2SSubmit{
+			Type: playerMessageTypeC2SSubmit,
 			Data: payload,
 		}, nil
 	default:

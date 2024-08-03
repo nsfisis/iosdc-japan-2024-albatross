@@ -170,8 +170,13 @@ func (hub *gameHub) run() {
 						},
 					}
 				}
+			case *playerMessageC2SSubmit:
+				// TODO: assert game state is gaming
+				log.Printf("submit: %v", message.message)
+				// code := msg.Data.Code
+				// TODO
 			default:
-				log.Fatalf("unexpected message type: %T", message.message)
+				log.Printf("unexpected message type: %T", message.message)
 			}
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
