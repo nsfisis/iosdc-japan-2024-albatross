@@ -1,11 +1,10 @@
 # Architecture
 
 * Reverse proxy server (Nginx)
-* API server (Golang + Echo)
-* App server (TypeScript + Remix)
+* API server (Golang/Echo)
+* App server (TypeScript/Remix)
 * Database (PostgreSQL)
-* Worker (Golang + Swift + WebAssembly)
-    * WIP, not merged into `main` branch
+* Worker (Golang/Echo + Swift/SwiftWasm + WebAssembly/Wasmtime)
 
 # Dependencies
 
