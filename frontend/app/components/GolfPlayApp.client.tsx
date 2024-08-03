@@ -81,6 +81,14 @@ export default function GolfPlayApp({
 		});
 	}, 1000);
 
+	const onCodeSubmit = useDebouncedCallback((code: string) => {
+		console.log("player:c2s:submit");
+		sendJsonMessage({
+			type: "player:c2s:submit",
+			data: { code },
+		});
+	}, 1000);
+
 	if (readyState === ReadyState.UNINSTANTIATED) {
 		throw new Error("WebSocket is not connected");
 	}
@@ -140,6 +148,7 @@ export default function GolfPlayApp({
 			<GolfPlayAppGaming
 				problem={problem!.description}
 				onCodeChange={onCodeChange}
+				onCodeSubmit={onCodeSubmit}
 				currentScore={currentScore}
 			/>
 		);

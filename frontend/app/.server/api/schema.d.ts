@@ -201,7 +201,7 @@ export interface components {
             /** @example 100 */
             score: number | null;
         };
-        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"] | components["schemas"]["GamePlayerMessageC2SCode"];
+        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"] | components["schemas"]["GamePlayerMessageC2SCode"] | components["schemas"]["GamePlayerMessageC2SSubmit"];
         GamePlayerMessageC2SEntry: {
             /** @constant */
             type: "player:c2s:entry";
@@ -216,6 +216,15 @@ export interface components {
             data: components["schemas"]["GamePlayerMessageC2SCodePayload"];
         };
         GamePlayerMessageC2SCodePayload: {
+            /** @example print('Hello, world!') */
+            code: string;
+        };
+        GamePlayerMessageC2SSubmit: {
+            /** @constant */
+            type: "player:c2s:submit";
+            data: components["schemas"]["GamePlayerMessageC2SSubmitPayload"];
+        };
+        GamePlayerMessageC2SSubmitPayload: {
             /** @example print('Hello, world!') */
             code: string;
         };

@@ -5,3 +5,7 @@ fmt:
 .PHONY: check
 check:
 	go build -o /dev/null ./...
+
+.PHONY: lint
+lint:
+	go vet ./...
