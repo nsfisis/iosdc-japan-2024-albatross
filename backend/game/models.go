@@ -6,9 +6,13 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 )
 
+type gameType = api.GameGameType
 type gameState = api.GameState
 
 const (
+	gameType1v1         = api.N1V1
+	gameTypeMultiplayer = api.Multiplayer
+
 	gameStateClosed         gameState = api.Closed
 	gameStateWaitingEntries gameState = api.WaitingEntries
 	gameStateWaitingStart   gameState = api.WaitingStart
@@ -20,7 +24,7 @@ const (
 
 type game struct {
 	gameID          int
-	gameType        string
+	gameType        gameType
 	state           gameState
 	displayName     string
 	durationSeconds int
