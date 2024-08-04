@@ -10,6 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
@@ -31,8 +32,28 @@ func NewAdminHandler(q *db.Queries, hubs GameHubsInterface) *AdminHandler {
 	}
 }
 
+func newAdminMiddleware() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(c echo.Context) error {
+			jwt, err := c.Cookie("albatross_token")
+			if err != nil {
+				return c.Redirect(http.StatusSeeOther, "/login")
+			}
+			claims, err := auth.ParseJWT(jwt.Value)
+			if err != nil {
+				return c.Redirect(http.StatusSeeOther, "/login")
+			}
+			if !claims.IsAdmin {
+				return echo.NewHTTPError(http.StatusForbidden)
+			}
+			return next(c)
+		}
+	}
+}
+
 func (h *AdminHandler) RegisterHandlers(g *echo.Group) {
 	g.Use(newAssetsMiddleware())
+	g.Use(newAdminMiddleware())
 
 	g.GET("/dashboard", h.getDashboard)
 	g.GET("/users", h.getUsers)

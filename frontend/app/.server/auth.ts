@@ -1,10 +1,12 @@
+import { redirect } from "@remix-run/node";
 import type { Session } from "@remix-run/server-runtime";
 import { jwtDecode } from "jwt-decode";
 import { Authenticator } from "remix-auth";
 import { FormStrategy } from "remix-auth-form";
 import { apiPostLogin } from "./api/client";
 import { components } from "./api/schema";
-import { sessionStorage } from "./session";
+import { createUnstructuredCookie } from "./cookie";
+import { cookieOptions, sessionStorage } from "./session";
 
 const authenticator = new Authenticator<string>(sessionStorage);
 
@@ -19,15 +21,40 @@ authenticator.use(
 
 export type User = components["schemas"]["User"];
 
+// This cookie is used to directly store the JWT for the API server.
+// Remix's createCookie() returns "structured" cookies, which cannot be reused directly by non-Remix servers.
+const tokenCookie = createUnstructuredCookie("albatross_token", cookieOptions);
+
 export async function login(request: Request): Promise<never> {
-	return await authenticator.authenticate("default", request, {
-		successRedirect: "/dashboard",
+	const jwt = await authenticator.authenticate("default", request, {
 		failureRedirect: "/login",
+	});
+
+	const session = await sessionStorage.getSession(
+		request.headers.get("cookie"),
+	);
+	session.set(authenticator.sessionKey, jwt);
+
+	throw redirect("/dashboard", {
+		headers: [
+			["Set-Cookie", await sessionStorage.commitSession(session)],
+			["Set-Cookie", await tokenCookie.serialize(jwt)],
+		],
 	});
 }
 
 export async function logout(request: Request | Session): Promise<never> {
-	return await authenticator.logout(request, { redirectTo: "/" });
+	try {
+		return await authenticator.logout(request, { redirectTo: "/" });
+	} catch (response) {
+		if (response instanceof Response) {
+			response.headers.append(
+				"Set-Cookie",
+				await tokenCookie.serialize("", { maxAge: 0, expires: new Date(0) }),
+			);
+		}
+		throw response;
+	}
 }
 
 export async function ensureUserLoggedIn(
