@@ -47,3 +47,8 @@ VALUES
     (5, 2),
     (6, 1),
     (6, 2);
+
+INSERT INTO testcases
+(problem_id, stdin, stdout)
+VALUES
+    (4, '', '42'),

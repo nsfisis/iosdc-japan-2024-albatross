@@ -5,6 +5,7 @@ type Props = {
 	onCodeChange: (code: string) => void;
 	onCodeSubmit: (code: string) => void;
 	currentScore: number | null;
+	lastExecStatus: string | null;
 };
 
 export default function GolfPlayAppGaming({
@@ -12,6 +13,7 @@ export default function GolfPlayAppGaming({
 	onCodeChange,
 	onCodeSubmit,
 	currentScore,
+	lastExecStatus,
 }: Props) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -36,7 +38,8 @@ export default function GolfPlayAppGaming({
 					<div className="mb-4 mt-auto">
 						<div className="mb-2">
 							<div className="font-semibold text-green-500">
-								Score: {currentScore == null ? "-" : `${currentScore}`}
+								Score: {currentScore == null ? "-" : `${currentScore}`} (
+								{lastExecStatus})
 							</div>
 						</div>
 						<button

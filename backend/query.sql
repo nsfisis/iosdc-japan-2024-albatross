@@ -53,3 +53,16 @@ SET
     started_at = $6,
     problem_id = $7
 WHERE game_id = $1;
+
+-- name: CreateSubmission :one
+INSERT INTO submissions (game_id, user_id, code, code_size)
+VALUES ($1, $2, $3, $4)
+RETURNING submission_id;
+
+-- name: ListTestcasesByGameID :many
+SELECT * FROM testcases
+WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1);
+
+-- name: CreateTestcaseExecution :exec
+INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4, $5);

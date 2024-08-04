@@ -300,6 +300,11 @@ components:
           example: "success"
           enum:
             - success
+            - failure
+            - timeout
+            - internal_error
+            - compile_error
+            - wrong_answer
         score:
           type: integer
           nullable: true

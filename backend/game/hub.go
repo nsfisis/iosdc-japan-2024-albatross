@@ -11,6 +11,7 @@ import (
 
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/taskqueue"
 )
 
 type playerClientState int
@@ -25,6 +26,7 @@ type gameHub struct {
 	ctx               context.Context
 	game              *game
 	q                 *db.Queries
+	taskQueue         *taskqueue.Queue
 	players           map[*playerClient]playerClientState
 	registerPlayer    chan *playerClient
 	unregisterPlayer  chan *playerClient
@@ -32,13 +34,15 @@ type gameHub struct {
 	watchers          map[*watcherClient]bool
 	registerWatcher   chan *watcherClient
 	unregisterWatcher chan *watcherClient
+	testcaseExecution chan string
 }
 
-func newGameHub(ctx context.Context, game *game, q *db.Queries) *gameHub {
+func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskqueue.Queue) *gameHub {
 	return &gameHub{
 		ctx:               ctx,
 		game:              game,
 		q:                 q,
+		taskQueue:         taskQueue,
 		players:           make(map[*playerClient]playerClientState),
 		registerPlayer:    make(chan *playerClient),
 		unregisterPlayer:  make(chan *playerClient),
@@ -46,6 +50,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries) *gameHub {
 		watchers:          make(map[*watcherClient]bool),
 		registerWatcher:   make(chan *watcherClient),
 		unregisterWatcher: make(chan *watcherClient),
+		testcaseExecution: make(chan string),
 	}
 }
 
@@ -173,10 +178,24 @@ func (hub *gameHub) run() {
 			case *playerMessageC2SSubmit:
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
-				// code := msg.Data.Code
-				// TODO
+				code := msg.Data.Code
+				task, err := taskqueue.NewExecTask(hub.game.gameID, message.client.playerID, code)
+				if err != nil {
+					log.Fatalf("failed to create task: %v", err)
+				}
+				hub.taskQueue.Enqueue(task)
 			default:
 				log.Printf("unexpected message type: %T", message.message)
+			}
+		case executionStatus := <-hub.testcaseExecution:
+			for player := range hub.players {
+				player.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  nil,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionStatus),
+					},
+				}
 			}
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
@@ -258,14 +277,16 @@ func (hub *gameHub) closeWatcherClient(watcher *watcherClient) {
 }
 
 type GameHubs struct {
-	hubs map[int]*gameHub
-	q    *db.Queries
+	hubs      map[int]*gameHub
+	q         *db.Queries
+	taskQueue *taskqueue.Queue
 }
 
-func NewGameHubs(q *db.Queries) *GameHubs {
+func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue) *GameHubs {
 	return &GameHubs{
-		hubs: make(map[int]*gameHub),
-		q:    q,
+		hubs:      make(map[int]*gameHub),
+		q:         q,
+		taskQueue: taskQueue,
 	}
 }
 
@@ -313,7 +334,7 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 			startedAt:       startedAt,
 			problem:         problem_,
 			playerCount:     len(playerRows),
-		}, hubs.q)
+		}, hubs.q, hubs.taskQueue)
 	}
 	return nil
 }
@@ -334,4 +355,8 @@ func (hubs *GameHubs) StartGame(gameID int) error {
 		return errors.New("no such game")
 	}
 	return hub.startGame()
+}
+
+func (hubs *GameHubs) C() chan string {
+	return hubs.hubs[4].testcaseExecution
 }
