@@ -30,11 +30,29 @@ type Problem struct {
 	Description string
 }
 
+type Submission struct {
+	SubmissionID int32
+	GameID       int32
+	UserID       int32
+	Code         string
+	CodeSize     int32
+	CreatedAt    pgtype.Timestamp
+}
+
 type Testcase struct {
 	TestcaseID int32
 	ProblemID  int32
 	Stdin      string
 	Stdout     string
+}
+
+type TestcaseExecution struct {
+	TestcaseExecutionID int32
+	SubmissionID        int32
+	TestcaseID          *int32
+	Status              string
+	Stdout              string
+	Stderr              string
 }
 
 type User struct {
