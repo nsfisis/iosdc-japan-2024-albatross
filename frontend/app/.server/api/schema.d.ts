@@ -96,6 +96,11 @@ export interface components {
             /** @example 1 */
             game_id: number;
             /**
+             * @example 1v1
+             * @enum {string}
+             */
+            game_type: "1v1" | "multiplayer";
+            /**
              * @example closed
              * @enum {string}
              */

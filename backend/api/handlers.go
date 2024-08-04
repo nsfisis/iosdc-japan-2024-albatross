@@ -87,6 +87,7 @@ func (h *ApiHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 		}
 		games[i] = Game{
 			GameID:          int(row.GameID),
+			GameType:        GameGameType(row.GameType),
 			State:           GameState(row.State),
 			DisplayName:     row.DisplayName,
 			DurationSeconds: int(row.DurationSeconds),
@@ -134,6 +135,7 @@ func (h *ApiHandler) GetGame(ctx context.Context, request GetGameRequestObject, 
 	}
 	game := Game{
 		GameID:          int(row.GameID),
+		GameType:        GameGameType(row.GameType),
 		State:           GameState(row.State),
 		DisplayName:     row.DisplayName,
 		DurationSeconds: int(row.DurationSeconds),

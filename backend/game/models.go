@@ -20,6 +20,7 @@ const (
 
 type game struct {
 	gameID          int
+	gameType        string
 	state           gameState
 	displayName     string
 	durationSeconds int
