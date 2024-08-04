@@ -1,0 +1,17 @@
+{{ template "base.html" . }}
+
+{{ define "breadcrumb" }}
+<a href="/admin/dashboard">Dashboard</a>
+{{ end }}
+
+{{ define "content" }}
+<ul>
+  {{ range .Users }}
+    <li>
+      <a href="/admin/users/{{ .UserID }}">
+        {{ .DisplayName }} (id={{ .UserID }} username={{ .Username }}){{ if .IsAdmin }} <em>admin</em>{{ end }}
+      </a>
+    </li>
+  {{ end }}
+</ul>
+{{ end }}

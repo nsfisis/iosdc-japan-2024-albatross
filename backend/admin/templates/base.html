@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ADMIN {{ .Title }} | iOSDC Japan 2024 Albatross.swift</title>
+  <link rel="icon" href="/favicon.svg">
+  <link rel="stylesheet" href="/admin/css/normalize.css">
+  <link rel="stylesheet" href="/admin/css/sakura.css">
+</head>
+<body>
+  <section>
+    <h1>ADMIN {{ .Title }}</h1>
+    <p>
+      <em>This is an admin page.</em>
+    </p>
+    <section>
+      <nav>
+        {{ block "breadcrumb" . }}{{ end }}
+      </nav>
+    </section>
+    <section>
+      {{ block "content" . }}{{ end }}
+    </section>
+  </section>
+</body>
+</html>
