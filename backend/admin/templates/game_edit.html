@@ -1,0 +1,45 @@
+{{ template "base.html" . }}
+
+{{ define "breadcrumb" }}
+<a href="/admin/dashboard">Dashboard</a> | <a href="/admin/games">Games</a>
+{{ end }}
+
+{{ define "content" }}
+<form>
+  <div>
+    <label>Game ID</label>
+    <input type="text" name="game_id" value="{{ .Game.GameID }}" readonly required>
+  </div>
+  <div>
+    <label>Display Name</label>
+    <input type="text" name="display_name" value="{{ .Game.DisplayName }}" required>
+  </div>
+  <div>
+    <label>State</label>
+    <select>
+      <option value="closed"{{ if eq .Game.State "closed" }} selected{{ end }}>Closed</option>
+      <option value="waiting_entries"{{ if eq .Game.State "waiting_entries" }} selected{{ end }}>WaitingEntries</option>
+      <option value="waiting_start"{{ if eq .Game.State "waiting_start" }} selected{{ end }}>WaitingStart</option>
+      <option value="prepare"{{ if eq .Game.State "prepare" }} selected{{ end }}>Prepare</option>
+      <option value="starting"{{ if eq .Game.State "starting" }} selected{{ end }}>Starting</option>
+      <option value="gaming"{{ if eq .Game.State "gaming" }} selected{{ end }}>Gaming</option>
+      <option value="finished"{{ if eq .Game.State "finished" }} selected{{ end }}>Finished</option>
+    </select>
+  </div>
+  <div>
+    <label>Duration Seconds</label>
+    <input type="number" name="duration_seconds" value="{{ .Game.DurationSeconds }}" required>
+  </div>
+  <div>
+    <label>Started At</label>
+    <input type="datetime-local" name="started_at" value="{{ .Game.StartedAt }}">
+  </div>
+  <div>
+    <label>Problem ID</label>
+    <input type="text" name="problem_id" value="{{ .Game.ProblemID }}" disabled>
+  </div>
+  <div>
+    <button type="submit">Save</button>
+  </div>
+</form>
+{{ end }}

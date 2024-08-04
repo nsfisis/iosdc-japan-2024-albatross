@@ -1,0 +1,33 @@
+{{ template "base.html" . }}
+
+{{ define "breadcrumb" }}
+<a href="/admin/dashboard">Dashboard</a> | <a href="/admin/users">Users</a>
+{{ end }}
+
+{{ define "content" }}
+<form>
+  <div>
+    <label>User ID</label>
+    <input type="text" name="user_id" value="{{ .User.UserID }}" readonly required>
+  </div>
+  <div>
+    <label>Username</label>
+    <input type="text" name="username" value="{{ .User.Username }}" readonly required>
+  </div>
+  <div>
+    <label>Display Name</label>
+    <input type="text" name="display_name" value="{{ .User.DisplayName }}" required>
+  </div>
+  <div>
+    <label>Icon Path</label>
+    <input type="text" name="icon_path" value="{{ .User.IconPath }}">
+  </div>
+  <div>
+    <label>Is Admin</label>
+    <input type="checkbox" name="is_admin"{{ if .User.IsAdmin }} checked{{ end }}>
+  </div>
+  <div>
+    <button type="submit">Save</button>
+  </div>
+</form>
+{{ end }}

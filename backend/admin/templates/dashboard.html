@@ -1,0 +1,13 @@
+{{ template "base.html" . }}
+
+{{ define "content" }}
+<p>
+  <a href="/admin/users">Users</a>
+</p>
+<p>
+  <a href="/admin/games">Games</a>
+</p>
+<form method="post" action="/logout">
+  <button type="submit">Logout</button>
+</form>
+{{ end }}

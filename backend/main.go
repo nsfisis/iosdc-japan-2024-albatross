@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 	oapimiddleware "github.com/oapi-codegen/echo-middleware"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/admin"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/game"
@@ -53,6 +54,7 @@ func main() {
 	queries := db.New(connPool)
 
 	e := echo.New()
+	e.Renderer = admin.NewRenderer()
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
@@ -76,6 +78,19 @@ func main() {
 	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
 	apiHandler := api.NewHandler(queries, gameHubs)
 	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
+
+	adminHandler := admin.NewAdminHandler(queries, gameHubs)
+	adminGroup := e.Group("/admin")
+	adminHandler.RegisterHandlers(adminGroup)
+
+	// For local dev: This is never used in production because the reverse
+	// proxy sends /login and /logout to the app server.
+	e.GET("/login", func(c echo.Context) error {
+		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/login")
+	})
+	e.POST("/logout", func(c echo.Context) error {
+		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/logout")
+	})
 
 	gameHubs.Run()
 

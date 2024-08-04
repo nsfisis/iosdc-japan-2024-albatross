@@ -11,7 +11,11 @@ export const meta: MetaFunction = () => [
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { user, token } = await ensureUserLoggedIn(request);
 	if (user.is_admin) {
-		return redirect("/admin/dashboard");
+		return redirect(
+			process.env.NODE_ENV === "development"
+				? "http://localhost:8002/admin/dashboard"
+				: "/admin/dashboard",
+		);
 	}
 	const { games } = await apiGetGames(token);
 	return {
@@ -26,10 +30,7 @@ export default function Dashboard() {
 	return (
 		<div className="min-h-screen p-8">
 			<div className="p-6 rounded shadow-md max-w-4xl mx-auto">
-				<h1 className="text-3xl font-bold mb-4">
-					{user.username}{" "}
-					{user.is_admin && <span className="text-red-500 text-lg">admin</span>}
-				</h1>
+				<h1 className="text-3xl font-bold mb-4">{user.username}</h1>
 				<h2 className="text-2xl font-semibold mb-2">User</h2>
 				<div className="mb-6">
 					<ul className="list-disc list-inside">
