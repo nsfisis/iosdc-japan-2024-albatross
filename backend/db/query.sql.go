@@ -12,7 +12,7 @@ import (
 )
 
 const getGameByID = `-- name: GetGameByID :one
-SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1
@@ -20,6 +20,7 @@ LIMIT 1
 
 type GetGameByIDRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -36,6 +37,7 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow
 	var i GetGameByIDRow
 	err := row.Scan(
 		&i.GameID,
+		&i.GameType,
 		&i.State,
 		&i.DisplayName,
 		&i.DurationSeconds,
@@ -107,13 +109,60 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
 	return i, err
 }
 
+const listGamePlayers = `-- name: ListGamePlayers :many
+SELECT game_id, game_players.user_id, users.user_id, username, display_name, icon_path, is_admin, created_at FROM game_players
+LEFT JOIN users ON game_players.user_id = users.user_id
+WHERE game_players.game_id = $1
+`
+
+type ListGamePlayersRow struct {
+	GameID      int32
+	UserID      int32
+	UserID_2    *int32
+	Username    *string
+	DisplayName *string
+	IconPath    *string
+	IsAdmin     *bool
+	CreatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) ListGamePlayers(ctx context.Context, gameID int32) ([]ListGamePlayersRow, error) {
+	rows, err := q.db.Query(ctx, listGamePlayers, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListGamePlayersRow
+	for rows.Next() {
+		var i ListGamePlayersRow
+		if err := rows.Scan(
+			&i.GameID,
+			&i.UserID,
+			&i.UserID_2,
+			&i.Username,
+			&i.DisplayName,
+			&i.IconPath,
+			&i.IsAdmin,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listGames = `-- name: ListGames :many
-SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 `
 
 type ListGamesRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -136,6 +185,7 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 		var i ListGamesRow
 		if err := rows.Scan(
 			&i.GameID,
+			&i.GameType,
 			&i.State,
 			&i.DisplayName,
 			&i.DurationSeconds,
@@ -157,7 +207,7 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 }
 
 const listGamesForPlayer = `-- name: ListGamesForPlayer :many
-SELECT games.game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
+SELECT games.game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
 WHERE game_players.user_id = $1
@@ -165,6 +215,7 @@ WHERE game_players.user_id = $1
 
 type ListGamesForPlayerRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -189,6 +240,7 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 		var i ListGamesForPlayerRow
 		if err := rows.Scan(
 			&i.GameID,
+			&i.GameType,
 			&i.State,
 			&i.DisplayName,
 			&i.DurationSeconds,
@@ -245,16 +297,18 @@ func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {
 const updateGame = `-- name: UpdateGame :exec
 UPDATE games
 SET
-    state = $2,
-    display_name = $3,
-    duration_seconds = $4,
-    started_at = $5,
-    problem_id = $6
+    game_type = $2,
+    state = $3,
+    display_name = $4,
+    duration_seconds = $5,
+    started_at = $6,
+    problem_id = $7
 WHERE game_id = $1
 `
 
 type UpdateGameParams struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -265,6 +319,7 @@ type UpdateGameParams struct {
 func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) error {
 	_, err := q.db.Exec(ctx, updateGame,
 		arg.GameID,
+		arg.GameType,
 		arg.State,
 		arg.DisplayName,
 		arg.DurationSeconds,

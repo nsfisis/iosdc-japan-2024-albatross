@@ -42,7 +42,8 @@ export default function Dashboard() {
 					<ul className="list-disc list-inside">
 						{games.map((game) => (
 							<li key={game.game_id}>
-								{game.display_name}{" "}
+								{game.display_name}
+								{game.game_type === "multiplayer" ? " (Multiplayer)" : " (1v1)"}
 								{game.state === "closed" || game.state === "finished" ? (
 									<span className="inline-block px-6 py-2 text-gray-400 bg-gray-200 cursor-not-allowed rounded">
 										Entry

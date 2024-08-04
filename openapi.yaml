@@ -185,6 +185,12 @@ components:
         game_id:
           type: integer
           example: 1
+        game_type:
+          type: string
+          example: "1v1"
+          enum:
+            - 1v1
+            - multiplayer
         state:
           type: string
           example: "closed"
@@ -209,6 +215,7 @@ components:
           $ref: '#/components/schemas/Problem'
       required:
         - game_id
+        - game_type
         - state
         - display_name
         - duration_seconds

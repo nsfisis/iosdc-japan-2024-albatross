@@ -130,6 +130,7 @@ func (h *AdminHandler) getGames(c echo.Context) error {
 		}
 		games[i] = echo.Map{
 			"GameID":          g.GameID,
+			"GameType":        g.GameType,
 			"State":           g.State,
 			"DisplayName":     g.DisplayName,
 			"DurationSeconds": g.DurationSeconds,
@@ -167,6 +168,7 @@ func (h *AdminHandler) getGameEdit(c echo.Context) error {
 		"Title": "Game Edit",
 		"Game": echo.Map{
 			"GameID":          row.GameID,
+			"GameType":        row.GameType,
 			"State":           row.State,
 			"DisplayName":     row.DisplayName,
 			"DurationSeconds": row.DurationSeconds,
@@ -190,6 +192,7 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 		}
 	}
 
+	gameType := c.FormValue("game_type")
 	state := c.FormValue("state")
 	displayName := c.FormValue("display_name")
 	durationSeconds, err := strconv.Atoi(c.FormValue("duration_seconds"))
@@ -247,6 +250,7 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 
 	err = h.q.UpdateGame(c.Request().Context(), db.UpdateGameParams{
 		GameID:          int32(gameID),
+		GameType:        gameType,
 		State:           state,
 		DisplayName:     displayName,
 		DurationSeconds: int32(durationSeconds),

@@ -56,5 +56,10 @@ func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
 	if hub == nil {
 		return echo.NewHTTPError(http.StatusNotFound, "Game not found")
 	}
+
+	if hub.game.gameType != gameType1v1 {
+		return echo.NewHTTPError(http.StatusBadRequest, "Only 1v1 game is supported")
+	}
+
 	return serveWatcherWs(hub, c.Response(), c.Request())
 }

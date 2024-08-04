@@ -81,7 +81,7 @@ func (hub *gameHub) run() {
 						entriedPlayerCount++
 					}
 				}
-				if entriedPlayerCount == 2 {
+				if entriedPlayerCount == hub.game.playerCount {
 					err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
 						GameID: int32(hub.game.gameID),
 						State:  string(gameStateWaitingStart),
@@ -101,7 +101,7 @@ func (hub *gameHub) run() {
 						readyPlayerCount++
 					}
 				}
-				if readyPlayerCount == 2 {
+				if readyPlayerCount == hub.game.playerCount {
 					startAt := time.Now().Add(11 * time.Second).UTC()
 					for player := range hub.players {
 						player.s2cMessages <- &playerMessageS2CStart{
@@ -300,6 +300,11 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 				description: *row.Description,
 			}
 		}
+		// TODO: N+1
+		playerRows, err := hubs.q.ListGamePlayers(ctx, int32(row.GameID))
+		if err != nil {
+			return err
+		}
 		hubs.hubs[int(row.GameID)] = newGameHub(ctx, &game{
 			gameID:          int(row.GameID),
 			durationSeconds: int(row.DurationSeconds),
@@ -307,6 +312,7 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 			displayName:     row.DisplayName,
 			startedAt:       startedAt,
 			problem:         problem_,
+			playerCount:     len(playerRows),
 		}, hubs.q)
 	}
 	return nil

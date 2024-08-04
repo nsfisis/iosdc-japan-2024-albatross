@@ -25,6 +25,7 @@ CREATE TABLE problems (
 
 CREATE TABLE games (
     game_id          SERIAL       PRIMARY KEY,
+    game_type        VARCHAR(16)  NOT NULL,
     state            VARCHAR(32)  NOT NULL,
     display_name     VARCHAR(255) NOT NULL,
     duration_seconds INT          NOT NULL,
