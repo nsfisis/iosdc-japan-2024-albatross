@@ -5,7 +5,7 @@
 {{ end }}
 
 {{ define "content" }}
-<form>
+<form method="post">
   <div>
     <label>Game ID</label>
     <input type="text" name="game_id" value="{{ .Game.GameID }}" readonly required>
