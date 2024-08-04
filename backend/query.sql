@@ -38,6 +38,11 @@ LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1;
 
+-- name: ListGamePlayers :many
+SELECT * FROM game_players
+LEFT JOIN users ON game_players.user_id = users.user_id
+WHERE game_players.game_id = $1;
+
 -- name: UpdateGame :exec
 UPDATE games
 SET

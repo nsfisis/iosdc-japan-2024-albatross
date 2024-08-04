@@ -109,6 +109,52 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
 	return i, err
 }
 
+const listGamePlayers = `-- name: ListGamePlayers :many
+SELECT game_id, game_players.user_id, users.user_id, username, display_name, icon_path, is_admin, created_at FROM game_players
+LEFT JOIN users ON game_players.user_id = users.user_id
+WHERE game_players.game_id = $1
+`
+
+type ListGamePlayersRow struct {
+	GameID      int32
+	UserID      int32
+	UserID_2    *int32
+	Username    *string
+	DisplayName *string
+	IconPath    *string
+	IsAdmin     *bool
+	CreatedAt   pgtype.Timestamp
+}
+
+func (q *Queries) ListGamePlayers(ctx context.Context, gameID int32) ([]ListGamePlayersRow, error) {
+	rows, err := q.db.Query(ctx, listGamePlayers, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListGamePlayersRow
+	for rows.Next() {
+		var i ListGamePlayersRow
+		if err := rows.Scan(
+			&i.GameID,
+			&i.UserID,
+			&i.UserID_2,
+			&i.Username,
+			&i.DisplayName,
+			&i.IconPath,
+			&i.IsAdmin,
+			&i.CreatedAt,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listGames = `-- name: ListGames :many
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id

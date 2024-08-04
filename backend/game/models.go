@@ -30,6 +30,7 @@ type game struct {
 	durationSeconds int
 	startedAt       *time.Time
 	problem         *problem
+	playerCount     int
 }
 
 type problem struct {
