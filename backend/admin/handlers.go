@@ -236,5 +236,5 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.String(http.StatusNoContent, "")
+	return c.NoContent(http.StatusNoContent)
 }
