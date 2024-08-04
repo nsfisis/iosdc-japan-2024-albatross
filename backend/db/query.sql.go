@@ -11,6 +11,55 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const createSubmission = `-- name: CreateSubmission :one
+INSERT INTO submissions (game_id, user_id, code, code_size)
+VALUES ($1, $2, $3, $4)
+RETURNING submission_id
+`
+
+type CreateSubmissionParams struct {
+	GameID   int32
+	UserID   int32
+	Code     string
+	CodeSize int32
+}
+
+func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionParams) (int32, error) {
+	row := q.db.QueryRow(ctx, createSubmission,
+		arg.GameID,
+		arg.UserID,
+		arg.Code,
+		arg.CodeSize,
+	)
+	var submission_id int32
+	err := row.Scan(&submission_id)
+	return submission_id, err
+}
+
+const createTestcaseExecution = `-- name: CreateTestcaseExecution :exec
+INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4, $5)
+`
+
+type CreateTestcaseExecutionParams struct {
+	SubmissionID int32
+	TestcaseID   *int32
+	Status       string
+	Stdout       string
+	Stderr       string
+}
+
+func (q *Queries) CreateTestcaseExecution(ctx context.Context, arg CreateTestcaseExecutionParams) error {
+	_, err := q.db.Exec(ctx, createTestcaseExecution,
+		arg.SubmissionID,
+		arg.TestcaseID,
+		arg.Status,
+		arg.Stdout,
+		arg.Stderr,
+	)
+	return err
+}
+
 const getGameByID = `-- name: GetGameByID :one
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
@@ -252,6 +301,36 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 			&i.Description,
 			&i.GameID_2,
 			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listTestcasesByGameID = `-- name: ListTestcasesByGameID :many
+SELECT testcase_id, problem_id, stdin, stdout FROM testcases
+WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
+`
+
+func (q *Queries) ListTestcasesByGameID(ctx context.Context, gameID int32) ([]Testcase, error) {
+	rows, err := q.db.Query(ctx, listTestcasesByGameID, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []Testcase
+	for rows.Next() {
+		var i Testcase
+		if err := rows.Scan(
+			&i.TestcaseID,
+			&i.ProblemID,
+			&i.Stdin,
+			&i.Stdout,
 		); err != nil {
 			return nil, err
 		}
