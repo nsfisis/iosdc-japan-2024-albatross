@@ -40,16 +40,6 @@ export async function ensureUserLoggedIn(
 	return { user, token };
 }
 
-export async function ensureAdminUserLoggedIn(
-	request: Request | Session,
-): Promise<{ user: User; token: string }> {
-	const { user, token } = await ensureUserLoggedIn(request);
-	if (!user.is_admin) {
-		throw new Error("Forbidden");
-	}
-	return { user, token };
-}
-
 export async function ensureUserNotLoggedIn(
 	request: Request | Session,
 ): Promise<null> {
