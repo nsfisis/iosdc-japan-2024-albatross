@@ -9,7 +9,7 @@
   {{ range .Games }}
     <li>
       <a href="/admin/games/{{ .GameID }}">
-        {{ .DisplayName }} (id={{ .GameID }})
+        {{ .DisplayName }} (id={{ .GameID }} type={{ .GameType }} state={{ .State }})
       </a>
     </li>
   {{ end }}

@@ -41,9 +41,10 @@ LIMIT 1;
 -- name: UpdateGame :exec
 UPDATE games
 SET
-    state = $2,
-    display_name = $3,
-    duration_seconds = $4,
-    started_at = $5,
-    problem_id = $6
+    game_type = $2,
+    state = $3,
+    display_name = $4,
+    duration_seconds = $5,
+    started_at = $6,
+    problem_id = $7
 WHERE game_id = $1;

@@ -15,11 +15,18 @@
     <input type="text" name="display_name" value="{{ .Game.DisplayName }}" required>
   </div>
   <div>
+    <label>Game Type</label>
+    <select name="game_type" required>
+      <option value="1v1"{{ if eq .Game.GameType "1v1" }} selected{{ end }}>1v1</option>
+      <option value="multiplayer"{{ if eq .Game.GameType "multiplayer" }} selected{{ end }}>Multiplayer</option>
+    </select>
+  </div>
+  <div>
     <label>State</label>
-    <select>
+    <select name="state" required>
       <option value="closed"{{ if eq .Game.State "closed" }} selected{{ end }}>Closed</option>
-      <option value="waiting_entries"{{ if eq .Game.State "waiting_entries" }} selected{{ end }}>WaitingEntries</option>
-      <option value="waiting_start"{{ if eq .Game.State "waiting_start" }} selected{{ end }}>WaitingStart</option>
+      <option value="waiting_entries"{{ if eq .Game.State "waiting_entries" }} selected{{ end }}>Waiting Entries</option>
+      <option value="waiting_start"{{ if eq .Game.State "waiting_start" }} selected{{ end }}>Waiting Start</option>
       <option value="prepare"{{ if eq .Game.State "prepare" }} selected{{ end }}>Prepare</option>
       <option value="starting"{{ if eq .Game.State "starting" }} selected{{ end }}>Starting</option>
       <option value="gaming"{{ if eq .Game.State "gaming" }} selected{{ end }}>Gaming</option>
