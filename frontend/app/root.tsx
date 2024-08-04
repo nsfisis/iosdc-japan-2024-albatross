@@ -8,9 +8,9 @@ import {
 } from "@remix-run/react";
 import "./tailwind.css";
 
-export const links: LinksFunction = () => {
-	return [{ rel: "icon", href: "/favicon.svg" }];
-};
+export const links: LinksFunction = () => [
+	{ rel: "icon", href: "/favicon.svg" },
+];
 
 export function Layout({ children }: { children: React.ReactNode }) {
 	return (

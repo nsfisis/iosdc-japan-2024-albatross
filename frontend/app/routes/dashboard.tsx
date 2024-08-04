@@ -4,9 +4,9 @@ import { Form, Link, useLoaderData } from "@remix-run/react";
 import { apiGetGames } from "../.server/api/client";
 import { ensureUserLoggedIn } from "../.server/auth";
 
-export const meta: MetaFunction = () => {
-	return [{ title: "Dashboard | iOSDC Japan 2024 Albatross.swift" }];
-};
+export const meta: MetaFunction = () => [
+	{ title: "Dashboard | iOSDC Japan 2024 Albatross.swift" },
+];
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { user, token } = await ensureUserLoggedIn(request);

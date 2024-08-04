@@ -3,9 +3,9 @@ import { useLoaderData } from "@remix-run/react";
 import { adminApiGetUsers } from "../.server/api/client";
 import { ensureAdminUserLoggedIn } from "../.server/auth";
 
-export const meta: MetaFunction = () => {
-	return [{ title: "[Admin] Users | iOSDC Japan 2024 Albatross.swift" }];
-};
+export const meta: MetaFunction = () => [
+	{ title: "[Admin] Users | iOSDC Japan 2024 Albatross.swift" },
+];
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { token } = await ensureAdminUserLoggedIn(request);

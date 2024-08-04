@@ -6,15 +6,13 @@ import { ensureUserLoggedIn } from "../.server/auth";
 import GolfPlayApp from "../components/GolfPlayApp.client";
 import GolfPlayAppConnecting from "../components/GolfPlayApps/GolfPlayAppConnecting";
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-	return [
-		{
-			title: data
-				? `Golf Playing ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
-				: "Golf Playing | iOSDC Japan 2024 Albatross.swift",
-		},
-	];
-};
+export const meta: MetaFunction<typeof loader> = ({ data }) => [
+	{
+		title: data
+			? `Golf Playing ${data.game.display_name} | iOSDC Japan 2024 Albatross.swift`
+			: "Golf Playing | iOSDC Japan 2024 Albatross.swift",
+	},
+];
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
 	const { token } = await ensureUserLoggedIn(request);

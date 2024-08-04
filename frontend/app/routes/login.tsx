@@ -6,9 +6,9 @@ import type {
 import { Form } from "@remix-run/react";
 import { ensureUserNotLoggedIn, login } from "../.server/auth";
 
-export const meta: MetaFunction = () => {
-	return [{ title: "Login | iOSDC Japan 2024 Albatross.swift" }];
-};
+export const meta: MetaFunction = () => [
+	{ title: "Login | iOSDC Japan 2024 Albatross.swift" },
+];
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	return await ensureUserNotLoggedIn(request);
