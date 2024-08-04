@@ -126,7 +126,7 @@ func (h *AdminHandler) getGames(c echo.Context) error {
 	for i, g := range rows {
 		var startedAt string
 		if !g.StartedAt.Valid {
-			startedAt = g.StartedAt.Time.In(jst).Format("2006-01-02T15:04:05")
+			startedAt = g.StartedAt.Time.In(jst).Format("2006-01-02T15:04")
 		}
 		games[i] = echo.Map{
 			"GameID":          g.GameID,
@@ -161,7 +161,7 @@ func (h *AdminHandler) getGameEdit(c echo.Context) error {
 
 	var startedAt string
 	if !row.StartedAt.Valid {
-		startedAt = row.StartedAt.Time.In(jst).Format("2006-01-02T15:04:05")
+		startedAt = row.StartedAt.Time.In(jst).Format("2006-01-02T15:04")
 	}
 
 	return c.Render(http.StatusOK, "game_edit", echo.Map{
@@ -214,7 +214,7 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 	{
 		startedAtRaw := c.FormValue("started_at")
 		if startedAtRaw != "" {
-			startedAtTime, err := time.Parse("2006-01-02T15:04:05", startedAtRaw)
+			startedAtTime, err := time.Parse("2006-01-02T15:04", startedAtRaw)
 			if err != nil {
 				return echo.NewHTTPError(http.StatusBadRequest, "Invalid started_at")
 			}
