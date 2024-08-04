@@ -61,7 +61,6 @@ func main() {
 	e.Use(middleware.Recover())
 
 	taskQueue := taskqueue.NewQueue("task-db:6379")
-	workerServer := taskqueue.NewWorkerServer("task-db:6379", queries)
 
 	gameHubs := game.NewGameHubs(queries, taskQueue)
 	err = gameHubs.RestoreFromDB(ctx)
@@ -98,6 +97,7 @@ func main() {
 
 	gameHubs.Run()
 
+	workerServer := taskqueue.NewWorkerServer("task-db:6379", queries, gameHubs.C())
 	go func() {
 		workerServer.Run()
 	}()

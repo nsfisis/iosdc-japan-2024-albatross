@@ -150,7 +150,7 @@ export interface components {
              * @example success
              * @enum {string}
              */
-            status: "success";
+            status: "success" | "failure" | "timeout" | "internal_error" | "compile_error" | "wrong_answer";
             /** @example 100 */
             score: number | null;
         };

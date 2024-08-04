@@ -34,6 +34,7 @@ type gameHub struct {
 	watchers          map[*watcherClient]bool
 	registerWatcher   chan *watcherClient
 	unregisterWatcher chan *watcherClient
+	testcaseExecution chan string
 }
 
 func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskqueue.Queue) *gameHub {
@@ -49,6 +50,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskq
 		watchers:          make(map[*watcherClient]bool),
 		registerWatcher:   make(chan *watcherClient),
 		unregisterWatcher: make(chan *watcherClient),
+		testcaseExecution: make(chan string),
 	}
 }
 
@@ -184,6 +186,16 @@ func (hub *gameHub) run() {
 				hub.taskQueue.Enqueue(task)
 			default:
 				log.Printf("unexpected message type: %T", message.message)
+			}
+		case executionStatus := <-hub.testcaseExecution:
+			for player := range hub.players {
+				player.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  nil,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionStatus),
+					},
+				}
 			}
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
@@ -343,4 +355,8 @@ func (hubs *GameHubs) StartGame(gameID int) error {
 		return errors.New("no such game")
 	}
 	return hub.startGame()
+}
+
+func (hubs *GameHubs) C() chan string {
+	return hubs.hubs[4].testcaseExecution
 }

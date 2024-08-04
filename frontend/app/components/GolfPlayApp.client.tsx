@@ -73,6 +73,8 @@ export default function GolfPlayApp({
 
 	const [currentScore, setCurrentScore] = useState<number | null>(null);
 
+	const [lastExecStatus, setLastExecStatus] = useState<string | null>(null);
+
 	const onCodeChange = useDebouncedCallback((code: string) => {
 		console.log("player:c2s:code");
 		sendJsonMessage({
@@ -121,13 +123,14 @@ export default function GolfPlayApp({
 						setGameState("starting");
 					}
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
-					const { score } = lastJsonMessage.data;
+					const { status, score } = lastJsonMessage.data;
 					if (
 						score !== null &&
 						(currentScore === null || score < currentScore)
 					) {
 						setCurrentScore(score);
 					}
+					setLastExecStatus(status);
 				}
 			} else {
 				setGameState("waiting");
@@ -150,6 +153,7 @@ export default function GolfPlayApp({
 				onCodeChange={onCodeChange}
 				onCodeSubmit={onCodeSubmit}
 				currentScore={currentScore}
+				lastExecStatus={lastExecStatus}
 			/>
 		);
 	} else if (gameState === "finished") {

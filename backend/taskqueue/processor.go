@@ -15,11 +15,13 @@ import (
 
 type ExecProcessor struct {
 	q *db.Queries
+	c chan string
 }
 
-func NewExecProcessor(q *db.Queries) *ExecProcessor {
+func NewExecProcessor(q *db.Queries, c chan string) *ExecProcessor {
 	return &ExecProcessor{
 		q: q,
+		c: c,
 	}
 }
 
@@ -78,6 +80,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
+			p.c <- "compile_error"
 			return fmt.Errorf("swiftc failed: %v", resData.Stderr)
 		}
 	}
@@ -118,6 +121,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
+			p.c <- "compile_error"
 			return fmt.Errorf("wasmc failed: %v", resData.Stderr)
 		}
 	}
@@ -166,6 +170,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
+			p.c <- resData.Result
 			return fmt.Errorf("testrun failed: %v", resData.Stderr)
 		}
 		if isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
@@ -179,6 +184,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
+			p.c <- "wrong_answer"
 			return fmt.Errorf("testrun failed: %v", resData.Stdout)
 		}
 	}
