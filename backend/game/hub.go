@@ -176,8 +176,12 @@ func (hub *gameHub) run() {
 			case *playerMessageC2SSubmit:
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
-				// code := msg.Data.Code
-				// TODO
+				code := msg.Data.Code
+				task, err := taskqueue.NewExecTask(hub.game.gameID, message.client.playerID, code)
+				if err != nil {
+					log.Fatalf("failed to create task: %v", err)
+				}
+				hub.taskQueue.Enqueue(task)
 			default:
 				log.Printf("unexpected message type: %T", message.message)
 			}

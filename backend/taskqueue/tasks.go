@@ -10,20 +10,17 @@ const (
 	TaskTypeExec = "exec"
 )
 
-type Testcase struct {
-	Stdin  string
-	Stdout string
-}
-
 type TaskExecPlayload struct {
-	Code      string
-	Testcases []*Testcase
+	GameID int
+	UserID int
+	Code   string
 }
 
-func NewExecTask(code string, testcases []*Testcase) (*asynq.Task, error) {
+func NewExecTask(gameID, userID int, code string) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskExecPlayload{
-		Code:      code,
-		Testcases: testcases,
+		GameID: gameID,
+		UserID: userID,
+		Code:   code,
 	})
 	if err != nil {
 		return nil, err
