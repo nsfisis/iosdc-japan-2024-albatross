@@ -15,6 +15,7 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/game"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/taskqueue"
 )
 
 func connectDB(ctx context.Context, dsn string) (*pgxpool.Pool, error) {
@@ -59,7 +60,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	gameHubs := game.NewGameHubs(queries)
+	taskQueue := taskqueue.NewQueue("task-db:6379")
+	workerServer := taskqueue.NewWorkerServer("task-db:6379")
+
+	gameHubs := game.NewGameHubs(queries, taskQueue)
 	err = gameHubs.RestoreFromDB(ctx)
 	if err != nil {
 		log.Fatalf("Error restoring game hubs from db %v", err)
@@ -93,6 +97,10 @@ func main() {
 	})
 
 	gameHubs.Run()
+
+	go func() {
+		workerServer.Run()
+	}()
 
 	if err := e.Start(":80"); err != http.ErrServerClosed {
 		log.Fatal(err)
