@@ -24,13 +24,13 @@ import (
 
 // Defines values for GameState.
 const (
-	GameStateClosed         GameState = "closed"
-	GameStateFinished       GameState = "finished"
-	GameStateGaming         GameState = "gaming"
-	GameStatePrepare        GameState = "prepare"
-	GameStateStarting       GameState = "starting"
-	GameStateWaitingEntries GameState = "waiting_entries"
-	GameStateWaitingStart   GameState = "waiting_start"
+	Closed         GameState = "closed"
+	Finished       GameState = "finished"
+	Gaming         GameState = "gaming"
+	Prepare        GameState = "prepare"
+	Starting       GameState = "starting"
+	WaitingEntries GameState = "waiting_entries"
+	WaitingStart   GameState = "waiting_start"
 )
 
 // Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
@@ -41,17 +41,6 @@ const (
 // Defines values for GameWatcherMessageS2CExecResultPayloadStatus.
 const (
 	GameWatcherMessageS2CExecResultPayloadStatusSuccess GameWatcherMessageS2CExecResultPayloadStatus = "success"
-)
-
-// Defines values for AdminPutGameJSONBodyState.
-const (
-	AdminPutGameJSONBodyStateClosed         AdminPutGameJSONBodyState = "closed"
-	AdminPutGameJSONBodyStateFinished       AdminPutGameJSONBodyState = "finished"
-	AdminPutGameJSONBodyStateGaming         AdminPutGameJSONBodyState = "gaming"
-	AdminPutGameJSONBodyStatePrepare        AdminPutGameJSONBodyState = "prepare"
-	AdminPutGameJSONBodyStateStarting       AdminPutGameJSONBodyState = "starting"
-	AdminPutGameJSONBodyStateWaitingEntries AdminPutGameJSONBodyState = "waiting_entries"
-	AdminPutGameJSONBodyStateWaitingStart   AdminPutGameJSONBodyState = "waiting_start"
 )
 
 // Error defines model for Error.
@@ -241,38 +230,6 @@ type NotFound = Error
 // Unauthorized defines model for Unauthorized.
 type Unauthorized = Error
 
-// AdminGetGamesParams defines parameters for AdminGetGames.
-type AdminGetGamesParams struct {
-	Authorization HeaderAuthorization `json:"Authorization"`
-}
-
-// AdminGetGameParams defines parameters for AdminGetGame.
-type AdminGetGameParams struct {
-	Authorization HeaderAuthorization `json:"Authorization"`
-}
-
-// AdminPutGameJSONBody defines parameters for AdminPutGame.
-type AdminPutGameJSONBody struct {
-	DisplayName     *string                    `json:"display_name,omitempty"`
-	DurationSeconds *int                       `json:"duration_seconds,omitempty"`
-	ProblemID       nullable.Nullable[int]     `json:"problem_id,omitempty"`
-	StartedAt       nullable.Nullable[int]     `json:"started_at,omitempty"`
-	State           *AdminPutGameJSONBodyState `json:"state,omitempty"`
-}
-
-// AdminPutGameParams defines parameters for AdminPutGame.
-type AdminPutGameParams struct {
-	Authorization HeaderAuthorization `json:"Authorization"`
-}
-
-// AdminPutGameJSONBodyState defines parameters for AdminPutGame.
-type AdminPutGameJSONBodyState string
-
-// AdminGetUsersParams defines parameters for AdminGetUsers.
-type AdminGetUsersParams struct {
-	Authorization HeaderAuthorization `json:"Authorization"`
-}
-
 // GetGamesParams defines parameters for GetGames.
 type GetGamesParams struct {
 	Authorization HeaderAuthorization `json:"Authorization"`
@@ -293,9 +250,6 @@ type PostLoginJSONBody struct {
 type GetTokenParams struct {
 	Authorization HeaderAuthorization `json:"Authorization"`
 }
-
-// AdminPutGameJSONRequestBody defines body for AdminPutGame for application/json ContentType.
-type AdminPutGameJSONRequestBody AdminPutGameJSONBody
 
 // PostLoginJSONRequestBody defines body for PostLogin for application/json ContentType.
 type PostLoginJSONRequestBody PostLoginJSONBody
@@ -691,18 +645,6 @@ func (t *GameWatcherMessageS2C) UnmarshalJSON(b []byte) error {
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
 	// List games
-	// (GET /admin/games)
-	AdminGetGames(ctx echo.Context, params AdminGetGamesParams) error
-	// Get a game
-	// (GET /admin/games/{game_id})
-	AdminGetGame(ctx echo.Context, gameID PathGameID, params AdminGetGameParams) error
-	// Update a game
-	// (PUT /admin/games/{game_id})
-	AdminPutGame(ctx echo.Context, gameID PathGameID, params AdminPutGameParams) error
-	// List all users
-	// (GET /admin/users)
-	AdminGetUsers(ctx echo.Context, params AdminGetUsersParams) error
-	// List games
 	// (GET /games)
 	GetGames(ctx echo.Context, params GetGamesParams) error
 	// Get a game
@@ -719,144 +661,6 @@ type ServerInterface interface {
 // ServerInterfaceWrapper converts echo contexts to parameters.
 type ServerInterfaceWrapper struct {
 	Handler ServerInterface
-}
-
-// AdminGetGames converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminGetGames(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminGetGamesParams
-
-	headers := ctx.Request().Header
-	// ------------- Required header parameter "Authorization" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization HeaderAuthorization
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
-		}
-
-		params.Authorization = Authorization
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminGetGames(ctx, params)
-	return err
-}
-
-// AdminGetGame converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminGetGame(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "game_id" -------------
-	var gameID PathGameID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminGetGameParams
-
-	headers := ctx.Request().Header
-	// ------------- Required header parameter "Authorization" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization HeaderAuthorization
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
-		}
-
-		params.Authorization = Authorization
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminGetGame(ctx, gameID, params)
-	return err
-}
-
-// AdminPutGame converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminPutGame(ctx echo.Context) error {
-	var err error
-	// ------------- Path parameter "game_id" -------------
-	var gameID PathGameID
-
-	err = runtime.BindStyledParameterWithOptions("simple", "game_id", ctx.Param("game_id"), &gameID, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationPath, Explode: false, Required: true})
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter game_id: %s", err))
-	}
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminPutGameParams
-
-	headers := ctx.Request().Header
-	// ------------- Required header parameter "Authorization" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization HeaderAuthorization
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
-		}
-
-		params.Authorization = Authorization
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminPutGame(ctx, gameID, params)
-	return err
-}
-
-// AdminGetUsers converts echo context to params.
-func (w *ServerInterfaceWrapper) AdminGetUsers(ctx echo.Context) error {
-	var err error
-
-	// Parameter object where we will unmarshal all parameters from the context
-	var params AdminGetUsersParams
-
-	headers := ctx.Request().Header
-	// ------------- Required header parameter "Authorization" -------------
-	if valueList, found := headers[http.CanonicalHeaderKey("Authorization")]; found {
-		var Authorization HeaderAuthorization
-		n := len(valueList)
-		if n != 1 {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Expected one value for Authorization, got %d", n))
-		}
-
-		err = runtime.BindStyledParameterWithOptions("simple", "Authorization", valueList[0], &Authorization, runtime.BindStyledParameterOptions{ParamLocation: runtime.ParamLocationHeader, Explode: false, Required: true})
-		if err != nil {
-			return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Invalid format for parameter Authorization: %s", err))
-		}
-
-		params.Authorization = Authorization
-	} else {
-		return echo.NewHTTPError(http.StatusBadRequest, fmt.Sprintf("Header parameter Authorization is required, but not found"))
-	}
-
-	// Invoke the callback with all the unmarshaled arguments
-	err = w.Handler.AdminGetUsers(ctx, params)
-	return err
 }
 
 // GetGames converts echo context to params.
@@ -996,10 +800,6 @@ func RegisterHandlersWithBaseURL(router EchoRouter, si ServerInterface, baseURL 
 		Handler: si,
 	}
 
-	router.GET(baseURL+"/admin/games", wrapper.AdminGetGames)
-	router.GET(baseURL+"/admin/games/:game_id", wrapper.AdminGetGame)
-	router.PUT(baseURL+"/admin/games/:game_id", wrapper.AdminPutGame)
-	router.GET(baseURL+"/admin/users", wrapper.AdminGetUsers)
 	router.GET(baseURL+"/games", wrapper.GetGames)
 	router.GET(baseURL+"/games/:game_id", wrapper.GetGame)
 	router.POST(baseURL+"/login", wrapper.PostLogin)
@@ -1014,181 +814,6 @@ type ForbiddenJSONResponse Error
 type NotFoundJSONResponse Error
 
 type UnauthorizedJSONResponse Error
-
-type AdminGetGamesRequestObject struct {
-	Params AdminGetGamesParams
-}
-
-type AdminGetGamesResponseObject interface {
-	VisitAdminGetGamesResponse(w http.ResponseWriter) error
-}
-
-type AdminGetGames200JSONResponse struct {
-	Games []Game `json:"games"`
-}
-
-func (response AdminGetGames200JSONResponse) VisitAdminGetGamesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGames401JSONResponse struct{ UnauthorizedJSONResponse }
-
-func (response AdminGetGames401JSONResponse) VisitAdminGetGamesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGames403JSONResponse struct{ ForbiddenJSONResponse }
-
-func (response AdminGetGames403JSONResponse) VisitAdminGetGamesResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGameRequestObject struct {
-	GameID PathGameID `json:"game_id"`
-	Params AdminGetGameParams
-}
-
-type AdminGetGameResponseObject interface {
-	VisitAdminGetGameResponse(w http.ResponseWriter) error
-}
-
-type AdminGetGame200JSONResponse struct {
-	Game Game `json:"game"`
-}
-
-func (response AdminGetGame200JSONResponse) VisitAdminGetGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGame401JSONResponse struct{ UnauthorizedJSONResponse }
-
-func (response AdminGetGame401JSONResponse) VisitAdminGetGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGame403JSONResponse struct{ ForbiddenJSONResponse }
-
-func (response AdminGetGame403JSONResponse) VisitAdminGetGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetGame404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response AdminGetGame404JSONResponse) VisitAdminGetGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminPutGameRequestObject struct {
-	GameID PathGameID `json:"game_id"`
-	Params AdminPutGameParams
-	Body   *AdminPutGameJSONRequestBody
-}
-
-type AdminPutGameResponseObject interface {
-	VisitAdminPutGameResponse(w http.ResponseWriter) error
-}
-
-type AdminPutGame204Response struct {
-}
-
-func (response AdminPutGame204Response) VisitAdminPutGameResponse(w http.ResponseWriter) error {
-	w.WriteHeader(204)
-	return nil
-}
-
-type AdminPutGame400JSONResponse struct{ BadRequestJSONResponse }
-
-func (response AdminPutGame400JSONResponse) VisitAdminPutGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(400)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminPutGame401JSONResponse struct{ UnauthorizedJSONResponse }
-
-func (response AdminPutGame401JSONResponse) VisitAdminPutGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminPutGame403JSONResponse struct{ ForbiddenJSONResponse }
-
-func (response AdminPutGame403JSONResponse) VisitAdminPutGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminPutGame404JSONResponse struct{ NotFoundJSONResponse }
-
-func (response AdminPutGame404JSONResponse) VisitAdminPutGameResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(404)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetUsersRequestObject struct {
-	Params AdminGetUsersParams
-}
-
-type AdminGetUsersResponseObject interface {
-	VisitAdminGetUsersResponse(w http.ResponseWriter) error
-}
-
-type AdminGetUsers200JSONResponse struct {
-	Users []User `json:"users"`
-}
-
-func (response AdminGetUsers200JSONResponse) VisitAdminGetUsersResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(200)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetUsers401JSONResponse struct{ UnauthorizedJSONResponse }
-
-func (response AdminGetUsers401JSONResponse) VisitAdminGetUsersResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(401)
-
-	return json.NewEncoder(w).Encode(response)
-}
-
-type AdminGetUsers403JSONResponse struct{ ForbiddenJSONResponse }
-
-func (response AdminGetUsers403JSONResponse) VisitAdminGetUsersResponse(w http.ResponseWriter) error {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(403)
-
-	return json.NewEncoder(w).Encode(response)
-}
 
 type GetGamesRequestObject struct {
 	Params GetGamesParams
@@ -1333,18 +958,6 @@ func (response GetToken401JSONResponse) VisitGetTokenResponse(w http.ResponseWri
 // StrictServerInterface represents all server handlers.
 type StrictServerInterface interface {
 	// List games
-	// (GET /admin/games)
-	AdminGetGames(ctx context.Context, request AdminGetGamesRequestObject) (AdminGetGamesResponseObject, error)
-	// Get a game
-	// (GET /admin/games/{game_id})
-	AdminGetGame(ctx context.Context, request AdminGetGameRequestObject) (AdminGetGameResponseObject, error)
-	// Update a game
-	// (PUT /admin/games/{game_id})
-	AdminPutGame(ctx context.Context, request AdminPutGameRequestObject) (AdminPutGameResponseObject, error)
-	// List all users
-	// (GET /admin/users)
-	AdminGetUsers(ctx context.Context, request AdminGetUsersRequestObject) (AdminGetUsersResponseObject, error)
-	// List games
 	// (GET /games)
 	GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error)
 	// Get a game
@@ -1368,114 +981,6 @@ func NewStrictHandler(ssi StrictServerInterface, middlewares []StrictMiddlewareF
 type strictHandler struct {
 	ssi         StrictServerInterface
 	middlewares []StrictMiddlewareFunc
-}
-
-// AdminGetGames operation middleware
-func (sh *strictHandler) AdminGetGames(ctx echo.Context, params AdminGetGamesParams) error {
-	var request AdminGetGamesRequestObject
-
-	request.Params = params
-
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.AdminGetGames(ctx.Request().Context(), request.(AdminGetGamesRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "AdminGetGames")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		return err
-	} else if validResponse, ok := response.(AdminGetGamesResponseObject); ok {
-		return validResponse.VisitAdminGetGamesResponse(ctx.Response())
-	} else if response != nil {
-		return fmt.Errorf("unexpected response type: %T", response)
-	}
-	return nil
-}
-
-// AdminGetGame operation middleware
-func (sh *strictHandler) AdminGetGame(ctx echo.Context, gameID PathGameID, params AdminGetGameParams) error {
-	var request AdminGetGameRequestObject
-
-	request.GameID = gameID
-	request.Params = params
-
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.AdminGetGame(ctx.Request().Context(), request.(AdminGetGameRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "AdminGetGame")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		return err
-	} else if validResponse, ok := response.(AdminGetGameResponseObject); ok {
-		return validResponse.VisitAdminGetGameResponse(ctx.Response())
-	} else if response != nil {
-		return fmt.Errorf("unexpected response type: %T", response)
-	}
-	return nil
-}
-
-// AdminPutGame operation middleware
-func (sh *strictHandler) AdminPutGame(ctx echo.Context, gameID PathGameID, params AdminPutGameParams) error {
-	var request AdminPutGameRequestObject
-
-	request.GameID = gameID
-	request.Params = params
-
-	var body AdminPutGameJSONRequestBody
-	if err := ctx.Bind(&body); err != nil {
-		return err
-	}
-	request.Body = &body
-
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.AdminPutGame(ctx.Request().Context(), request.(AdminPutGameRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "AdminPutGame")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		return err
-	} else if validResponse, ok := response.(AdminPutGameResponseObject); ok {
-		return validResponse.VisitAdminPutGameResponse(ctx.Response())
-	} else if response != nil {
-		return fmt.Errorf("unexpected response type: %T", response)
-	}
-	return nil
-}
-
-// AdminGetUsers operation middleware
-func (sh *strictHandler) AdminGetUsers(ctx echo.Context, params AdminGetUsersParams) error {
-	var request AdminGetUsersRequestObject
-
-	request.Params = params
-
-	handler := func(ctx echo.Context, request interface{}) (interface{}, error) {
-		return sh.ssi.AdminGetUsers(ctx.Request().Context(), request.(AdminGetUsersRequestObject))
-	}
-	for _, middleware := range sh.middlewares {
-		handler = middleware(handler, "AdminGetUsers")
-	}
-
-	response, err := handler(ctx, request)
-
-	if err != nil {
-		return err
-	} else if validResponse, ok := response.(AdminGetUsersResponseObject); ok {
-		return validResponse.VisitAdminGetUsersResponse(ctx.Response())
-	} else if response != nil {
-		return fmt.Errorf("unexpected response type: %T", response)
-	}
-	return nil
 }
 
 // GetGames operation middleware
@@ -1586,33 +1091,31 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"wKIoin8DAAD//5oSt8+jKgAA",
+	"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",
+	"//9iv6ZqPCEAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

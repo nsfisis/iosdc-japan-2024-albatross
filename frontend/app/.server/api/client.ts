@@ -1,5 +1,5 @@
 import createClient from "openapi-fetch";
-import type { operations, paths } from "./schema";
+import type { paths } from "./schema";
 
 const apiClient = createClient<paths>({
 	baseUrl:
@@ -42,53 +42,6 @@ export async function apiGetToken(token: string) {
 		params: {
 			header: { Authorization: `Bearer ${token}` },
 		},
-	});
-	if (error) throw new Error(error.message);
-	return data;
-}
-
-export async function adminApiGetUsers(token: string) {
-	const { data, error } = await apiClient.GET("/admin/users", {
-		params: {
-			header: { Authorization: `Bearer ${token}` },
-		},
-	});
-	if (error) throw new Error(error.message);
-	return data;
-}
-
-export async function adminApiGetGames(token: string) {
-	const { data, error } = await apiClient.GET("/admin/games", {
-		params: {
-			header: { Authorization: `Bearer ${token}` },
-		},
-	});
-	if (error) throw new Error(error.message);
-	return data;
-}
-
-export async function adminApiGetGame(token: string, gameId: number) {
-	const { data, error } = await apiClient.GET("/admin/games/{game_id}", {
-		params: {
-			header: { Authorization: `Bearer ${token}` },
-			path: { game_id: gameId },
-		},
-	});
-	if (error) throw new Error(error.message);
-	return data;
-}
-
-export async function adminApiPutGame(
-	token: string,
-	gameId: number,
-	body: operations["adminPutGame"]["requestBody"]["content"]["application/json"],
-) {
-	const { data, error } = await apiClient.PUT("/admin/games/{game_id}", {
-		params: {
-			header: { Authorization: `Bearer ${token}` },
-			path: { game_id: gameId },
-		},
-		body,
 	});
 	if (error) throw new Error(error.message);
 	return data;
