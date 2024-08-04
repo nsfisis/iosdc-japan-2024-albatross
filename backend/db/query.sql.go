@@ -12,7 +12,7 @@ import (
 )
 
 const getGameByID = `-- name: GetGameByID :one
-SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1
@@ -20,6 +20,7 @@ LIMIT 1
 
 type GetGameByIDRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -36,6 +37,7 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow
 	var i GetGameByIDRow
 	err := row.Scan(
 		&i.GameID,
+		&i.GameType,
 		&i.State,
 		&i.DisplayName,
 		&i.DurationSeconds,
@@ -108,12 +110,13 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
 }
 
 const listGames = `-- name: ListGames :many
-SELECT game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
+SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 `
 
 type ListGamesRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -136,6 +139,7 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 		var i ListGamesRow
 		if err := rows.Scan(
 			&i.GameID,
+			&i.GameType,
 			&i.State,
 			&i.DisplayName,
 			&i.DurationSeconds,
@@ -157,7 +161,7 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 }
 
 const listGamesForPlayer = `-- name: ListGamesForPlayer :many
-SELECT games.game_id, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
+SELECT games.game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
 WHERE game_players.user_id = $1
@@ -165,6 +169,7 @@ WHERE game_players.user_id = $1
 
 type ListGamesForPlayerRow struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
@@ -189,6 +194,7 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 		var i ListGamesForPlayerRow
 		if err := rows.Scan(
 			&i.GameID,
+			&i.GameType,
 			&i.State,
 			&i.DisplayName,
 			&i.DurationSeconds,

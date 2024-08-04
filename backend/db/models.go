@@ -10,6 +10,7 @@ import (
 
 type Game struct {
 	GameID          int32
+	GameType        string
 	State           string
 	DisplayName     string
 	DurationSeconds int32
