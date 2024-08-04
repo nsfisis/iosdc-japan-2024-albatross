@@ -25,6 +25,11 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	};
 
 	const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
+
+	if (game.game_type !== "1v1") {
+		return new Response("Not Found", { status: 404 });
+	}
+
 	return {
 		game,
 		sockToken,
