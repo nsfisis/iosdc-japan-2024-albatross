@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 
-	echojwt "github.com/labstack/echo-jwt/v4"
+	// echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
@@ -19,9 +19,10 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
-	e.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte("TODO"),
-	}))
+	// TODO: temporarily disabled
+	// e.Use(echojwt.WithConfig(echojwt.Config{
+	// 	SigningKey: []byte("TODO"),
+	// }))
 
 	e.POST("/api/swiftc", handleSwiftCompile)
 	e.POST("/api/wasmc", handleWasmCompile)
