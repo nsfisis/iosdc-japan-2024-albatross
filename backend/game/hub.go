@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
-	"github.com/oapi-codegen/nullable"
 
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/api"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
@@ -149,29 +148,12 @@ func (hub *gameHub) run() {
 				// TODO: assert game state is gaming
 				log.Printf("code: %v", message.message)
 				code := msg.Data.Code
-				score := len(code)
-				message.client.s2cMessages <- &playerMessageS2CExecResult{
-					Type: playerMessageTypeS2CExecResult,
-					Data: playerMessageS2CExecResultPayload{
-						Score:  nullable.NewNullableWithValue(score),
-						Status: api.GamePlayerMessageS2CExecResultPayloadStatusSuccess,
-					},
-				}
 				for watcher := range hub.watchers {
 					watcher.s2cMessages <- &watcherMessageS2CCode{
 						Type: watcherMessageTypeS2CCode,
 						Data: watcherMessageS2CCodePayload{
 							PlayerID: message.client.playerID,
 							Code:     code,
-						},
-					}
-					watcher.s2cMessages <- &watcherMessageS2CExecResult{
-						Type: watcherMessageTypeS2CExecResult,
-						Data: watcherMessageS2CExecResultPayload{
-							PlayerID: message.client.playerID,
-							Score:    nullable.NewNullableWithValue(score),
-							Stdout:   "",
-							Stderr:   "",
 						},
 					}
 				}
@@ -188,6 +170,7 @@ func (hub *gameHub) run() {
 				log.Printf("unexpected message type: %T", message.message)
 			}
 		case executionStatus := <-hub.testcaseExecution:
+			_ = executionStatus
 			for player := range hub.players {
 				player.s2cMessages <- &playerMessageS2CExecResult{
 					Type: playerMessageTypeS2CExecResult,
@@ -197,6 +180,7 @@ func (hub *gameHub) run() {
 					},
 				}
 			}
+			// broadcast to watchers
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
 				if time.Now().After(*hub.game.startedAt) {
@@ -220,8 +204,8 @@ func (hub *gameHub) run() {
 					}
 					hub.game.state = gameStateFinished
 					hub.close()
+					return
 				}
-				return
 			}
 		}
 	}
@@ -291,6 +275,7 @@ func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue) *GameHubs {
 }
 
 func (hubs *GameHubs) Close() {
+	log.Println("closing all game hubs")
 	for _, hub := range hubs.hubs {
 		hub.close()
 	}
@@ -358,5 +343,5 @@ func (hubs *GameHubs) StartGame(gameID int) error {
 }
 
 func (hubs *GameHubs) C() chan string {
-	return hubs.hubs[4].testcaseExecution
+	return hubs.hubs[7].testcaseExecution
 }
