@@ -4,7 +4,8 @@ WHERE users.user_id = $1
 LIMIT 1;
 
 -- name: ListUsers :many
-SELECT * FROM users;
+SELECT * FROM users
+ORDER BY users.user_id;
 
 -- name: GetUserAuthByUsername :one
 SELECT * FROM users
@@ -14,13 +15,15 @@ LIMIT 1;
 
 -- name: ListGames :many
 SELECT * FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id;
+LEFT JOIN problems ON games.problem_id = problems.problem_id
+ORDER BY games.game_id;
 
 -- name: ListGamesForPlayer :many
 SELECT * FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
-WHERE game_players.user_id = $1;
+WHERE game_players.user_id = $1
+ORDER BY games.game_id;
 
 -- name: UpdateGameState :exec
 UPDATE games
@@ -41,7 +44,8 @@ LIMIT 1;
 -- name: ListGamePlayers :many
 SELECT * FROM game_players
 LEFT JOIN users ON game_players.user_id = users.user_id
-WHERE game_players.game_id = $1;
+WHERE game_players.game_id = $1
+ORDER BY game_players.user_id;
 
 -- name: UpdateGame :exec
 UPDATE games
@@ -61,7 +65,8 @@ RETURNING submission_id;
 
 -- name: ListTestcasesByGameID :many
 SELECT * FROM testcases
-WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1);
+WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
+ORDER BY testcases.testcase_id;
 
 -- name: CreateTestcaseExecution :exec
 INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)

@@ -5,7 +5,7 @@
 {{ end }}
 
 {{ define "content" }}
-<form>
+<form method="post">
   <div>
     <label>User ID</label>
     <input type="text" name="user_id" value="{{ .User.UserID }}" readonly required>

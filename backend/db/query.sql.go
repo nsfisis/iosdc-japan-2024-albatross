@@ -162,6 +162,7 @@ const listGamePlayers = `-- name: ListGamePlayers :many
 SELECT game_id, game_players.user_id, users.user_id, username, display_name, icon_path, is_admin, created_at FROM game_players
 LEFT JOIN users ON game_players.user_id = users.user_id
 WHERE game_players.game_id = $1
+ORDER BY game_players.user_id
 `
 
 type ListGamePlayersRow struct {
@@ -207,6 +208,7 @@ func (q *Queries) ListGamePlayers(ctx context.Context, gameID int32) ([]ListGame
 const listGames = `-- name: ListGames :many
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
+ORDER BY games.game_id
 `
 
 type ListGamesRow struct {
@@ -260,6 +262,7 @@ SELECT games.game_id, game_type, state, display_name, duration_seconds, created_
 LEFT JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
 WHERE game_players.user_id = $1
+ORDER BY games.game_id
 `
 
 type ListGamesForPlayerRow struct {
@@ -315,6 +318,7 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 const listTestcasesByGameID = `-- name: ListTestcasesByGameID :many
 SELECT testcase_id, problem_id, stdin, stdout FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
+ORDER BY testcases.testcase_id
 `
 
 func (q *Queries) ListTestcasesByGameID(ctx context.Context, gameID int32) ([]Testcase, error) {
@@ -344,6 +348,7 @@ func (q *Queries) ListTestcasesByGameID(ctx context.Context, gameID int32) ([]Te
 
 const listUsers = `-- name: ListUsers :many
 SELECT user_id, username, display_name, icon_path, is_admin, created_at FROM users
+ORDER BY users.user_id
 `
 
 func (q *Queries) ListUsers(ctx context.Context) ([]User, error) {

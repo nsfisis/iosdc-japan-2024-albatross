@@ -10,7 +10,7 @@ import (
 const (
 	playerMessageTypeS2CPrepare    = "player:s2c:prepare"
 	playerMessageTypeS2CStart      = "player:s2c:start"
-	playerMessageTypeS2CExecResult = "player:s2c:execreslut"
+	playerMessageTypeS2CExecResult = "player:s2c:execresult"
 	playerMessageTypeC2SEntry      = "player:c2s:entry"
 	playerMessageTypeC2SReady      = "player:c2s:ready"
 	playerMessageTypeC2SCode       = "player:c2s:code"
@@ -80,7 +80,7 @@ func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error
 
 const (
 	watcherMessageTypeS2CStart      = "watcher:s2c:start"
-	watcherMessageTypeS2CExecResult = "watcher:s2c:execreslut"
+	watcherMessageTypeS2CExecResult = "watcher:s2c:execresult"
 	watcherMessageTypeS2CCode       = "watcher:s2c:code"
 )
 
