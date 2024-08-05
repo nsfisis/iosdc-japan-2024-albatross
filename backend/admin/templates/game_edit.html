@@ -39,11 +39,11 @@
   </div>
   <div>
     <label>Started At</label>
-    <input type="datetime-local" name="started_at" value="{{ .Game.StartedAt }}">
+    <input type="datetime-local" name="started_at" value="{{ if .Game.StartedAt }}{{ .Game.StartedAt }}{{ end }}">
   </div>
   <div>
     <label>Problem ID</label>
-    <input type="text" name="problem_id" value="{{ .Game.ProblemID }}" disabled>
+    <input type="text" name="problem_id" value="{{ if .Game.ProblemID }}{{ .Game.ProblemID }}{{ end }}">
   </div>
   <div>
     <button type="submit">Save</button>
