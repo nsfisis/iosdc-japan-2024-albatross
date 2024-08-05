@@ -20,7 +20,8 @@ VALUES
     ('TEST problem 3', 'This is TEST problem 3'),
     ('TEST problem 4', 'This is TEST problem 4'),
     ('TEST problem 5', 'This is TEST problem 5'),
-    ('TEST problem 6', 'This is TEST problem 6');
+    ('TEST problem 6', 'This is TEST problem 6'),
+    ('TEST problem 7', 'This is TEST problem 7');
 
 INSERT INTO games
 (game_type, state, display_name, duration_seconds, problem_id)
@@ -30,7 +31,8 @@ VALUES
     ('1v1',         'finished',        'TEST game 3', 180, 3),
     ('multiplayer', 'waiting_start',   'TEST game 4', 180, 4),
     ('multiplayer', 'closed',          'TEST game 5', 180, 5),
-    ('multiplayer', 'finished',        'TEST game 6', 180, 6);
+    ('multiplayer', 'finished',        'TEST game 6', 180, 6),
+    ('multiplayer', 'waiting_entries', 'TEST game 7', 180, 7);
 
 INSERT INTO game_players
 (game_id, user_id)
@@ -46,9 +48,11 @@ VALUES
     (5, 1),
     (5, 2),
     (6, 1),
-    (6, 2);
+    (6, 2),
+    (7, 1);
 
 INSERT INTO testcases
 (problem_id, stdin, stdout)
 VALUES
     (4, '', '42'),
+    (7, '', '42');
