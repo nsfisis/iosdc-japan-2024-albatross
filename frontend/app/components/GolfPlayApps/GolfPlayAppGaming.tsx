@@ -38,8 +38,7 @@ export default function GolfPlayAppGaming({
 					<div className="mb-4 mt-auto">
 						<div className="mb-2">
 							<div className="font-semibold text-green-500">
-								Score: {currentScore == null ? "-" : `${currentScore}`} (
-								{lastExecStatus})
+								Score: {currentScore ?? "-"} ({lastExecStatus ?? "-"})
 							</div>
 						</div>
 						<button
