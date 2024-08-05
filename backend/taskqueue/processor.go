@@ -173,7 +173,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			p.c <- resData.Result
 			return fmt.Errorf("testrun failed: %v", resData.Stderr)
 		}
-		if isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
+		if !isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
 			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
 				SubmissionID: submissionID,
 				TestcaseID:   &testcase.TestcaseID,
@@ -189,6 +189,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		}
 	}
 
+	p.c <- "success"
 	return nil
 }
 
