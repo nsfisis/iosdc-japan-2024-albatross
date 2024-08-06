@@ -1,9 +1,15 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import { ensureUserNotLoggedIn } from "../.server/auth";
 
 export const meta: MetaFunction = () => [
 	{ title: "iOSDC Japan 2024 Albatross.swift" },
 ];
+
+export async function loader({ request }: LoaderFunctionArgs) {
+	await ensureUserNotLoggedIn(request);
+	return null;
+}
 
 export default function Index() {
 	return (
