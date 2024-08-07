@@ -53,6 +53,7 @@ type TestcaseResult struct {
 	Status           string
 	Stdout           string
 	Stderr           string
+	CreatedAt        pgtype.Timestamp
 }
 
 type User struct {

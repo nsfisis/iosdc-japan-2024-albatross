@@ -71,6 +71,7 @@ CREATE TABLE testcase_results (
     status             VARCHAR(16) NOT NULL,
     stdout             TEXT        NOT NULL,
     stderr             TEXT        NOT NULL,
+    created_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id),
     CONSTRAINT fk_testcase_id FOREIGN KEY(testcase_id) REFERENCES testcases(testcase_id)
 );
