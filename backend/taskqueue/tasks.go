@@ -30,7 +30,7 @@ func NewExecTask(gameID, userID int, code string) (*asynq.Task, error) {
 
 type TaskExecResult struct {
 	Task   *TaskExecPlayload
-	Result string
+	Status string
 	Stdout string
 	Stderr string
 }

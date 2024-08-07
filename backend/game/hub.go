@@ -209,7 +209,7 @@ func (hub *gameHub) processTaskResults() {
 				Type: playerMessageTypeS2CExecResult,
 				Data: playerMessageS2CExecResultPayload{
 					Score:  nil,
-					Status: api.GamePlayerMessageS2CExecResultPayloadStatus(taskResult.Result),
+					Status: api.GamePlayerMessageS2CExecResultPayloadStatus(taskResult.Status),
 				},
 			}
 		}

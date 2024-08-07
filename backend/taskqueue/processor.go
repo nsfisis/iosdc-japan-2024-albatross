@@ -49,7 +49,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			Code        string `json:"code"`
 		}
 		type swiftcResponseData struct {
-			Result string `json:"result"`
+			Status string `json:"status"`
 			Stdout string `json:"stdout"`
 			Stderr string `json:"stderr"`
 		}
@@ -69,7 +69,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
-		if resData.Result != "success" {
+		if resData.Status != "success" {
 			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   nil,
@@ -82,7 +82,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
-				Result: "compile_error",
+				Status: "compile_error",
 			}
 			return fmt.Errorf("swiftc failed: %v", resData.Stderr)
 		}
@@ -93,7 +93,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			Code        string `json:"code"`
 		}
 		type wasmcResponseData struct {
-			Result string `json:"result"`
+			Status string `json:"status"`
 			Stdout string `json:"stdout"`
 			Stderr string `json:"stderr"`
 		}
@@ -113,7 +113,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
-		if resData.Result != "success" {
+		if resData.Status != "success" {
 			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   nil,
@@ -126,7 +126,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
-				Result: "compile_error",
+				Status: "compile_error",
 			}
 			return fmt.Errorf("wasmc failed: %v", resData.Stderr)
 		}
@@ -144,7 +144,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			Stdin       string `json:"stdin"`
 		}
 		type testrunResponseData struct {
-			Result string `json:"result"`
+			Status string `json:"status"`
 			Stdout string `json:"stdout"`
 			Stderr string `json:"stderr"`
 		}
@@ -165,11 +165,11 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
-		if resData.Result != "success" {
+		if resData.Status != "success" {
 			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   testcase.TestcaseID,
-				Status:       resData.Result,
+				Status:       resData.Status,
 				Stdout:       resData.Stdout,
 				Stderr:       resData.Stderr,
 			})
@@ -178,7 +178,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
-				Result: resData.Result,
+				Status: resData.Status,
 			}
 			return fmt.Errorf("testrun failed: %v", resData.Stderr)
 		}
@@ -195,7 +195,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
-				Result: "wrong_answer",
+				Status: "wrong_answer",
 			}
 			return fmt.Errorf("testrun failed: %v", resData.Stdout)
 		}
@@ -203,7 +203,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 
 	p.results <- TaskExecResult{
 		Task:   &payload,
-		Result: "success",
+		Status: "success",
 	}
 	return nil
 }

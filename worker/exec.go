@@ -95,7 +95,7 @@ func execSwiftCompile(
 
 	if err := os.WriteFile(inPath, []byte(code), 0644); err != nil {
 		return swiftCompileResponseData{
-			Result: resultInternalError,
+			Status: resultInternalError,
 			Stdout: "",
 			Stderr: err.Error(),
 		}
@@ -116,7 +116,7 @@ func execSwiftCompile(
 	)
 
 	return swiftCompileResponseData{
-		Result: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
@@ -148,7 +148,7 @@ func execWasmCompile(
 	)
 
 	return wasmCompileResponseData{
-		Result: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
@@ -179,7 +179,7 @@ func execTestRun(
 	)
 
 	return testRunResponseData{
-		Result: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
