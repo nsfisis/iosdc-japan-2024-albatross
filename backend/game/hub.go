@@ -171,6 +171,9 @@ func (hub *gameHub) run() {
 			}
 		case executionResult := <-hub.testcaseExecution:
 			for player := range hub.players {
+				if player.playerID != executionResult.Task.UserID {
+					continue
+				}
 				player.s2cMessages <- &playerMessageS2CExecResult{
 					Type: playerMessageTypeS2CExecResult,
 					Data: playerMessageS2CExecResultPayload{
