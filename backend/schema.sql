@@ -73,6 +73,7 @@ CREATE TABLE testcase_results (
     stderr             TEXT        NOT NULL,
     created_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id),
-    CONSTRAINT fk_testcase_id FOREIGN KEY(testcase_id) REFERENCES testcases(testcase_id)
+    CONSTRAINT fk_testcase_id FOREIGN KEY(testcase_id) REFERENCES testcases(testcase_id),
+    CONSTRAINT uq_submission_id_testcase_id UNIQUE(submission_id, testcase_id)
 );
 CREATE INDEX idx_testcase_results_submission_id ON testcase_results(submission_id);
