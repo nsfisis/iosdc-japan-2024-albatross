@@ -70,9 +70,8 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
 		if resData.Status != "success" {
-			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
+			err := p.q.CreateSubmissionResult(ctx, db.CreateSubmissionResultParams{
 				SubmissionID: submissionID,
-				TestcaseID:   nil,
 				Status:       "compile_error",
 				Stdout:       resData.Stdout,
 				Stderr:       resData.Stderr,
@@ -114,9 +113,8 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
 		if resData.Status != "success" {
-			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
+			err := p.q.CreateSubmissionResult(ctx, db.CreateSubmissionResultParams{
 				SubmissionID: submissionID,
-				TestcaseID:   nil,
 				Status:       "compile_error",
 				Stdout:       resData.Stdout,
 				Stderr:       resData.Stderr,

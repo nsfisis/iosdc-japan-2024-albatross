@@ -68,6 +68,10 @@ SELECT * FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
 ORDER BY testcases.testcase_id;
 
+-- name: CreateSubmissionResult :exec
+INSERT INTO submission_results (submission_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4);
+
 -- name: CreateTestcaseResult :exec
 INSERT INTO testcase_results (submission_id, testcase_id, status, stdout, stderr)
 VALUES ($1, $2, $3, $4, $5);

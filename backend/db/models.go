@@ -39,6 +39,15 @@ type Submission struct {
 	CreatedAt    pgtype.Timestamp
 }
 
+type SubmissionResult struct {
+	SubmissionResultID int32
+	SubmissionID       int32
+	Status             string
+	Stdout             string
+	Stderr             string
+	CreatedAt          pgtype.Timestamp
+}
+
 type Testcase struct {
 	TestcaseID int32
 	ProblemID  int32

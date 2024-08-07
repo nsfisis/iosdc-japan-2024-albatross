@@ -64,6 +64,17 @@ CREATE TABLE submissions (
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
+CREATE TABLE submission_results (
+    submission_result_id SERIAL      PRIMARY KEY,
+    submission_id        INT         NOT NULL UNIQUE,
+    status               VARCHAR(16) NOT NULL,
+    stdout               TEXT        NOT NULL,
+    stderr               TEXT        NOT NULL,
+    created_at           TIMESTAMP   NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id)
+);
+CREATE INDEX idx_submission_results_submission_id ON submission_results(submission_id);
+
 CREATE TABLE testcase_results (
     testcase_result_id SERIAL      PRIMARY KEY,
     submission_id      INT         NOT NULL,
