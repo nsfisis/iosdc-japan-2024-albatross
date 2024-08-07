@@ -11,6 +11,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const aggregateTestcaseResults = `-- name: AggregateTestcaseResults :one
+SELECT
+    CASE
+        WHEN COUNT(CASE WHEN r.status IS NULL            THEN 1 END) > 0 THEN 'running'
+        WHEN COUNT(CASE WHEN r.status = 'internal_error' THEN 1 END) > 0 THEN 'internal_error'
+        WHEN COUNT(CASE WHEN r.status = 'timeout'        THEN 1 END) > 0 THEN 'timeout'
+        WHEN COUNT(CASE WHEN r.status = 'runtime_error'  THEN 1 END) > 0 THEN 'runtime_error'
+        WHEN COUNT(CASE WHEN r.status = 'wrong_answer'   THEN 1 END) > 0 THEN 'wrong_answer'
+        ELSE 'success'
+    END AS status
+FROM testcases
+LEFT JOIN testcase_results AS r ON testcases.testcase_id = r.testcase_id
+WHERE r.submission_id = $1
+`
+
+func (q *Queries) AggregateTestcaseResults(ctx context.Context, submissionID int32) (string, error) {
+	row := q.db.QueryRow(ctx, aggregateTestcaseResults, submissionID)
+	var status string
+	err := row.Scan(&status)
+	return status, err
+}
+
 const createSubmission = `-- name: CreateSubmission :one
 INSERT INTO submissions (game_id, user_id, code, code_size)
 VALUES ($1, $2, $3, $4)

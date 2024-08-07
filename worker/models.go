@@ -7,7 +7,7 @@ import (
 
 const (
 	resultSuccess       = "success"
-	resultFailure       = "failure"
+	resultRuntimeError  = "runtime_error"
 	resultTimeout       = "timeout"
 	resultInternalError = "internal_error"
 )

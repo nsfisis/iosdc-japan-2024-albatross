@@ -77,7 +77,7 @@ func convertCommandErrorToResultType(err error) string {
 		if err == context.DeadlineExceeded {
 			return resultTimeout
 		} else {
-			return resultFailure
+			return resultRuntimeError
 		}
 	} else {
 		return resultSuccess

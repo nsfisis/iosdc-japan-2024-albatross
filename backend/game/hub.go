@@ -270,7 +270,17 @@ func (hub *gameHub) processTaskResults() {
 				// TODO: broadcast to watchers
 			}
 		case *taskqueue.TaskResultRunTestcase:
-			err := hub.processTaskResultRunTestcase(taskResult)
+			var err error
+			err = hub.processTaskResultRunTestcase(taskResult)
+			_ = err // TODO: handle err?
+			aggregatedStatus, err := hub.q.AggregateTestcaseResults(hub.ctx, int32(taskResult.TaskPayload.SubmissionID))
+			_ = err // TODO: handle err?
+			err = hub.q.CreateSubmissionResult(hub.ctx, db.CreateSubmissionResultParams{
+				SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+				Status:       aggregatedStatus,
+				Stdout:       "",
+				Stderr:       "",
+			})
 			if err != nil {
 				for player := range hub.players {
 					if player.playerID != taskResult.TaskPayload.UserID() {
@@ -280,13 +290,26 @@ func (hub *gameHub) processTaskResults() {
 						Type: playerMessageTypeS2CExecResult,
 						Data: playerMessageS2CExecResultPayload{
 							Score:  nil,
-							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
+							Status: api.GamePlayerMessageS2CExecResultPayloadStatus("internal_error"),
 						},
 					}
 				}
 				// TODO: broadcast to watchers
+				continue
 			}
-			// TODO: aggregate results of testcases
+			for player := range hub.players {
+				if player.playerID != taskResult.TaskPayload.UserID() {
+					continue
+				}
+				player.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  nil,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(aggregatedStatus),
+					},
+				}
+				// TODO: broadcast to watchers
+			}
 		default:
 			panic("unexpected task result type")
 		}
