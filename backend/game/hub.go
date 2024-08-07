@@ -169,20 +169,6 @@ func (hub *gameHub) run() {
 			default:
 				log.Printf("unexpected message type: %T", message.message)
 			}
-		case executionResult := <-hub.testcaseExecution:
-			for player := range hub.players {
-				if player.playerID != executionResult.Task.UserID {
-					continue
-				}
-				player.s2cMessages <- &playerMessageS2CExecResult{
-					Type: playerMessageTypeS2CExecResult,
-					Data: playerMessageS2CExecResultPayload{
-						Score:  nil,
-						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionResult.Result),
-					},
-				}
-			}
-			// broadcast to watchers
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
 				if time.Now().After(*hub.game.startedAt) {
@@ -210,6 +196,24 @@ func (hub *gameHub) run() {
 				}
 			}
 		}
+	}
+}
+
+func (hub *gameHub) processTaskResults() {
+	for executionResult := range hub.testcaseExecution {
+		for player := range hub.players {
+			if player.playerID != executionResult.Task.UserID {
+				continue
+			}
+			player.s2cMessages <- &playerMessageS2CExecResult{
+				Type: playerMessageTypeS2CExecResult,
+				Data: playerMessageS2CExecResultPayload{
+					Score:  nil,
+					Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionResult.Result),
+				},
+			}
+		}
+		// broadcast to watchers
 	}
 }
 
@@ -331,6 +335,7 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 func (hubs *GameHubs) Run() {
 	for _, hub := range hubs.hubs {
 		go hub.run()
+		go hub.processTaskResults()
 	}
 
 	for taskResult := range hubs.taskResults {
