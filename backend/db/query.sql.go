@@ -43,7 +43,7 @@ VALUES ($1, $2, $3, $4, $5)
 
 type CreateTestcaseExecutionParams struct {
 	SubmissionID int32
-	TestcaseID   *int32
+	TestcaseID   int32
 	Status       string
 	Stdout       string
 	Stderr       string

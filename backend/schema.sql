@@ -67,7 +67,7 @@ CREATE TABLE submissions (
 CREATE TABLE testcase_executions (
     testcase_execution_id SERIAL      PRIMARY KEY,
     submission_id         INT         NOT NULL,
-    testcase_id           INT,
+    testcase_id           INT         NOT NULL,
     status                VARCHAR(16) NOT NULL,
     stdout                TEXT        NOT NULL,
     stderr                TEXT        NOT NULL,

@@ -49,7 +49,7 @@ type Testcase struct {
 type TestcaseExecution struct {
 	TestcaseExecutionID int32
 	SubmissionID        int32
-	TestcaseID          *int32
+	TestcaseID          int32
 	Status              string
 	Stdout              string
 	Stderr              string

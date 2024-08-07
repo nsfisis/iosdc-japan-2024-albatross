@@ -168,7 +168,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		if resData.Result != "success" {
 			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
 				SubmissionID: submissionID,
-				TestcaseID:   &testcase.TestcaseID,
+				TestcaseID:   testcase.TestcaseID,
 				Status:       resData.Result,
 				Stdout:       resData.Stdout,
 				Stderr:       resData.Stderr,
@@ -185,7 +185,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 		if !isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
 			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
 				SubmissionID: submissionID,
-				TestcaseID:   &testcase.TestcaseID,
+				TestcaseID:   testcase.TestcaseID,
 				Status:       "wrong_answer",
 				Stdout:       resData.Stdout,
 				Stderr:       resData.Stderr,
