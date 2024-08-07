@@ -112,6 +112,8 @@ type TaskPayloadRunTestcase struct {
 	TaskPayloadBase
 	SubmissionID int
 	TestcaseID   int
+	Stdin        string
+	Stdout       string
 }
 
 func newTaskRunTestcase(
@@ -120,6 +122,8 @@ func newTaskRunTestcase(
 	code string,
 	submissionID int,
 	testcaseID int,
+	stdin string,
+	stdout string,
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskPayloadRunTestcase{
 		TaskPayloadBase: TaskPayloadBase{
@@ -129,6 +133,8 @@ func newTaskRunTestcase(
 		},
 		SubmissionID: submissionID,
 		TestcaseID:   testcaseID,
+		Stdin:        stdin,
+		Stdout:       stdout,
 	})
 	if err != nil {
 		return nil, err

@@ -83,6 +83,8 @@ func (q *Queue) EnqueueTaskRunTestcase(
 	code string,
 	submissionID int,
 	testcaseID int,
+	stdin string,
+	stdout string,
 ) error {
 	task, err := newTaskRunTestcase(
 		gameID,
@@ -90,6 +92,8 @@ func (q *Queue) EnqueueTaskRunTestcase(
 		code,
 		submissionID,
 		testcaseID,
+		stdin,
+		stdout,
 	)
 	if err != nil {
 		return err
