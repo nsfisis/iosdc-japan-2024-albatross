@@ -8,7 +8,7 @@ import (
 
 type WorkerServer struct {
 	server    *asynq.Server
-	processor *processor
+	processor *processorWrapper
 }
 
 func NewWorkerServer(redisAddr string, queries *db.Queries) *WorkerServer {
@@ -18,7 +18,7 @@ func NewWorkerServer(redisAddr string, queries *db.Queries) *WorkerServer {
 		},
 		asynq.Config{},
 	)
-	processor := newProcessor(queries)
+	processor := newProcessorWrapper(newProcessor(queries))
 	return &WorkerServer{
 		server:    server,
 		processor: processor,
