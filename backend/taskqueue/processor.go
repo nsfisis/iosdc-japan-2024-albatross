@@ -70,7 +70,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
 		if resData.Result != "success" {
-			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
+			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   nil,
 				Status:       "compile_error",
@@ -78,7 +78,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 				Stderr:       resData.Stderr,
 			})
 			if err != nil {
-				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
+				return fmt.Errorf("CreateTestcaseResult failed: %v", err)
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
@@ -114,7 +114,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
 		if resData.Result != "success" {
-			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
+			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   nil,
 				Status:       "compile_error",
@@ -122,7 +122,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 				Stderr:       resData.Stderr,
 			})
 			if err != nil {
-				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
+				return fmt.Errorf("CreateTestcaseResult failed: %v", err)
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
@@ -166,7 +166,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			return fmt.Errorf("json.Decode failed: %v", err)
 		}
 		if resData.Result != "success" {
-			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
+			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   testcase.TestcaseID,
 				Status:       resData.Result,
@@ -174,7 +174,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 				Stderr:       resData.Stderr,
 			})
 			if err != nil {
-				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
+				return fmt.Errorf("CreateTestcaseResult failed: %v", err)
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
@@ -182,8 +182,8 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			}
 			return fmt.Errorf("testrun failed: %v", resData.Stderr)
 		}
-		if !isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
-			err := p.q.CreateTestcaseExecution(ctx, db.CreateTestcaseExecutionParams{
+		if !isTestcaseResultCorrect(testcase.Stdout, resData.Stdout) {
+			err := p.q.CreateTestcaseResult(ctx, db.CreateTestcaseResultParams{
 				SubmissionID: submissionID,
 				TestcaseID:   testcase.TestcaseID,
 				Status:       "wrong_answer",
@@ -191,7 +191,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 				Stderr:       resData.Stderr,
 			})
 			if err != nil {
-				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
+				return fmt.Errorf("CreateTestcaseResult failed: %v", err)
 			}
 			p.results <- TaskExecResult{
 				Task:   &payload,
@@ -208,7 +208,7 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 	return nil
 }
 
-func isTestcaseExecutionCorrect(expectedStdout, actualStdout string) bool {
+func isTestcaseResultCorrect(expectedStdout, actualStdout string) bool {
 	expectedStdout = strings.TrimSpace(expectedStdout)
 	actualStdout = strings.TrimSpace(actualStdout)
 	return actualStdout == expectedStdout

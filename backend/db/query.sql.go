@@ -36,12 +36,12 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 	return submission_id, err
 }
 
-const createTestcaseExecution = `-- name: CreateTestcaseExecution :exec
-INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)
+const createTestcaseResult = `-- name: CreateTestcaseResult :exec
+INSERT INTO testcase_results (submission_id, testcase_id, status, stdout, stderr)
 VALUES ($1, $2, $3, $4, $5)
 `
 
-type CreateTestcaseExecutionParams struct {
+type CreateTestcaseResultParams struct {
 	SubmissionID int32
 	TestcaseID   int32
 	Status       string
@@ -49,8 +49,8 @@ type CreateTestcaseExecutionParams struct {
 	Stderr       string
 }
 
-func (q *Queries) CreateTestcaseExecution(ctx context.Context, arg CreateTestcaseExecutionParams) error {
-	_, err := q.db.Exec(ctx, createTestcaseExecution,
+func (q *Queries) CreateTestcaseResult(ctx context.Context, arg CreateTestcaseResultParams) error {
+	_, err := q.db.Exec(ctx, createTestcaseResult,
 		arg.SubmissionID,
 		arg.TestcaseID,
 		arg.Status,

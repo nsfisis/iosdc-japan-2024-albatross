@@ -46,13 +46,13 @@ type Testcase struct {
 	Stdout     string
 }
 
-type TestcaseExecution struct {
-	TestcaseExecutionID int32
-	SubmissionID        int32
-	TestcaseID          int32
-	Status              string
-	Stdout              string
-	Stderr              string
+type TestcaseResult struct {
+	TestcaseResultID int32
+	SubmissionID     int32
+	TestcaseID       int32
+	Status           string
+	Stdout           string
+	Stderr           string
 }
 
 type User struct {
