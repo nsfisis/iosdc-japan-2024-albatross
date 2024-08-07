@@ -162,16 +162,15 @@ func (hub *gameHub) run() {
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
 				codeSize := len(code) // TODO: exclude whitespaces.
-				task, err := taskqueue.NewTaskCreateSubmissionRecord(
+				if err := hub.taskQueue.EnqueueTaskCreateSubmissionRecord(
 					hub.game.gameID,
 					message.client.playerID,
 					code,
 					codeSize,
-				)
-				if err != nil {
-					log.Fatalf("failed to create task: %v", err)
+				); err != nil {
+					// TODO: notify failure to player
+					log.Fatalf("failed to enqueue task: %v", err)
 				}
-				hub.taskQueue.Enqueue(task)
 			default:
 				log.Printf("unexpected message type: %T", message.message)
 			}

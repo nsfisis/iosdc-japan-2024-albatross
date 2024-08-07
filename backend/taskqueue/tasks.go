@@ -26,7 +26,7 @@ type TaskPayloadCreateSubmissionRecord struct {
 	CodeSize int
 }
 
-func NewTaskCreateSubmissionRecord(
+func newTaskCreateSubmissionRecord(
 	gameID int,
 	userID int,
 	code string,
@@ -55,7 +55,7 @@ type TaskPayloadCompileSwiftToWasm struct {
 	SubmissionID int
 }
 
-func NewTaskCompileSwiftToWasm(
+func newTaskCompileSwiftToWasm(
 	gameID int,
 	userID int,
 	code string,
@@ -84,7 +84,7 @@ type TaskPayloadCompileWasmToNativeExecutable struct {
 	SubmissionID int
 }
 
-func NewTaskCompileWasmToNativeExecutable(
+func newTaskCompileWasmToNativeExecutable(
 	gameID int,
 	userID int,
 	code string,
@@ -114,7 +114,7 @@ type TaskPayloadRunTestcase struct {
 	TestcaseID   int
 }
 
-func NewTaskRunTestcase(
+func newTaskRunTestcase(
 	gameID int,
 	userID int,
 	code string,
