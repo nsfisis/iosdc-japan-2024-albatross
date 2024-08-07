@@ -33,7 +33,7 @@ type gameHub struct {
 	watchers          map[*watcherClient]bool
 	registerWatcher   chan *watcherClient
 	unregisterWatcher chan *watcherClient
-	taskResults       chan taskqueue.TaskExecResult
+	taskResults       chan taskqueue.TaskResult
 }
 
 func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskqueue.Queue) *gameHub {
@@ -49,7 +49,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskq
 		watchers:          make(map[*watcherClient]bool),
 		registerWatcher:   make(chan *watcherClient),
 		unregisterWatcher: make(chan *watcherClient),
-		taskResults:       make(chan taskqueue.TaskExecResult),
+		taskResults:       make(chan taskqueue.TaskResult),
 	}
 }
 
@@ -161,7 +161,13 @@ func (hub *gameHub) run() {
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
-				task, err := taskqueue.NewExecTask(hub.game.gameID, message.client.playerID, code)
+				codeSize := len(code) // TODO: exclude whitespaces.
+				task, err := taskqueue.NewTaskCreateSubmissionRecord(
+					hub.game.gameID,
+					message.client.playerID,
+					code,
+					codeSize,
+				)
 				if err != nil {
 					log.Fatalf("failed to create task: %v", err)
 				}
@@ -201,19 +207,31 @@ func (hub *gameHub) run() {
 
 func (hub *gameHub) processTaskResults() {
 	for taskResult := range hub.taskResults {
-		for player := range hub.players {
-			if player.playerID != taskResult.Task.UserID {
-				continue
+		switch taskResult := taskResult.(type) {
+		case *taskqueue.TaskResultCreateSubmissionRecord:
+			// todo
+		case *taskqueue.TaskResultCompileSwiftToWasm:
+			// todo
+		case *taskqueue.TaskResultCompileWasmToNativeExecutable:
+			// todo
+		case *taskqueue.TaskResultRunTestcase:
+			// todo
+			for player := range hub.players {
+				if player.playerID != taskResult.TaskPayload.UserID() {
+					continue
+				}
+				player.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  nil,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(taskResult.Status),
+					},
+				}
 			}
-			player.s2cMessages <- &playerMessageS2CExecResult{
-				Type: playerMessageTypeS2CExecResult,
-				Data: playerMessageS2CExecResultPayload{
-					Score:  nil,
-					Status: api.GamePlayerMessageS2CExecResultPayloadStatus(taskResult.Status),
-				},
-			}
+			// broadcast to watchers
+		default:
+			panic("unexpected task result type")
 		}
-		// broadcast to watchers
 	}
 }
 
@@ -270,10 +288,10 @@ type GameHubs struct {
 	hubs        map[int]*gameHub
 	q           *db.Queries
 	taskQueue   *taskqueue.Queue
-	taskResults chan taskqueue.TaskExecResult
+	taskResults chan taskqueue.TaskResult
 }
 
-func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskExecResult) *GameHubs {
+func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskResult) *GameHubs {
 	return &GameHubs{
 		hubs:        make(map[int]*gameHub),
 		q:           q,
@@ -339,9 +357,9 @@ func (hubs *GameHubs) Run() {
 	}
 
 	for taskResult := range hubs.taskResults {
-		hub := hubs.getHub(taskResult.Task.GameID)
+		hub := hubs.getHub(taskResult.GameID())
 		if hub == nil {
-			log.Printf("no such game: %d", taskResult.Task.GameID)
+			log.Printf("no such game: %d", taskResult.GameID())
 			continue
 		}
 		hub.taskResults <- taskResult
