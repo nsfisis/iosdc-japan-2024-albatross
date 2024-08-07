@@ -9,10 +9,10 @@ import (
 type WorkerServer struct {
 	server  *asynq.Server
 	queries *db.Queries
-	c       chan string
+	results chan TaskExecResult
 }
 
-func NewWorkerServer(redisAddr string, queries *db.Queries, c chan string) *WorkerServer {
+func NewWorkerServer(redisAddr string, queries *db.Queries) *WorkerServer {
 	return &WorkerServer{
 		server: asynq.NewServer(
 			asynq.RedisClientOpt{
@@ -21,13 +21,17 @@ func NewWorkerServer(redisAddr string, queries *db.Queries, c chan string) *Work
 			asynq.Config{},
 		),
 		queries: queries,
-		c:       c,
+		results: make(chan TaskExecResult),
 	}
 }
 
 func (s *WorkerServer) Run() error {
 	mux := asynq.NewServeMux()
-	mux.Handle(TaskTypeExec, NewExecProcessor(s.queries, s.c))
+	mux.Handle(TaskTypeExec, NewExecProcessor(s.queries, s.results))
 
 	return s.server.Run(mux)
+}
+
+func (s *WorkerServer) Results() chan TaskExecResult {
+	return s.results
 }

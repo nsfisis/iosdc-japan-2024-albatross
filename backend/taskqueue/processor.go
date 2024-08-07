@@ -14,14 +14,14 @@ import (
 )
 
 type ExecProcessor struct {
-	q *db.Queries
-	c chan string
+	q       *db.Queries
+	results chan TaskExecResult
 }
 
-func NewExecProcessor(q *db.Queries, c chan string) *ExecProcessor {
+func NewExecProcessor(q *db.Queries, results chan TaskExecResult) *ExecProcessor {
 	return &ExecProcessor{
-		q: q,
-		c: c,
+		q:       q,
+		results: results,
 	}
 }
 
@@ -80,7 +80,10 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
-			p.c <- "compile_error"
+			p.results <- TaskExecResult{
+				Task:   &payload,
+				Result: "compile_error",
+			}
 			return fmt.Errorf("swiftc failed: %v", resData.Stderr)
 		}
 	}
@@ -121,7 +124,10 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
-			p.c <- "compile_error"
+			p.results <- TaskExecResult{
+				Task:   &payload,
+				Result: "compile_error",
+			}
 			return fmt.Errorf("wasmc failed: %v", resData.Stderr)
 		}
 	}
@@ -170,7 +176,10 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
-			p.c <- resData.Result
+			p.results <- TaskExecResult{
+				Task:   &payload,
+				Result: resData.Result,
+			}
 			return fmt.Errorf("testrun failed: %v", resData.Stderr)
 		}
 		if !isTestcaseExecutionCorrect(testcase.Stdout, resData.Stdout) {
@@ -184,12 +193,18 @@ func (p *ExecProcessor) ProcessTask(ctx context.Context, t *asynq.Task) error {
 			if err != nil {
 				return fmt.Errorf("CreateTestcaseExecution failed: %v", err)
 			}
-			p.c <- "wrong_answer"
+			p.results <- TaskExecResult{
+				Task:   &payload,
+				Result: "wrong_answer",
+			}
 			return fmt.Errorf("testrun failed: %v", resData.Stdout)
 		}
 	}
 
-	p.c <- "success"
+	p.results <- TaskExecResult{
+		Task:   &payload,
+		Result: "success",
+	}
 	return nil
 }
 

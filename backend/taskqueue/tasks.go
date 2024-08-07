@@ -27,3 +27,10 @@ func NewExecTask(gameID, userID int, code string) (*asynq.Task, error) {
 	}
 	return asynq.NewTask(TaskTypeExec, payload), nil
 }
+
+type TaskExecResult struct {
+	Task   *TaskExecPlayload
+	Result string
+	Stdout string
+	Stderr string
+}

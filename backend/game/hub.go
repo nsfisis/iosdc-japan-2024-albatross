@@ -33,7 +33,7 @@ type gameHub struct {
 	watchers          map[*watcherClient]bool
 	registerWatcher   chan *watcherClient
 	unregisterWatcher chan *watcherClient
-	testcaseExecution chan string
+	testcaseExecution chan taskqueue.TaskExecResult
 }
 
 func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskqueue.Queue) *gameHub {
@@ -49,7 +49,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskq
 		watchers:          make(map[*watcherClient]bool),
 		registerWatcher:   make(chan *watcherClient),
 		unregisterWatcher: make(chan *watcherClient),
-		testcaseExecution: make(chan string),
+		testcaseExecution: make(chan taskqueue.TaskExecResult),
 	}
 }
 
@@ -169,14 +169,13 @@ func (hub *gameHub) run() {
 			default:
 				log.Printf("unexpected message type: %T", message.message)
 			}
-		case executionStatus := <-hub.testcaseExecution:
-			_ = executionStatus
+		case executionResult := <-hub.testcaseExecution:
 			for player := range hub.players {
 				player.s2cMessages <- &playerMessageS2CExecResult{
 					Type: playerMessageTypeS2CExecResult,
 					Data: playerMessageS2CExecResultPayload{
 						Score:  nil,
-						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionStatus),
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionResult.Result),
 					},
 				}
 			}
@@ -261,16 +260,18 @@ func (hub *gameHub) closeWatcherClient(watcher *watcherClient) {
 }
 
 type GameHubs struct {
-	hubs      map[int]*gameHub
-	q         *db.Queries
-	taskQueue *taskqueue.Queue
+	hubs        map[int]*gameHub
+	q           *db.Queries
+	taskQueue   *taskqueue.Queue
+	taskResults chan taskqueue.TaskExecResult
 }
 
-func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue) *GameHubs {
+func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskExecResult) *GameHubs {
 	return &GameHubs{
-		hubs:      make(map[int]*gameHub),
-		q:         q,
-		taskQueue: taskQueue,
+		hubs:        make(map[int]*gameHub),
+		q:           q,
+		taskQueue:   taskQueue,
+		taskResults: taskResults,
 	}
 }
 
@@ -328,6 +329,15 @@ func (hubs *GameHubs) Run() {
 	for _, hub := range hubs.hubs {
 		go hub.run()
 	}
+
+	for taskResult := range hubs.taskResults {
+		hub := hubs.getHub(taskResult.Task.GameID)
+		if hub == nil {
+			log.Printf("no such game: %d", taskResult.Task.GameID)
+			continue
+		}
+		hub.testcaseExecution <- taskResult
+	}
 }
 
 func (hubs *GameHubs) SockHandler() *sockHandler {
@@ -340,8 +350,4 @@ func (hubs *GameHubs) StartGame(gameID int) error {
 		return errors.New("no such game")
 	}
 	return hub.startGame()
-}
-
-func (hubs *GameHubs) C() chan string {
-	return hubs.hubs[7].testcaseExecution
 }

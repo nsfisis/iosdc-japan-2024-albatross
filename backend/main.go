@@ -61,8 +61,9 @@ func main() {
 	e.Use(middleware.Recover())
 
 	taskQueue := taskqueue.NewQueue("task-db:6379")
+	workerServer := taskqueue.NewWorkerServer("task-db:6379", queries)
 
-	gameHubs := game.NewGameHubs(queries, taskQueue)
+	gameHubs := game.NewGameHubs(queries, taskQueue, workerServer.Results())
 	err = gameHubs.RestoreFromDB(ctx)
 	if err != nil {
 		log.Fatalf("Error restoring game hubs from db %v", err)
@@ -95,9 +96,8 @@ func main() {
 		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/logout")
 	})
 
-	gameHubs.Run()
+	go gameHubs.Run()
 
-	workerServer := taskqueue.NewWorkerServer("task-db:6379", queries, gameHubs.C())
 	go func() {
 		workerServer.Run()
 	}()
