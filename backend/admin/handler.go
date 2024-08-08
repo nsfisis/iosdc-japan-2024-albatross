@@ -16,7 +16,7 @@ import (
 
 var jst = time.FixedZone("Asia/Tokyo", 9*60*60)
 
-type AdminHandler struct {
+type Handler struct {
 	q    *db.Queries
 	hubs GameHubsInterface
 }
@@ -25,8 +25,8 @@ type GameHubsInterface interface {
 	StartGame(gameID int) error
 }
 
-func NewAdminHandler(q *db.Queries, hubs GameHubsInterface) *AdminHandler {
-	return &AdminHandler{
+func NewHandler(q *db.Queries, hubs GameHubsInterface) *Handler {
+	return &Handler{
 		q:    q,
 		hubs: hubs,
 	}
@@ -51,7 +51,7 @@ func newAdminMiddleware() echo.MiddlewareFunc {
 	}
 }
 
-func (h *AdminHandler) RegisterHandlers(g *echo.Group) {
+func (h *Handler) RegisterHandlers(g *echo.Group) {
 	g.Use(newAssetsMiddleware())
 	g.Use(newAdminMiddleware())
 
@@ -63,13 +63,13 @@ func (h *AdminHandler) RegisterHandlers(g *echo.Group) {
 	g.POST("/games/:gameID", h.postGameEdit)
 }
 
-func (h *AdminHandler) getDashboard(c echo.Context) error {
+func (h *Handler) getDashboard(c echo.Context) error {
 	return c.Render(http.StatusOK, "dashboard", echo.Map{
 		"Title": "Dashboard",
 	})
 }
 
-func (h *AdminHandler) getUsers(c echo.Context) error {
+func (h *Handler) getUsers(c echo.Context) error {
 	rows, err := h.q.ListUsers(c.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -91,7 +91,7 @@ func (h *AdminHandler) getUsers(c echo.Context) error {
 	})
 }
 
-func (h *AdminHandler) getUserEdit(c echo.Context) error {
+func (h *Handler) getUserEdit(c echo.Context) error {
 	userID, err := strconv.Atoi(c.Param("userID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user id")
@@ -100,9 +100,8 @@ func (h *AdminHandler) getUserEdit(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound)
-		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	return c.Render(http.StatusOK, "user_edit", echo.Map{
@@ -117,7 +116,7 @@ func (h *AdminHandler) getUserEdit(c echo.Context) error {
 	})
 }
 
-func (h *AdminHandler) getGames(c echo.Context) error {
+func (h *Handler) getGames(c echo.Context) error {
 	rows, err := h.q.ListGames(c.Request().Context())
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -145,7 +144,7 @@ func (h *AdminHandler) getGames(c echo.Context) error {
 	})
 }
 
-func (h *AdminHandler) getGameEdit(c echo.Context) error {
+func (h *Handler) getGameEdit(c echo.Context) error {
 	gameID, err := strconv.Atoi(c.Param("gameID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
@@ -154,9 +153,8 @@ func (h *AdminHandler) getGameEdit(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound)
-		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	var startedAt string
@@ -178,7 +176,7 @@ func (h *AdminHandler) getGameEdit(c echo.Context) error {
 	})
 }
 
-func (h *AdminHandler) postGameEdit(c echo.Context) error {
+func (h *Handler) postGameEdit(c echo.Context) error {
 	gameID, err := strconv.Atoi(c.Param("gameID"))
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid game id")
@@ -187,9 +185,8 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return echo.NewHTTPError(http.StatusNotFound)
-		} else {
-			return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
 	gameType := c.FormValue("game_type")

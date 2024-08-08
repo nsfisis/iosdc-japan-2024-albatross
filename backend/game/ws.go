@@ -20,6 +20,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		// TODO: insecure!
+		_ = r
 		return true
 	},
 }

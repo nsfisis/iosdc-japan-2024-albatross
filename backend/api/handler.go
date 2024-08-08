@@ -12,7 +12,7 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
-type APIHandler struct {
+type Handler struct {
 	q    *db.Queries
 	hubs GameHubsInterface
 }
@@ -21,7 +21,7 @@ type GameHubsInterface interface {
 	StartGame(gameID int) error
 }
 
-func (h *APIHandler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
+func (h *Handler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
 	userID, err := auth.Login(ctx, h.q, username, password)
@@ -52,7 +52,7 @@ func (h *APIHandler) PostLogin(ctx context.Context, request PostLoginRequestObje
 	}, nil
 }
 
-func (h *APIHandler) GetToken(ctx context.Context, request GetTokenRequestObject, user *auth.JWTClaims) (GetTokenResponseObject, error) {
+func (h *Handler) GetToken(_ context.Context, _ GetTokenRequestObject, user *auth.JWTClaims) (GetTokenResponseObject, error) {
 	newToken, err := auth.NewShortLivedJWT(user)
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -62,7 +62,7 @@ func (h *APIHandler) GetToken(ctx context.Context, request GetTokenRequestObject
 	}, nil
 }
 
-func (h *APIHandler) GetGames(ctx context.Context, request GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
+func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
 	gameRows, err := h.q.ListGamesForPlayer(ctx, int32(user.UserID))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -100,7 +100,7 @@ func (h *APIHandler) GetGames(ctx context.Context, request GetGamesRequestObject
 	}, nil
 }
 
-func (h *APIHandler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
+func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
 	gameID := request.GameID
 	row, err := h.q.GetGameByID(ctx, int32(gameID))
@@ -111,9 +111,8 @@ func (h *APIHandler) GetGame(ctx context.Context, request GetGameRequestObject, 
 					Message: "Game not found",
 				},
 			}, nil
-		} else {
-			return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 		}
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 	var startedAt *int
 	if row.StartedAt.Valid {

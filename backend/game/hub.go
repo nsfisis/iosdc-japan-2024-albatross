@@ -544,15 +544,15 @@ func (hub *gameHub) closeWatcherClient(watcher *watcherClient) {
 	close(watcher.s2cMessages)
 }
 
-type GameHubs struct {
+type Hubs struct {
 	hubs        map[int]*gameHub
 	q           *db.Queries
 	taskQueue   *taskqueue.Queue
 	taskResults chan taskqueue.TaskResult
 }
 
-func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskResult) *GameHubs {
-	return &GameHubs{
+func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskResult) *Hubs {
+	return &Hubs{
 		hubs:        make(map[int]*gameHub),
 		q:           q,
 		taskQueue:   taskQueue,
@@ -560,18 +560,18 @@ func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan tas
 	}
 }
 
-func (hubs *GameHubs) Close() {
+func (hubs *Hubs) Close() {
 	log.Println("closing all game hubs")
 	for _, hub := range hubs.hubs {
 		hub.close()
 	}
 }
 
-func (hubs *GameHubs) getHub(gameID int) *gameHub {
+func (hubs *Hubs) getHub(gameID int) *gameHub {
 	return hubs.hubs[gameID]
 }
 
-func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
+func (hubs *Hubs) RestoreFromDB(ctx context.Context) error {
 	games, err := hubs.q.ListGames(ctx)
 	if err != nil {
 		return err
@@ -581,12 +581,12 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 		if row.StartedAt.Valid {
 			startedAt = &row.StartedAt.Time
 		}
-		var problem_ *problem
+		var pr *problem
 		if row.ProblemID != nil {
 			if row.Title == nil || row.Description == nil {
 				panic("inconsistent data")
 			}
-			problem_ = &problem{
+			pr = &problem{
 				problemID:   int(*row.ProblemID),
 				title:       *row.Title,
 				description: *row.Description,
@@ -603,14 +603,14 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 			state:           gameState(row.State),
 			displayName:     row.DisplayName,
 			startedAt:       startedAt,
-			problem:         problem_,
+			problem:         pr,
 			playerCount:     len(playerRows),
 		}, hubs.q, hubs.taskQueue)
 	}
 	return nil
 }
 
-func (hubs *GameHubs) Run() {
+func (hubs *Hubs) Run() {
 	for _, hub := range hubs.hubs {
 		go hub.run()
 		go hub.processTaskResults()
@@ -626,11 +626,11 @@ func (hubs *GameHubs) Run() {
 	}
 }
 
-func (hubs *GameHubs) SockHandler() *sockHandler {
+func (hubs *Hubs) SockHandler() *SockHandler {
 	return newSockHandler(hubs)
 }
 
-func (hubs *GameHubs) StartGame(gameID int) error {
+func (hubs *Hubs) StartGame(gameID int) error {
 	hub := hubs.getHub(gameID)
 	if hub == nil {
 		return errors.New("no such game")

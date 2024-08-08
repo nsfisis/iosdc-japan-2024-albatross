@@ -83,7 +83,7 @@ func main() {
 	apiHandler := api.NewHandler(queries, gameHubs)
 	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
 
-	adminHandler := admin.NewAdminHandler(queries, gameHubs)
+	adminHandler := admin.NewHandler(queries, gameHubs)
 	adminGroup := e.Group("/admin")
 	adminHandler.RegisterHandlers(adminGroup)
 

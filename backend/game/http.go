@@ -9,17 +9,17 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 )
 
-type sockHandler struct {
-	hubs *GameHubs
+type SockHandler struct {
+	hubs *Hubs
 }
 
-func newSockHandler(hubs *GameHubs) *sockHandler {
-	return &sockHandler{
+func newSockHandler(hubs *Hubs) *SockHandler {
+	return &SockHandler{
 		hubs: hubs,
 	}
 }
 
-func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
+func (h *SockHandler) HandleSockGolfPlay(c echo.Context) error {
 	jwt := c.QueryParam("token")
 	claims, err := auth.ParseJWT(jwt)
 	if err != nil {
@@ -38,7 +38,7 @@ func (h *sockHandler) HandleSockGolfPlay(c echo.Context) error {
 	return servePlayerWs(hub, c.Response(), c.Request(), claims.UserID)
 }
 
-func (h *sockHandler) HandleSockGolfWatch(c echo.Context) error {
+func (h *SockHandler) HandleSockGolfWatch(c echo.Context) error {
 	jwt := c.QueryParam("token")
 	claims, err := auth.ParseJWT(jwt)
 	if err != nil {

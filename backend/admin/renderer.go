@@ -27,7 +27,7 @@ func NewRenderer() *Renderer {
 	}
 }
 
-func (r *Renderer) Render(w io.Writer, name string, data interface{}, c echo.Context) error {
+func (r *Renderer) Render(w io.Writer, name string, data interface{}, _ echo.Context) error {
 	tmpl, ok := r.templates[name]
 	if !ok {
 		t, err := template.ParseFS(templatesFS, "templates/base.html", "templates/"+name+".html")
