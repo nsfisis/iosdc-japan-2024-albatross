@@ -42,10 +42,9 @@ func (p *processor) doProcessTaskCreateSubmissionRecord(
 }
 
 func (p *processor) doProcessTaskCompileSwiftToWasm(
-	ctx context.Context,
+	_ context.Context,
 	payload *TaskPayloadCompileSwiftToWasm,
 ) (*TaskResultCompileSwiftToWasm, error) {
-	_ = ctx
 	type swiftcRequestData struct {
 		MaxDuration int    `json:"max_duration_ms"`
 		Code        string `json:"code"`
@@ -80,10 +79,9 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 }
 
 func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
-	ctx context.Context,
+	_ context.Context,
 	payload *TaskPayloadCompileWasmToNativeExecutable,
 ) (*TaskResultCompileWasmToNativeExecutable, error) {
-	_ = ctx
 	type wasmcRequestData struct {
 		MaxDuration int    `json:"max_duration_ms"`
 		Code        string `json:"code"`
@@ -118,7 +116,7 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 }
 
 func (p *processor) doProcessTaskRunTestcase(
-	ctx context.Context,
+	_ context.Context,
 	payload *TaskPayloadRunTestcase,
 ) (*TaskResultRunTestcase, error) {
 	type testrunRequestData struct {
@@ -148,17 +146,10 @@ func (p *processor) doProcessTaskRunTestcase(
 	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		return nil, fmt.Errorf("json.Decode failed: %v", err)
 	}
-	if resData.Status != "success" {
-		return &TaskResultRunTestcase{
-			TaskPayload: payload,
-			Status:      resData.Status,
-			Stdout:      resData.Stdout,
-			Stderr:      resData.Stderr,
-		}, nil
-	}
-
 	return &TaskResultRunTestcase{
 		TaskPayload: payload,
-		Status:      "success",
+		Status:      resData.Status,
+		Stdout:      resData.Stdout,
+		Stderr:      resData.Stderr,
 	}, nil
 }
