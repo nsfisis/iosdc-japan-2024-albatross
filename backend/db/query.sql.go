@@ -11,6 +11,28 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const aggregateTestcaseResults = `-- name: AggregateTestcaseResults :one
+SELECT
+    CASE
+        WHEN COUNT(CASE WHEN r.status IS NULL            THEN 1 END) > 0 THEN 'running'
+        WHEN COUNT(CASE WHEN r.status = 'internal_error' THEN 1 END) > 0 THEN 'internal_error'
+        WHEN COUNT(CASE WHEN r.status = 'timeout'        THEN 1 END) > 0 THEN 'timeout'
+        WHEN COUNT(CASE WHEN r.status = 'runtime_error'  THEN 1 END) > 0 THEN 'runtime_error'
+        WHEN COUNT(CASE WHEN r.status = 'wrong_answer'   THEN 1 END) > 0 THEN 'wrong_answer'
+        ELSE 'success'
+    END AS status
+FROM testcases
+LEFT JOIN testcase_results AS r ON testcases.testcase_id = r.testcase_id
+WHERE r.submission_id = $1
+`
+
+func (q *Queries) AggregateTestcaseResults(ctx context.Context, submissionID int32) (string, error) {
+	row := q.db.QueryRow(ctx, aggregateTestcaseResults, submissionID)
+	var status string
+	err := row.Scan(&status)
+	return status, err
+}
+
 const createSubmission = `-- name: CreateSubmission :one
 INSERT INTO submissions (game_id, user_id, code, code_size)
 VALUES ($1, $2, $3, $4)
@@ -36,21 +58,43 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 	return submission_id, err
 }
 
-const createTestcaseExecution = `-- name: CreateTestcaseExecution :exec
-INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)
-VALUES ($1, $2, $3, $4, $5)
+const createSubmissionResult = `-- name: CreateSubmissionResult :exec
+INSERT INTO submission_results (submission_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4)
 `
 
-type CreateTestcaseExecutionParams struct {
+type CreateSubmissionResultParams struct {
 	SubmissionID int32
-	TestcaseID   *int32
 	Status       string
 	Stdout       string
 	Stderr       string
 }
 
-func (q *Queries) CreateTestcaseExecution(ctx context.Context, arg CreateTestcaseExecutionParams) error {
-	_, err := q.db.Exec(ctx, createTestcaseExecution,
+func (q *Queries) CreateSubmissionResult(ctx context.Context, arg CreateSubmissionResultParams) error {
+	_, err := q.db.Exec(ctx, createSubmissionResult,
+		arg.SubmissionID,
+		arg.Status,
+		arg.Stdout,
+		arg.Stderr,
+	)
+	return err
+}
+
+const createTestcaseResult = `-- name: CreateTestcaseResult :exec
+INSERT INTO testcase_results (submission_id, testcase_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4, $5)
+`
+
+type CreateTestcaseResultParams struct {
+	SubmissionID int32
+	TestcaseID   int32
+	Status       string
+	Stdout       string
+	Stderr       string
+}
+
+func (q *Queries) CreateTestcaseResult(ctx context.Context, arg CreateTestcaseResultParams) error {
+	_, err := q.db.Exec(ctx, createTestcaseResult,
 		arg.SubmissionID,
 		arg.TestcaseID,
 		arg.Status,

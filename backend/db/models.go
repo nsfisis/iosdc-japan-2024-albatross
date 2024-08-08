@@ -39,6 +39,15 @@ type Submission struct {
 	CreatedAt    pgtype.Timestamp
 }
 
+type SubmissionResult struct {
+	SubmissionResultID int32
+	SubmissionID       int32
+	Status             string
+	Stdout             string
+	Stderr             string
+	CreatedAt          pgtype.Timestamp
+}
+
 type Testcase struct {
 	TestcaseID int32
 	ProblemID  int32
@@ -46,13 +55,14 @@ type Testcase struct {
 	Stdout     string
 }
 
-type TestcaseExecution struct {
-	TestcaseExecutionID int32
-	SubmissionID        int32
-	TestcaseID          *int32
-	Status              string
-	Stdout              string
-	Stderr              string
+type TestcaseResult struct {
+	TestcaseResultID int32
+	SubmissionID     int32
+	TestcaseID       int32
+	Status           string
+	Stdout           string
+	Stderr           string
+	CreatedAt        pgtype.Timestamp
 }
 
 type User struct {

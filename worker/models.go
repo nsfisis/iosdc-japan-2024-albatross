@@ -7,7 +7,7 @@ import (
 
 const (
 	resultSuccess       = "success"
-	resultFailure       = "failure"
+	resultRuntimeError  = "runtime_error"
 	resultTimeout       = "timeout"
 	resultInternalError = "internal_error"
 )
@@ -33,7 +33,7 @@ func (req *swiftCompileRequestData) validate() error {
 }
 
 type swiftCompileResponseData struct {
-	Result string `json:"result"`
+	Status string `json:"status"`
 	Stdout string `json:"stdout"`
 	Stderr string `json:"stderr"`
 }
@@ -44,7 +44,7 @@ type wasmCompileRequestData struct {
 }
 
 type wasmCompileResponseData struct {
-	Result string `json:"result"`
+	Status string `json:"status"`
 	Stdout string `json:"stdout"`
 	Stderr string `json:"stderr"`
 }
@@ -78,7 +78,7 @@ func (req *testRunRequestData) validate() error {
 }
 
 type testRunResponseData struct {
-	Result string `json:"result"`
+	Status string `json:"status"`
 	Stdout string `json:"stdout"`
 	Stderr string `json:"stderr"`
 }

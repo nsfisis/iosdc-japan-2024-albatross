@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgtype"
@@ -33,7 +34,7 @@ type gameHub struct {
 	watchers          map[*watcherClient]bool
 	registerWatcher   chan *watcherClient
 	unregisterWatcher chan *watcherClient
-	testcaseExecution chan string
+	taskResults       chan taskqueue.TaskResult
 }
 
 func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskqueue.Queue) *gameHub {
@@ -49,7 +50,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskq
 		watchers:          make(map[*watcherClient]bool),
 		registerWatcher:   make(chan *watcherClient),
 		unregisterWatcher: make(chan *watcherClient),
-		testcaseExecution: make(chan string),
+		taskResults:       make(chan taskqueue.TaskResult),
 	}
 }
 
@@ -161,26 +162,19 @@ func (hub *gameHub) run() {
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
-				task, err := taskqueue.NewExecTask(hub.game.gameID, message.client.playerID, code)
-				if err != nil {
-					log.Fatalf("failed to create task: %v", err)
+				codeSize := len(code) // TODO: exclude whitespaces.
+				if err := hub.taskQueue.EnqueueTaskCreateSubmissionRecord(
+					hub.game.gameID,
+					message.client.playerID,
+					code,
+					codeSize,
+				); err != nil {
+					// TODO: notify failure to player
+					log.Fatalf("failed to enqueue task: %v", err)
 				}
-				hub.taskQueue.Enqueue(task)
 			default:
 				log.Printf("unexpected message type: %T", message.message)
 			}
-		case executionStatus := <-hub.testcaseExecution:
-			_ = executionStatus
-			for player := range hub.players {
-				player.s2cMessages <- &playerMessageS2CExecResult{
-					Type: playerMessageTypeS2CExecResult,
-					Data: playerMessageS2CExecResultPayload{
-						Score:  nil,
-						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(executionStatus),
-					},
-				}
-			}
-			// broadcast to watchers
 		case <-ticker.C:
 			if hub.game.state == gameStateStarting {
 				if time.Now().After(*hub.game.startedAt) {
@@ -209,6 +203,296 @@ func (hub *gameHub) run() {
 			}
 		}
 	}
+}
+
+type codeSubmissionError struct {
+	Status string
+	Stdout string
+	Stderr string
+}
+
+func (err *codeSubmissionError) Error() string {
+	return err.Stderr
+}
+
+func (hub *gameHub) processTaskResults() {
+	for taskResult := range hub.taskResults {
+		switch taskResult := taskResult.(type) {
+		case *taskqueue.TaskResultCreateSubmissionRecord:
+			err := hub.processTaskResultCreateSubmissionRecord(taskResult)
+			if err != nil {
+				for player := range hub.players {
+					if player.playerID != taskResult.TaskPayload.UserID() {
+						continue
+					}
+					player.s2cMessages <- &playerMessageS2CExecResult{
+						Type: playerMessageTypeS2CExecResult,
+						Data: playerMessageS2CExecResultPayload{
+							Score:  nil,
+							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
+						},
+					}
+				}
+				// TODO: broadcast to watchers
+			}
+		case *taskqueue.TaskResultCompileSwiftToWasm:
+			err := hub.processTaskResultCompileSwiftToWasm(taskResult)
+			if err != nil {
+				for player := range hub.players {
+					if player.playerID != taskResult.TaskPayload.UserID() {
+						continue
+					}
+					player.s2cMessages <- &playerMessageS2CExecResult{
+						Type: playerMessageTypeS2CExecResult,
+						Data: playerMessageS2CExecResultPayload{
+							Score:  nil,
+							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
+						},
+					}
+				}
+				// TODO: broadcast to watchers
+			}
+		case *taskqueue.TaskResultCompileWasmToNativeExecutable:
+			err := hub.processTaskResultCompileWasmToNativeExecutable(taskResult)
+			if err != nil {
+				for player := range hub.players {
+					if player.playerID != taskResult.TaskPayload.UserID() {
+						continue
+					}
+					player.s2cMessages <- &playerMessageS2CExecResult{
+						Type: playerMessageTypeS2CExecResult,
+						Data: playerMessageS2CExecResultPayload{
+							Score:  nil,
+							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
+						},
+					}
+				}
+				// TODO: broadcast to watchers
+			}
+		case *taskqueue.TaskResultRunTestcase:
+			var err error
+			err = hub.processTaskResultRunTestcase(taskResult)
+			_ = err // TODO: handle err?
+			aggregatedStatus, err := hub.q.AggregateTestcaseResults(hub.ctx, int32(taskResult.TaskPayload.SubmissionID))
+			_ = err // TODO: handle err?
+			err = hub.q.CreateSubmissionResult(hub.ctx, db.CreateSubmissionResultParams{
+				SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+				Status:       aggregatedStatus,
+				Stdout:       "",
+				Stderr:       "",
+			})
+			if err != nil {
+				for player := range hub.players {
+					if player.playerID != taskResult.TaskPayload.UserID() {
+						continue
+					}
+					player.s2cMessages <- &playerMessageS2CExecResult{
+						Type: playerMessageTypeS2CExecResult,
+						Data: playerMessageS2CExecResultPayload{
+							Score:  nil,
+							Status: api.GamePlayerMessageS2CExecResultPayloadStatus("internal_error"),
+						},
+					}
+				}
+				// TODO: broadcast to watchers
+				continue
+			}
+			for player := range hub.players {
+				if player.playerID != taskResult.TaskPayload.UserID() {
+					continue
+				}
+				player.s2cMessages <- &playerMessageS2CExecResult{
+					Type: playerMessageTypeS2CExecResult,
+					Data: playerMessageS2CExecResultPayload{
+						Score:  nil,
+						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(aggregatedStatus),
+					},
+				}
+				// TODO: broadcast to watchers
+			}
+		default:
+			panic("unexpected task result type")
+		}
+	}
+}
+
+func (hub *gameHub) processTaskResultCreateSubmissionRecord(
+	taskResult *taskqueue.TaskResultCreateSubmissionRecord,
+) *codeSubmissionError {
+	if taskResult.Err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: taskResult.Err.Error(),
+		}
+	}
+
+	if err := hub.taskQueue.EnqueueTaskCompileSwiftToWasm(
+		taskResult.TaskPayload.GameID(),
+		taskResult.TaskPayload.UserID(),
+		taskResult.TaskPayload.Code(),
+		taskResult.SubmissionID,
+	); err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: err.Error(),
+		}
+	}
+	return nil
+}
+
+func (hub *gameHub) processTaskResultCompileSwiftToWasm(
+	taskResult *taskqueue.TaskResultCompileSwiftToWasm,
+) *codeSubmissionError {
+	if taskResult.Err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: taskResult.Err.Error(),
+		}
+	}
+
+	if taskResult.Status != "success" {
+		if err := hub.q.CreateSubmissionResult(hub.ctx, db.CreateSubmissionResultParams{
+			SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+			Status:       taskResult.Status,
+			Stdout:       taskResult.Stdout,
+			Stderr:       taskResult.Stderr,
+		}); err != nil {
+			return &codeSubmissionError{
+				Status: "internal_error",
+				Stderr: err.Error(),
+			}
+		}
+		return &codeSubmissionError{
+			Status: taskResult.Status,
+			Stdout: taskResult.Stdout,
+			Stderr: taskResult.Stderr,
+		}
+	}
+	if err := hub.taskQueue.EnqueueTaskCompileWasmToNativeExecutable(
+		taskResult.TaskPayload.GameID(),
+		taskResult.TaskPayload.UserID(),
+		taskResult.TaskPayload.Code(),
+		taskResult.TaskPayload.SubmissionID,
+	); err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: err.Error(),
+		}
+	}
+	return nil
+}
+
+func (hub *gameHub) processTaskResultCompileWasmToNativeExecutable(
+	taskResult *taskqueue.TaskResultCompileWasmToNativeExecutable,
+) *codeSubmissionError {
+	if taskResult.Err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: taskResult.Err.Error(),
+		}
+	}
+
+	if taskResult.Status != "success" {
+		if err := hub.q.CreateSubmissionResult(hub.ctx, db.CreateSubmissionResultParams{
+			SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+			Status:       taskResult.Status,
+			Stdout:       taskResult.Stdout,
+			Stderr:       taskResult.Stderr,
+		}); err != nil {
+			return &codeSubmissionError{
+				Status: "internal_error",
+				Stderr: err.Error(),
+			}
+		}
+		return &codeSubmissionError{
+			Status: taskResult.Status,
+			Stdout: taskResult.Stdout,
+			Stderr: taskResult.Stderr,
+		}
+	}
+
+	testcases, err := hub.q.ListTestcasesByGameID(hub.ctx, int32(taskResult.TaskPayload.GameID()))
+	if err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: err.Error(),
+		}
+	}
+	if len(testcases) == 0 {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: "no testcases found",
+		}
+	}
+
+	for _, testcase := range testcases {
+		if err := hub.taskQueue.EnqueueTaskRunTestcase(
+			taskResult.TaskPayload.GameID(),
+			taskResult.TaskPayload.UserID(),
+			taskResult.TaskPayload.Code(),
+			taskResult.TaskPayload.SubmissionID,
+			int(testcase.TestcaseID),
+			testcase.Stdin,
+			testcase.Stdout,
+		); err != nil {
+			return &codeSubmissionError{
+				Status: "internal_error",
+				Stderr: err.Error(),
+			}
+		}
+	}
+	return nil
+}
+
+func (hub *gameHub) processTaskResultRunTestcase(
+	taskResult *taskqueue.TaskResultRunTestcase,
+) *codeSubmissionError {
+	if taskResult.Err != nil {
+		return &codeSubmissionError{
+			Status: "internal_error",
+			Stderr: taskResult.Err.Error(),
+		}
+	}
+
+	if taskResult.Status != "success" {
+		if err := hub.q.CreateTestcaseResult(hub.ctx, db.CreateTestcaseResultParams{
+			SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+			TestcaseID:   int32(taskResult.TaskPayload.TestcaseID),
+			Status:       taskResult.Status,
+			Stdout:       taskResult.Stdout,
+			Stderr:       taskResult.Stderr,
+		}); err != nil {
+			return &codeSubmissionError{
+				Status: "internal_error",
+				Stderr: err.Error(),
+			}
+		}
+		return &codeSubmissionError{
+			Status: taskResult.Status,
+			Stdout: taskResult.Stdout,
+			Stderr: taskResult.Stderr,
+		}
+	}
+	if !isTestcaseResultCorrect(taskResult.TaskPayload.Stdout, taskResult.Stdout) {
+		if err := hub.q.CreateTestcaseResult(hub.ctx, db.CreateTestcaseResultParams{
+			SubmissionID: int32(taskResult.TaskPayload.SubmissionID),
+			TestcaseID:   int32(taskResult.TaskPayload.TestcaseID),
+			Status:       "wrong_answer",
+			Stdout:       taskResult.Stdout,
+			Stderr:       taskResult.Stderr,
+		}); err != nil {
+			return &codeSubmissionError{
+				Status: "internal_error",
+				Stderr: err.Error(),
+			}
+		}
+		return &codeSubmissionError{
+			Status: "wrong_answer",
+			Stdout: taskResult.Stdout,
+			Stderr: taskResult.Stderr,
+		}
+	}
+	return nil
 }
 
 func (hub *gameHub) startGame() error {
@@ -261,16 +545,18 @@ func (hub *gameHub) closeWatcherClient(watcher *watcherClient) {
 }
 
 type GameHubs struct {
-	hubs      map[int]*gameHub
-	q         *db.Queries
-	taskQueue *taskqueue.Queue
+	hubs        map[int]*gameHub
+	q           *db.Queries
+	taskQueue   *taskqueue.Queue
+	taskResults chan taskqueue.TaskResult
 }
 
-func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue) *GameHubs {
+func NewGameHubs(q *db.Queries, taskQueue *taskqueue.Queue, taskResults chan taskqueue.TaskResult) *GameHubs {
 	return &GameHubs{
-		hubs:      make(map[int]*gameHub),
-		q:         q,
-		taskQueue: taskQueue,
+		hubs:        make(map[int]*gameHub),
+		q:           q,
+		taskQueue:   taskQueue,
+		taskResults: taskResults,
 	}
 }
 
@@ -327,6 +613,16 @@ func (hubs *GameHubs) RestoreFromDB(ctx context.Context) error {
 func (hubs *GameHubs) Run() {
 	for _, hub := range hubs.hubs {
 		go hub.run()
+		go hub.processTaskResults()
+	}
+
+	for taskResult := range hubs.taskResults {
+		hub := hubs.getHub(taskResult.GameID())
+		if hub == nil {
+			log.Printf("no such game: %d", taskResult.GameID())
+			continue
+		}
+		hub.taskResults <- taskResult
 	}
 }
 
@@ -342,6 +638,8 @@ func (hubs *GameHubs) StartGame(gameID int) error {
 	return hub.startGame()
 }
 
-func (hubs *GameHubs) C() chan string {
-	return hubs.hubs[7].testcaseExecution
+func isTestcaseResultCorrect(expectedStdout, actualStdout string) bool {
+	expectedStdout = strings.TrimSpace(expectedStdout)
+	actualStdout = strings.TrimSpace(actualStdout)
+	return actualStdout == expectedStdout
 }

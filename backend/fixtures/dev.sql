@@ -54,5 +54,6 @@ VALUES
 INSERT INTO testcases
 (problem_id, stdin, stdout)
 VALUES
+    (1, '', '42'),
     (4, '', '42'),
     (7, '', '42');

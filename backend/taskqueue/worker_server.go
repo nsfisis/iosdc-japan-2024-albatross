@@ -7,27 +7,35 @@ import (
 )
 
 type WorkerServer struct {
-	server  *asynq.Server
-	queries *db.Queries
-	c       chan string
+	server    *asynq.Server
+	processor *processorWrapper
 }
 
-func NewWorkerServer(redisAddr string, queries *db.Queries, c chan string) *WorkerServer {
+func NewWorkerServer(redisAddr string, queries *db.Queries) *WorkerServer {
+	server := asynq.NewServer(
+		asynq.RedisClientOpt{
+			Addr: redisAddr,
+		},
+		asynq.Config{},
+	)
+	processor := newProcessorWrapper(newProcessor(queries))
 	return &WorkerServer{
-		server: asynq.NewServer(
-			asynq.RedisClientOpt{
-				Addr: redisAddr,
-			},
-			asynq.Config{},
-		),
-		queries: queries,
-		c:       c,
+		server:    server,
+		processor: processor,
 	}
 }
 
 func (s *WorkerServer) Run() error {
 	mux := asynq.NewServeMux()
-	mux.Handle(TaskTypeExec, NewExecProcessor(s.queries, s.c))
+
+	mux.HandleFunc(string(TaskTypeCreateSubmissionRecord), s.processor.processTaskCreateSubmissionRecord)
+	mux.HandleFunc(string(TaskTypeCompileSwiftToWasm), s.processor.processTaskCompileSwiftToWasm)
+	mux.HandleFunc(string(TaskTypeCompileWasmToNativeExecutable), s.processor.processTaskCompileWasmToNativeExecutable)
+	mux.HandleFunc(string(TaskTypeRunTestcase), s.processor.processTaskRunTestcase)
 
 	return s.server.Run(mux)
+}
+
+func (s *WorkerServer) Results() chan TaskResult {
+	return s.processor.results
 }

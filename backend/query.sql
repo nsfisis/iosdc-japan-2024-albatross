@@ -68,6 +68,24 @@ SELECT * FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
 ORDER BY testcases.testcase_id;
 
--- name: CreateTestcaseExecution :exec
-INSERT INTO testcase_executions (submission_id, testcase_id, status, stdout, stderr)
+-- name: CreateSubmissionResult :exec
+INSERT INTO submission_results (submission_id, status, stdout, stderr)
+VALUES ($1, $2, $3, $4);
+
+-- name: CreateTestcaseResult :exec
+INSERT INTO testcase_results (submission_id, testcase_id, status, stdout, stderr)
 VALUES ($1, $2, $3, $4, $5);
+
+-- name: AggregateTestcaseResults :one
+SELECT
+    CASE
+        WHEN COUNT(CASE WHEN r.status IS NULL            THEN 1 END) > 0 THEN 'running'
+        WHEN COUNT(CASE WHEN r.status = 'internal_error' THEN 1 END) > 0 THEN 'internal_error'
+        WHEN COUNT(CASE WHEN r.status = 'timeout'        THEN 1 END) > 0 THEN 'timeout'
+        WHEN COUNT(CASE WHEN r.status = 'runtime_error'  THEN 1 END) > 0 THEN 'runtime_error'
+        WHEN COUNT(CASE WHEN r.status = 'wrong_answer'   THEN 1 END) > 0 THEN 'wrong_answer'
+        ELSE 'success'
+    END AS status
+FROM testcases
+LEFT JOIN testcase_results AS r ON testcases.testcase_id = r.testcase_id
+WHERE r.submission_id = $1;

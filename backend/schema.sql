@@ -64,14 +64,27 @@ CREATE TABLE submissions (
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE testcase_executions (
-    testcase_execution_id SERIAL      PRIMARY KEY,
-    submission_id         INT         NOT NULL,
-    testcase_id           INT,
-    status                VARCHAR(16) NOT NULL,
-    stdout                TEXT        NOT NULL,
-    stderr                TEXT        NOT NULL,
-    CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id),
-    CONSTRAINT fk_testcase_id FOREIGN KEY(testcase_id) REFERENCES testcases(testcase_id)
+CREATE TABLE submission_results (
+    submission_result_id SERIAL      PRIMARY KEY,
+    submission_id        INT         NOT NULL UNIQUE,
+    status               VARCHAR(16) NOT NULL,
+    stdout               TEXT        NOT NULL,
+    stderr               TEXT        NOT NULL,
+    created_at           TIMESTAMP   NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id)
 );
-CREATE INDEX idx_testcase_executions_submission_id ON testcase_executions(submission_id);
+CREATE INDEX idx_submission_results_submission_id ON submission_results(submission_id);
+
+CREATE TABLE testcase_results (
+    testcase_result_id SERIAL      PRIMARY KEY,
+    submission_id      INT         NOT NULL,
+    testcase_id        INT         NOT NULL,
+    status             VARCHAR(16) NOT NULL,
+    stdout             TEXT        NOT NULL,
+    stderr             TEXT        NOT NULL,
+    created_at         TIMESTAMP   NOT NULL DEFAULT NOW(),
+    CONSTRAINT fk_submission_id FOREIGN KEY(submission_id) REFERENCES submissions(submission_id),
+    CONSTRAINT fk_testcase_id FOREIGN KEY(testcase_id) REFERENCES testcases(testcase_id),
+    CONSTRAINT uq_submission_id_testcase_id UNIQUE(submission_id, testcase_id)
+);
+CREATE INDEX idx_testcase_results_submission_id ON testcase_results(submission_id);
