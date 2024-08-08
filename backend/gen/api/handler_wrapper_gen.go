@@ -111,15 +111,15 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
-var _ StrictServerInterface = (*ApiHandlerWrapper)(nil)
+var _ StrictServerInterface = (*APIHandlerWrapper)(nil)
 
-type ApiHandlerWrapper struct {
-	innerHandler ApiHandler
+type APIHandlerWrapper struct {
+	impl APIHandler
 }
 
-func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandlerWrapper {
-	return &ApiHandlerWrapper{
-		innerHandler: ApiHandler{
+func NewHandler(queries *db.Queries, hubs GameHubsInterface) *APIHandlerWrapper {
+	return &APIHandlerWrapper{
+		impl: APIHandler{
 			q:    queries,
 			hubs: hubs,
 		},
@@ -140,7 +140,7 @@ func parseJWTClaimsFromAuthorizationHeader(authorization string) (*auth.JWTClaim
 }
 
 {{ range . }}
-	func (h *ApiHandlerWrapper) {{ .Name }}(ctx context.Context, request {{ .Name }}RequestObject) ({{ .Name }}ResponseObject, error) {
+	func (h *APIHandlerWrapper) {{ .Name }}(ctx context.Context, request {{ .Name }}RequestObject) ({{ .Name }}ResponseObject, error) {
 		{{ if .RequiresLogin -}}
 			user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 			if err != nil {
@@ -159,9 +159,9 @@ func parseJWTClaimsFromAuthorizationHeader(authorization string) (*auth.JWTClaim
 					}, nil
 				}
 			{{ end -}}
-			return h.innerHandler.{{ .Name }}(ctx, request, user)
+			return h.impl.{{ .Name }}(ctx, request, user)
 		{{ else -}}
-			return h.innerHandler.{{ .Name }}(ctx, request)
+			return h.impl.{{ .Name }}(ctx, request)
 		{{ end -}}
 	}
 {{ end }}

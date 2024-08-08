@@ -58,11 +58,11 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 		MaxDuration: 5000,
 		Code:        payload.Code(),
 	}
-	reqJson, err := json.Marshal(reqData)
+	reqJSON, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/swiftc", "application/json", bytes.NewBuffer(reqJson))
+	res, err := http.Post("http://worker:80/api/swiftc", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
 		return nil, fmt.Errorf("http.Post failed: %v", err)
 	}
@@ -95,11 +95,11 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 		MaxDuration: 5000,
 		Code:        payload.Code(),
 	}
-	reqJson, err := json.Marshal(reqData)
+	reqJSON, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/wasmc", "application/json", bytes.NewBuffer(reqJson))
+	res, err := http.Post("http://worker:80/api/wasmc", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
 		return nil, fmt.Errorf("http.Post failed: %v", err)
 	}
@@ -134,11 +134,11 @@ func (p *processor) doProcessTaskRunTestcase(
 		Code:        payload.Code(),
 		Stdin:       payload.Stdin,
 	}
-	reqJson, err := json.Marshal(reqData)
+	reqJSON, err := json.Marshal(reqData)
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/testrun", "application/json", bytes.NewBuffer(reqJson))
+	res, err := http.Post("http://worker:80/api/testrun", "application/json", bytes.NewBuffer(reqJSON))
 	if err != nil {
 		return nil, fmt.Errorf("http.Post failed: %v", err)
 	}

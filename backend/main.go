@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Error loading env %v", err)
 	}
 
-	openApiSpec, err := api.GetSwaggerWithPrefix("/api")
+	openAPISpec, err := api.GetSwaggerWithPrefix("/api")
 	if err != nil {
 		log.Fatalf("Error loading OpenAPI spec\n: %s", err)
 	}
@@ -79,7 +79,7 @@ func main() {
 	})
 
 	apiGroup := e.Group("/api")
-	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
+	apiGroup.Use(oapimiddleware.OapiRequestValidator(openAPISpec))
 	apiHandler := api.NewHandler(queries, gameHubs)
 	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
 
