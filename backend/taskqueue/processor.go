@@ -29,8 +29,9 @@ func (p *processor) doProcessTaskCreateSubmissionRecord(
 	submissionID, err := p.q.CreateSubmission(ctx, db.CreateSubmissionParams{
 		GameID:   int32(payload.GameID()),
 		UserID:   int32(payload.UserID()),
-		Code:     payload.Code(),
+		Code:     payload.Code,
 		CodeSize: int32(payload.CodeSize),
+		CodeHash: string(payload.CodeHash()),
 	})
 	if err != nil {
 		return nil, err
@@ -49,6 +50,7 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 	type swiftcRequestData struct {
 		MaxDuration int    `json:"max_duration_ms"`
 		Code        string `json:"code"`
+		CodeHash    string `json:"code_hash"`
 	}
 	type swiftcResponseData struct {
 		Status string `json:"status"`
@@ -57,7 +59,8 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 	}
 	reqData := swiftcRequestData{
 		MaxDuration: 5000,
-		Code:        payload.Code(),
+		Code:        payload.Code,
+		CodeHash:    string(payload.CodeHash()),
 	}
 	reqJSON, err := json.Marshal(reqData)
 	if err != nil {
@@ -99,7 +102,7 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 ) (*TaskResultCompileWasmToNativeExecutable, error) {
 	type wasmcRequestData struct {
 		MaxDuration int    `json:"max_duration_ms"`
-		Code        string `json:"code"`
+		CodeHash    string `json:"code_hash"`
 	}
 	type wasmcResponseData struct {
 		Status string `json:"status"`
@@ -108,7 +111,7 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 	}
 	reqData := wasmcRequestData{
 		MaxDuration: 5000,
-		Code:        payload.Code(),
+		CodeHash:    string(payload.CodeHash()),
 	}
 	reqJSON, err := json.Marshal(reqData)
 	if err != nil {
@@ -150,7 +153,7 @@ func (p *processor) doProcessTaskRunTestcase(
 ) (*TaskResultRunTestcase, error) {
 	type testrunRequestData struct {
 		MaxDuration int    `json:"max_duration_ms"`
-		Code        string `json:"code"`
+		CodeHash    string `json:"code_hash"`
 		Stdin       string `json:"stdin"`
 	}
 	type testrunResponseData struct {
@@ -160,7 +163,7 @@ func (p *processor) doProcessTaskRunTestcase(
 	}
 	reqData := testrunRequestData{
 		MaxDuration: 5000,
-		Code:        payload.Code(),
+		CodeHash:    string(payload.CodeHash()),
 		Stdin:       payload.Stdin,
 	}
 	reqJSON, err := json.Marshal(reqData)

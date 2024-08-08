@@ -25,12 +25,14 @@ func (q *Queue) EnqueueTaskCreateSubmissionRecord(
 	userID int,
 	code string,
 	codeSize int,
+	codeHash MD5HexHash,
 ) error {
 	task, err := newTaskCreateSubmissionRecord(
 		gameID,
 		userID,
 		code,
 		codeSize,
+		codeHash,
 	)
 	if err != nil {
 		return err
@@ -43,12 +45,14 @@ func (q *Queue) EnqueueTaskCompileSwiftToWasm(
 	gameID int,
 	userID int,
 	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 ) error {
 	task, err := newTaskCompileSwiftToWasm(
 		gameID,
 		userID,
 		code,
+		codeHash,
 		submissionID,
 	)
 	if err != nil {
@@ -61,13 +65,13 @@ func (q *Queue) EnqueueTaskCompileSwiftToWasm(
 func (q *Queue) EnqueueTaskCompileWasmToNativeExecutable(
 	gameID int,
 	userID int,
-	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 ) error {
 	task, err := newTaskCompileWasmToNativeExecutable(
 		gameID,
 		userID,
-		code,
+		codeHash,
 		submissionID,
 	)
 	if err != nil {
@@ -80,7 +84,7 @@ func (q *Queue) EnqueueTaskCompileWasmToNativeExecutable(
 func (q *Queue) EnqueueTaskRunTestcase(
 	gameID int,
 	userID int,
-	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 	testcaseID int,
 	stdin string,
@@ -89,7 +93,7 @@ func (q *Queue) EnqueueTaskRunTestcase(
 	task, err := newTaskRunTestcase(
 		gameID,
 		userID,
-		code,
+		codeHash,
 		submissionID,
 		testcaseID,
 		stdin,

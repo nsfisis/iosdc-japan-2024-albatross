@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
 	"fmt"
 	"os"
 	"os/exec"
@@ -34,10 +33,6 @@ func prepareDirectories() error {
 		return err
 	}
 	return nil
-}
-
-func calcHash(code string) string {
-	return fmt.Sprintf("%x", md5.Sum([]byte(code)))
 }
 
 func calcFilePath(hash, ext string) string {
@@ -85,11 +80,11 @@ func convertCommandErrorToResultType(err error) string {
 func execSwiftCompile(
 	ctx context.Context,
 	code string,
+	codeHash string,
 	maxDuration time.Duration,
 ) swiftCompileResponseData {
-	hash := calcHash(code)
-	inPath := calcFilePath(hash, "swift")
-	outPath := calcFilePath(hash, "wasm")
+	inPath := calcFilePath(codeHash, "swift")
+	outPath := calcFilePath(codeHash, "wasm")
 
 	if err := os.WriteFile(inPath, []byte(code), 0644); err != nil {
 		return swiftCompileResponseData{
@@ -122,12 +117,11 @@ func execSwiftCompile(
 
 func execWasmCompile(
 	ctx context.Context,
-	code string,
+	codeHash string,
 	maxDuration time.Duration,
 ) wasmCompileResponseData {
-	hash := calcHash(code)
-	inPath := calcFilePath(hash, "wasm")
-	outPath := calcFilePath(hash, "cwasm")
+	inPath := calcFilePath(codeHash, "wasm")
+	outPath := calcFilePath(codeHash, "cwasm")
 
 	stdout, stderr, err := execCommandWithTimeout(
 		ctx,
@@ -154,12 +148,11 @@ func execWasmCompile(
 
 func execTestRun(
 	ctx context.Context,
-	code string,
+	codeHash string,
 	stdin string,
 	maxDuration time.Duration,
 ) testRunResponseData {
-	hash := calcHash(code)
-	inPath := calcFilePath(hash, "cwasm")
+	inPath := calcFilePath(codeHash, "cwasm")
 
 	stdout, stderr, err := execCommandWithTimeout(
 		ctx,

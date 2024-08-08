@@ -8,6 +8,9 @@ import (
 
 type TaskType string
 
+// MD5 hash in hexadecimal format
+type MD5HexHash string
+
 const (
 	TaskTypeCreateSubmissionRecord        TaskType = "create_submission_record"
 	TaskTypeCompileSwiftToWasm            TaskType = "compile_swift_to_wasm"
@@ -16,13 +19,14 @@ const (
 )
 
 type TaskPayloadBase struct {
-	GameID int
-	UserID int
-	Code   string
+	GameID   int
+	UserID   int
+	CodeHash MD5HexHash
 }
 
 type TaskPayloadCreateSubmissionRecord struct {
 	TaskPayloadBase
+	Code     string
 	CodeSize int
 }
 
@@ -31,13 +35,15 @@ func newTaskCreateSubmissionRecord(
 	userID int,
 	code string,
 	codeSize int,
+	codeHash MD5HexHash,
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskPayloadCreateSubmissionRecord{
 		TaskPayloadBase: TaskPayloadBase{
-			GameID: gameID,
-			UserID: userID,
-			Code:   code,
+			GameID:   gameID,
+			UserID:   userID,
+			CodeHash: codeHash,
 		},
+		Code:     code,
 		CodeSize: codeSize,
 	})
 	if err != nil {
@@ -46,28 +52,31 @@ func newTaskCreateSubmissionRecord(
 	return asynq.NewTask(string(TaskTypeCreateSubmissionRecord), payload), nil
 }
 
-func (t *TaskPayloadCreateSubmissionRecord) GameID() int  { return t.TaskPayloadBase.GameID }
-func (t *TaskPayloadCreateSubmissionRecord) UserID() int  { return t.TaskPayloadBase.UserID }
-func (t *TaskPayloadCreateSubmissionRecord) Code() string { return t.TaskPayloadBase.Code }
+func (t *TaskPayloadCreateSubmissionRecord) GameID() int          { return t.TaskPayloadBase.GameID }
+func (t *TaskPayloadCreateSubmissionRecord) UserID() int          { return t.TaskPayloadBase.UserID }
+func (t *TaskPayloadCreateSubmissionRecord) CodeHash() MD5HexHash { return t.TaskPayloadBase.CodeHash }
 
 type TaskPayloadCompileSwiftToWasm struct {
 	TaskPayloadBase
 	SubmissionID int
+	Code         string
 }
 
 func newTaskCompileSwiftToWasm(
 	gameID int,
 	userID int,
 	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskPayloadCompileSwiftToWasm{
 		TaskPayloadBase: TaskPayloadBase{
-			GameID: gameID,
-			UserID: userID,
-			Code:   code,
+			GameID:   gameID,
+			UserID:   userID,
+			CodeHash: codeHash,
 		},
 		SubmissionID: submissionID,
+		Code:         code,
 	})
 	if err != nil {
 		return nil, err
@@ -75,9 +84,9 @@ func newTaskCompileSwiftToWasm(
 	return asynq.NewTask(string(TaskTypeCompileSwiftToWasm), payload), nil
 }
 
-func (t *TaskPayloadCompileSwiftToWasm) GameID() int  { return t.TaskPayloadBase.GameID }
-func (t *TaskPayloadCompileSwiftToWasm) UserID() int  { return t.TaskPayloadBase.UserID }
-func (t *TaskPayloadCompileSwiftToWasm) Code() string { return t.TaskPayloadBase.Code }
+func (t *TaskPayloadCompileSwiftToWasm) GameID() int          { return t.TaskPayloadBase.GameID }
+func (t *TaskPayloadCompileSwiftToWasm) UserID() int          { return t.TaskPayloadBase.UserID }
+func (t *TaskPayloadCompileSwiftToWasm) CodeHash() MD5HexHash { return t.TaskPayloadBase.CodeHash }
 
 type TaskPayloadCompileWasmToNativeExecutable struct {
 	TaskPayloadBase
@@ -87,14 +96,14 @@ type TaskPayloadCompileWasmToNativeExecutable struct {
 func newTaskCompileWasmToNativeExecutable(
 	gameID int,
 	userID int,
-	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskPayloadCompileWasmToNativeExecutable{
 		TaskPayloadBase: TaskPayloadBase{
-			GameID: gameID,
-			UserID: userID,
-			Code:   code,
+			GameID:   gameID,
+			UserID:   userID,
+			CodeHash: codeHash,
 		},
 		SubmissionID: submissionID,
 	})
@@ -104,9 +113,11 @@ func newTaskCompileWasmToNativeExecutable(
 	return asynq.NewTask(string(TaskTypeCompileWasmToNativeExecutable), payload), nil
 }
 
-func (t *TaskPayloadCompileWasmToNativeExecutable) GameID() int  { return t.TaskPayloadBase.GameID }
-func (t *TaskPayloadCompileWasmToNativeExecutable) UserID() int  { return t.TaskPayloadBase.UserID }
-func (t *TaskPayloadCompileWasmToNativeExecutable) Code() string { return t.TaskPayloadBase.Code }
+func (t *TaskPayloadCompileWasmToNativeExecutable) GameID() int { return t.TaskPayloadBase.GameID }
+func (t *TaskPayloadCompileWasmToNativeExecutable) UserID() int { return t.TaskPayloadBase.UserID }
+func (t *TaskPayloadCompileWasmToNativeExecutable) CodeHash() MD5HexHash {
+	return t.TaskPayloadBase.CodeHash
+}
 
 type TaskPayloadRunTestcase struct {
 	TaskPayloadBase
@@ -119,7 +130,7 @@ type TaskPayloadRunTestcase struct {
 func newTaskRunTestcase(
 	gameID int,
 	userID int,
-	code string,
+	codeHash MD5HexHash,
 	submissionID int,
 	testcaseID int,
 	stdin string,
@@ -127,9 +138,9 @@ func newTaskRunTestcase(
 ) (*asynq.Task, error) {
 	payload, err := json.Marshal(TaskPayloadRunTestcase{
 		TaskPayloadBase: TaskPayloadBase{
-			GameID: gameID,
-			UserID: userID,
-			Code:   code,
+			GameID:   gameID,
+			UserID:   userID,
+			CodeHash: codeHash,
 		},
 		SubmissionID: submissionID,
 		TestcaseID:   testcaseID,
@@ -142,9 +153,9 @@ func newTaskRunTestcase(
 	return asynq.NewTask(string(TaskTypeRunTestcase), payload), nil
 }
 
-func (t *TaskPayloadRunTestcase) GameID() int  { return t.TaskPayloadBase.GameID }
-func (t *TaskPayloadRunTestcase) UserID() int  { return t.TaskPayloadBase.UserID }
-func (t *TaskPayloadRunTestcase) Code() string { return t.TaskPayloadBase.Code }
+func (t *TaskPayloadRunTestcase) GameID() int          { return t.TaskPayloadBase.GameID }
+func (t *TaskPayloadRunTestcase) UserID() int          { return t.TaskPayloadBase.UserID }
+func (t *TaskPayloadRunTestcase) CodeHash() MD5HexHash { return t.TaskPayloadBase.CodeHash }
 
 type TaskResult interface {
 	Type() TaskType
