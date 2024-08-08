@@ -50,7 +50,7 @@ func NewShortLivedJWT(claims *JWTClaims) (string, error) {
 
 func ParseJWT(token string) (*JWTClaims, error) {
 	claims := new(JWTClaims)
-	t, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+	t, err := jwt.ParseWithClaims(token, claims, func(*jwt.Token) (interface{}, error) {
 		return []byte("TODO"), nil
 	})
 	if err != nil {

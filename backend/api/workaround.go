@@ -12,7 +12,7 @@ func GetSwaggerWithPrefix(prefix string) (*openapi3.T, error) {
 		return nil, err
 	}
 
-	var prefixedPaths openapi3.Paths = openapi3.Paths{}
+	prefixedPaths := openapi3.Paths{}
 	for key, value := range spec.Paths.Map() {
 		prefixedPaths.Set(prefix+key, value)
 	}

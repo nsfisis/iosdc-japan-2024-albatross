@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Error loading env %v", err)
 	}
 
-	openApiSpec, err := api.GetSwaggerWithPrefix("/api")
+	openAPISpec, err := api.GetSwaggerWithPrefix("/api")
 	if err != nil {
 		log.Fatalf("Error loading OpenAPI spec\n: %s", err)
 	}
@@ -79,11 +79,11 @@ func main() {
 	})
 
 	apiGroup := e.Group("/api")
-	apiGroup.Use(oapimiddleware.OapiRequestValidator(openApiSpec))
+	apiGroup.Use(oapimiddleware.OapiRequestValidator(openAPISpec))
 	apiHandler := api.NewHandler(queries, gameHubs)
 	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
 
-	adminHandler := admin.NewAdminHandler(queries, gameHubs)
+	adminHandler := admin.NewHandler(queries, gameHubs)
 	adminGroup := e.Group("/admin")
 	adminHandler.RegisterHandlers(adminGroup)
 
@@ -99,7 +99,9 @@ func main() {
 	go gameHubs.Run()
 
 	go func() {
-		workerServer.Run()
+		if err := workerServer.Run(); err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	if err := e.Start(":80"); err != http.ErrServerClosed {

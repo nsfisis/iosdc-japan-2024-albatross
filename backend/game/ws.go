@@ -1,6 +1,7 @@
 package game
 
 import (
+	"log"
 	"net/http"
 	"time"
 
@@ -19,6 +20,7 @@ var upgrader = websocket.Upgrader{
 	WriteBufferSize: 1024,
 	CheckOrigin: func(r *http.Request) bool {
 		// TODO: insecure!
+		_ = r
 		return true
 	},
 }
@@ -36,8 +38,14 @@ func servePlayerWs(hub *gameHub, w http.ResponseWriter, r *http.Request, playerI
 	}
 	hub.registerPlayer <- player
 
-	go player.writePump()
-	go player.readPump()
+	go func() {
+		err := player.writePump()
+		log.Printf("%v", err)
+	}()
+	go func() {
+		err := player.readPump()
+		log.Printf("%v", err)
+	}()
 	return nil
 }
 
@@ -53,7 +61,13 @@ func serveWatcherWs(hub *gameHub, w http.ResponseWriter, r *http.Request) error 
 	}
 	hub.registerWatcher <- watcher
 
-	go watcher.writePump()
-	go watcher.readPump()
+	go func() {
+		err := watcher.writePump()
+		log.Printf("%v", err)
+	}()
+	go func() {
+		err := watcher.readPump()
+		log.Printf("%v", err)
+	}()
 	return nil
 }

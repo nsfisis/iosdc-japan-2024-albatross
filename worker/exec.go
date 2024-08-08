@@ -76,12 +76,10 @@ func convertCommandErrorToResultType(err error) string {
 	if err != nil {
 		if err == context.DeadlineExceeded {
 			return resultTimeout
-		} else {
-			return resultRuntimeError
 		}
-	} else {
-		return resultSuccess
+		return resultRuntimeError
 	}
+	return resultSuccess
 }
 
 func execSwiftCompile(

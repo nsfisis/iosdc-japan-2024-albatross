@@ -14,12 +14,12 @@ import (
 var _ StrictServerInterface = (*ApiHandlerWrapper)(nil)
 
 type ApiHandlerWrapper struct {
-	innerHandler ApiHandler
+	innerHandler Handler
 }
 
 func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandlerWrapper {
 	return &ApiHandlerWrapper{
-		innerHandler: ApiHandler{
+		innerHandler: Handler{
 			q:    queries,
 			hubs: hubs,
 		},

@@ -1,6 +1,5 @@
-.PHONY: fmt
-fmt:
-	go fmt ./...
+.PHONY: all
+all: check lint
 
 .PHONY: check
 check:
@@ -8,4 +7,4 @@ check:
 
 .PHONY: lint
 lint:
-	go vet ./...
+	go run github.com/golangci/golangci-lint/cmd/golangci-lint run
