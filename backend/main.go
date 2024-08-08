@@ -99,7 +99,9 @@ func main() {
 	go gameHubs.Run()
 
 	go func() {
-		workerServer.Run()
+		if err := workerServer.Run(); err != nil {
+			log.Fatal(err)
+		}
 	}()
 
 	if err := e.Start(":80"); err != http.ErrServerClosed {

@@ -244,7 +244,10 @@ func (h *AdminHandler) postGameEdit(c echo.Context) error {
 	{
 		// TODO:
 		if state != row.State && state == "prepare" {
-			h.hubs.StartGame(int(gameID))
+			err := h.hubs.StartGame(int(gameID))
+			if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+			}
 		}
 	}
 

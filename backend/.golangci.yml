@@ -1,10 +1,4 @@
 linters:
-  disable-all: true
   enable:
     - gofmt
     - goimports
-    - gosimple
-    - govet
-    - ineffassign
-    - staticcheck
-    - unused
