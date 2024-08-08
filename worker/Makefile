@@ -1,6 +1,5 @@
-.PHONY: fmt
-fmt:
-	go fmt ./...
+.PHONY: all
+all: check lint
 
 .PHONY: check
 check:
