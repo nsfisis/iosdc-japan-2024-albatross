@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
@@ -62,10 +63,24 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/swiftc", "application/json", bytes.NewBuffer(reqJSON))
+	req, err := http.NewRequest("POST", "http://worker:80/api/swiftc", bytes.NewBuffer(reqJSON))
 	if err != nil {
-		return nil, fmt.Errorf("http.Post failed: %v", err)
+		return nil, fmt.Errorf("http.NewRequest failed: %v", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
+	jwt, err := auth.NewAnonymousJWT()
+	if err != nil {
+		return nil, fmt.Errorf("auth.NewAnonymousJWT failed: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+jwt)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("client.Do failed: %v", err)
+	}
+	defer res.Body.Close()
+
 	resData := swiftcResponseData{}
 	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		return nil, fmt.Errorf("json.Decode failed: %v", err)
@@ -99,10 +114,24 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/wasmc", "application/json", bytes.NewBuffer(reqJSON))
+	req, err := http.NewRequest("POST", "http://worker:80/api/wasmc", bytes.NewBuffer(reqJSON))
 	if err != nil {
-		return nil, fmt.Errorf("http.Post failed: %v", err)
+		return nil, fmt.Errorf("http.NewRequest failed: %v", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
+	jwt, err := auth.NewAnonymousJWT()
+	if err != nil {
+		return nil, fmt.Errorf("auth.NewAnonymousJWT failed: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+jwt)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("client.Do failed: %v", err)
+	}
+	defer res.Body.Close()
+
 	resData := wasmcResponseData{}
 	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		return nil, fmt.Errorf("json.Decode failed: %v", err)
@@ -138,10 +167,24 @@ func (p *processor) doProcessTaskRunTestcase(
 	if err != nil {
 		return nil, fmt.Errorf("json.Marshal failed: %v", err)
 	}
-	res, err := http.Post("http://worker:80/api/testrun", "application/json", bytes.NewBuffer(reqJSON))
+	req, err := http.NewRequest("POST", "http://worker:80/api/testrun", bytes.NewBuffer(reqJSON))
 	if err != nil {
-		return nil, fmt.Errorf("http.Post failed: %v", err)
+		return nil, fmt.Errorf("http.NewRequest failed: %v", err)
 	}
+	req.Header.Set("Content-Type", "application/json")
+	jwt, err := auth.NewAnonymousJWT()
+	if err != nil {
+		return nil, fmt.Errorf("auth.NewAnonymousJWT failed: %v", err)
+	}
+	req.Header.Set("Authorization", "Bearer "+jwt)
+
+	client := &http.Client{}
+	res, err := client.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("client.Do failed: %v", err)
+	}
+	defer res.Body.Close()
+
 	resData := testrunResponseData{}
 	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
 		return nil, fmt.Errorf("json.Decode failed: %v", err)
