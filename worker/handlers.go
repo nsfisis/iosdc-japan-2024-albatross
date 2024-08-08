@@ -23,6 +23,7 @@ func handleSwiftCompile(c echo.Context) error {
 	res := execSwiftCompile(
 		c.Request().Context(),
 		req.Code,
+		req.CodeHash,
 		req.maxDuration(),
 	)
 
@@ -40,7 +41,7 @@ func handleWasmCompile(c echo.Context) error {
 
 	res := execWasmCompile(
 		c.Request().Context(),
-		req.Code,
+		req.CodeHash,
 		req.maxDuration(),
 	)
 
@@ -58,7 +59,7 @@ func handleTestRun(c echo.Context) error {
 
 	res := execTestRun(
 		c.Request().Context(),
-		req.Code,
+		req.CodeHash,
 		req.Stdin,
 		req.maxDuration(),
 	)

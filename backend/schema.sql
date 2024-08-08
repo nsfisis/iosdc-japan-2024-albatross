@@ -59,6 +59,7 @@ CREATE TABLE submissions (
     user_id       INT       NOT NULL,
     code          TEXT      NOT NULL,
     code_size     INT       NOT NULL,
+    code_hash     CHAR(32)  NOT NULL,
     created_at    TIMESTAMP NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_game_id FOREIGN KEY(game_id) REFERENCES games(game_id),
     CONSTRAINT fk_user_id FOREIGN KEY(user_id) REFERENCES users(user_id)

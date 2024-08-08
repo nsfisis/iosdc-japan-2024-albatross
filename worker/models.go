@@ -19,6 +19,7 @@ var (
 type swiftCompileRequestData struct {
 	MaxDurationMilliseconds int    `json:"max_duration_ms"`
 	Code                    string `json:"code"`
+	CodeHash                string `json:"code_hash"`
 }
 
 func (req *swiftCompileRequestData) maxDuration() time.Duration {
@@ -40,7 +41,7 @@ type swiftCompileResponseData struct {
 
 type wasmCompileRequestData struct {
 	MaxDurationMilliseconds int    `json:"max_duration_ms"`
-	Code                    string `json:"code"`
+	CodeHash                string `json:"code_hash"`
 }
 
 type wasmCompileResponseData struct {
@@ -62,7 +63,7 @@ func (req *wasmCompileRequestData) validate() error {
 
 type testRunRequestData struct {
 	MaxDurationMilliseconds int    `json:"max_duration_ms"`
-	Code                    string `json:"code"`
+	CodeHash                string `json:"code_hash"`
 	Stdin                   string `json:"stdin"`
 }
 

@@ -34,8 +34,8 @@ func (q *Queries) AggregateTestcaseResults(ctx context.Context, submissionID int
 }
 
 const createSubmission = `-- name: CreateSubmission :one
-INSERT INTO submissions (game_id, user_id, code, code_size)
-VALUES ($1, $2, $3, $4)
+INSERT INTO submissions (game_id, user_id, code, code_size, code_hash)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING submission_id
 `
 
@@ -44,6 +44,7 @@ type CreateSubmissionParams struct {
 	UserID   int32
 	Code     string
 	CodeSize int32
+	CodeHash string
 }
 
 func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionParams) (int32, error) {
@@ -52,6 +53,7 @@ func (q *Queries) CreateSubmission(ctx context.Context, arg CreateSubmissionPara
 		arg.UserID,
 		arg.Code,
 		arg.CodeSize,
+		arg.CodeHash,
 	)
 	var submission_id int32
 	err := row.Scan(&submission_id)

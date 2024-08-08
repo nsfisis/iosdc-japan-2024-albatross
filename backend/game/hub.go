@@ -2,7 +2,9 @@ package game
 
 import (
 	"context"
+	"crypto/md5"
 	"errors"
+	"fmt"
 	"log"
 	"strings"
 	"time"
@@ -163,11 +165,13 @@ func (hub *gameHub) run() {
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
 				codeSize := len(code) // TODO: exclude whitespaces.
+				codeHash := calcHash(code)
 				if err := hub.taskQueue.EnqueueTaskCreateSubmissionRecord(
 					hub.game.gameID,
 					message.client.playerID,
 					code,
 					codeSize,
+					taskqueue.MD5HexHash(codeHash),
 				); err != nil {
 					// TODO: notify failure to player
 					log.Fatalf("failed to enqueue task: %v", err)
@@ -329,7 +333,8 @@ func (hub *gameHub) processTaskResultCreateSubmissionRecord(
 	if err := hub.taskQueue.EnqueueTaskCompileSwiftToWasm(
 		taskResult.TaskPayload.GameID(),
 		taskResult.TaskPayload.UserID(),
-		taskResult.TaskPayload.Code(),
+		taskResult.TaskPayload.Code,
+		taskResult.TaskPayload.CodeHash(),
 		taskResult.SubmissionID,
 	); err != nil {
 		return &codeSubmissionError{
@@ -371,7 +376,7 @@ func (hub *gameHub) processTaskResultCompileSwiftToWasm(
 	if err := hub.taskQueue.EnqueueTaskCompileWasmToNativeExecutable(
 		taskResult.TaskPayload.GameID(),
 		taskResult.TaskPayload.UserID(),
-		taskResult.TaskPayload.Code(),
+		taskResult.TaskPayload.CodeHash(),
 		taskResult.TaskPayload.SubmissionID,
 	); err != nil {
 		return &codeSubmissionError{
@@ -429,7 +434,7 @@ func (hub *gameHub) processTaskResultCompileWasmToNativeExecutable(
 		if err := hub.taskQueue.EnqueueTaskRunTestcase(
 			taskResult.TaskPayload.GameID(),
 			taskResult.TaskPayload.UserID(),
-			taskResult.TaskPayload.Code(),
+			taskResult.TaskPayload.CodeHash(),
 			taskResult.TaskPayload.SubmissionID,
 			int(testcase.TestcaseID),
 			testcase.Stdin,
@@ -643,4 +648,8 @@ func isTestcaseResultCorrect(expectedStdout, actualStdout string) bool {
 	expectedStdout = strings.TrimSpace(expectedStdout)
 	actualStdout = strings.TrimSpace(actualStdout)
 	return actualStdout == expectedStdout
+}
+
+func calcHash(code string) string {
+	return fmt.Sprintf("%x", md5.Sum([]byte(code)))
 }

@@ -59,8 +59,8 @@ SET
 WHERE game_id = $1;
 
 -- name: CreateSubmission :one
-INSERT INTO submissions (game_id, user_id, code, code_size)
-VALUES ($1, $2, $3, $4)
+INSERT INTO submissions (game_id, user_id, code, code_size, code_hash)
+VALUES ($1, $2, $3, $4, $5)
 RETURNING submission_id;
 
 -- name: ListTestcasesByGameID :many
