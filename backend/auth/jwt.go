@@ -33,6 +33,14 @@ func NewJWT(user *db.User) (string, error) {
 	return token.SignedString([]byte("TODO"))
 }
 
+func NewAnonymousJWT() (string, error) {
+	claims := jwt.RegisteredClaims{
+		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
+	}
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	return token.SignedString([]byte("TODO"))
+}
+
 func NewShortLivedJWT(claims *JWTClaims) (string, error) {
 	newClaims := &JWTClaims{
 		UserID:      claims.UserID,
