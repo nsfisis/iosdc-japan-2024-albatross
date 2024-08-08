@@ -36,6 +36,7 @@ type Submission struct {
 	UserID       int32
 	Code         string
 	CodeSize     int32
+	CodeHash     string
 	CreatedAt    pgtype.Timestamp
 }
 

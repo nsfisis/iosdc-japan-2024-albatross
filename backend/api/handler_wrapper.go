@@ -11,15 +11,15 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
-var _ StrictServerInterface = (*ApiHandlerWrapper)(nil)
+var _ StrictServerInterface = (*HandlerWrapper)(nil)
 
-type ApiHandlerWrapper struct {
-	innerHandler Handler
+type HandlerWrapper struct {
+	impl Handler
 }
 
-func NewHandler(queries *db.Queries, hubs GameHubsInterface) *ApiHandlerWrapper {
-	return &ApiHandlerWrapper{
-		innerHandler: Handler{
+func NewHandler(queries *db.Queries, hubs GameHubsInterface) *HandlerWrapper {
+	return &HandlerWrapper{
+		impl: Handler{
 			q:    queries,
 			hubs: hubs,
 		},
@@ -39,7 +39,7 @@ func parseJWTClaimsFromAuthorizationHeader(authorization string) (*auth.JWTClaim
 	return claims, nil
 }
 
-func (h *ApiHandlerWrapper) GetGame(ctx context.Context, request GetGameRequestObject) (GetGameResponseObject, error) {
+func (h *HandlerWrapper) GetGame(ctx context.Context, request GetGameRequestObject) (GetGameResponseObject, error) {
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetGame401JSONResponse{
@@ -48,10 +48,10 @@ func (h *ApiHandlerWrapper) GetGame(ctx context.Context, request GetGameRequestO
 			},
 		}, nil
 	}
-	return h.innerHandler.GetGame(ctx, request, user)
+	return h.impl.GetGame(ctx, request, user)
 }
 
-func (h *ApiHandlerWrapper) GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error) {
+func (h *HandlerWrapper) GetGames(ctx context.Context, request GetGamesRequestObject) (GetGamesResponseObject, error) {
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetGames401JSONResponse{
@@ -60,10 +60,10 @@ func (h *ApiHandlerWrapper) GetGames(ctx context.Context, request GetGamesReques
 			},
 		}, nil
 	}
-	return h.innerHandler.GetGames(ctx, request, user)
+	return h.impl.GetGames(ctx, request, user)
 }
 
-func (h *ApiHandlerWrapper) GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error) {
+func (h *HandlerWrapper) GetToken(ctx context.Context, request GetTokenRequestObject) (GetTokenResponseObject, error) {
 	user, err := parseJWTClaimsFromAuthorizationHeader(request.Params.Authorization)
 	if err != nil {
 		return GetToken401JSONResponse{
@@ -72,9 +72,9 @@ func (h *ApiHandlerWrapper) GetToken(ctx context.Context, request GetTokenReques
 			},
 		}, nil
 	}
-	return h.innerHandler.GetToken(ctx, request, user)
+	return h.impl.GetToken(ctx, request, user)
 }
 
-func (h *ApiHandlerWrapper) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
-	return h.innerHandler.PostLogin(ctx, request)
+func (h *HandlerWrapper) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
+	return h.impl.PostLogin(ctx, request)
 }
