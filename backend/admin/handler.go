@@ -261,5 +261,5 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
 
-	return c.NoContent(http.StatusNoContent)
+	return c.Redirect(http.StatusSeeOther, c.Request().URL.Path)
 }

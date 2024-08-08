@@ -12,7 +12,7 @@ up:
 
 .PHONY: down
 down:
-	${DOCKER_COMPOSE} down
+	${DOCKER_COMPOSE} down --remove-orphans
 
 .PHONY: logs
 logs:
