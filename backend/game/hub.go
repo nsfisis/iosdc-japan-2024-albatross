@@ -599,6 +599,7 @@ func (hubs *Hubs) RestoreFromDB(ctx context.Context) error {
 		}
 		hubs.hubs[int(row.GameID)] = newGameHub(ctx, &game{
 			gameID:          int(row.GameID),
+			gameType:        gameType(row.GameType),
 			durationSeconds: int(row.DurationSeconds),
 			state:           gameState(row.State),
 			displayName:     row.DisplayName,
