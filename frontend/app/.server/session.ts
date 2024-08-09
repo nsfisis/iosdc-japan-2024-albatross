@@ -4,9 +4,8 @@ export const cookieOptions = {
 	sameSite: "lax" as const,
 	path: "/",
 	httpOnly: true,
-	// secure: process.env.NODE_ENV === "production",
-	secure: false, // TODO
-	secrets: ["TODO"],
+	secure: process.env.NODE_ENV === "production",
+	secrets: [process.env.ALBATROSS_COOKIE_SECRET ?? "local"],
 };
 
 export const sessionStorage = createCookieSessionStorage({
