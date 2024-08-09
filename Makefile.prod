@@ -4,6 +4,12 @@ DOCKER_COMPOSE := docker compose -f compose.prod.yaml
 build:
 	${DOCKER_COMPOSE} build
 
+.PHONY: serve
+serve: up
+
+.PHONY: clean
+clean: down
+
 .PHONY: up
 up:
 	${DOCKER_COMPOSE} up -d
