@@ -2,12 +2,24 @@ package auth
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
+
+var (
+	jwtSecret []byte
+)
+
+func init() {
+	jwtSecret = []byte(os.Getenv("ALBATROSS_JWT_SECRET"))
+	if len(jwtSecret) == 0 {
+		panic("ALBATROSS_JWT_SECRET is not set")
+	}
+}
 
 type JWTClaims struct {
 	UserID      int     `json:"user_id"`
@@ -30,7 +42,7 @@ func NewJWT(user *db.User) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte("TODO"))
+	return token.SignedString(jwtSecret)
 }
 
 func NewAnonymousJWT() (string, error) {
@@ -38,7 +50,7 @@ func NewAnonymousJWT() (string, error) {
 		ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Minute * 5)),
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	return token.SignedString([]byte("TODO"))
+	return token.SignedString(jwtSecret)
 }
 
 func NewShortLivedJWT(claims *JWTClaims) (string, error) {
@@ -53,13 +65,13 @@ func NewShortLivedJWT(claims *JWTClaims) (string, error) {
 		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, newClaims)
-	return token.SignedString([]byte("TODO"))
+	return token.SignedString(jwtSecret)
 }
 
 func ParseJWT(token string) (*JWTClaims, error) {
 	claims := new(JWTClaims)
 	t, err := jwt.ParseWithClaims(token, claims, func(*jwt.Token) (interface{}, error) {
-		return []byte("TODO"), nil
+		return jwtSecret, nil
 	})
 	if err != nil {
 		return nil, err

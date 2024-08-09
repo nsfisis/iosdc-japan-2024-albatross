@@ -6,7 +6,7 @@ export const cookieOptions = {
 	httpOnly: true,
 	// secure: process.env.NODE_ENV === "production",
 	secure: false, // TODO
-	secrets: ["TODO"],
+	secrets: [process.env.ALBATROSS_COOKIE_SECRET ?? "local"],
 };
 
 export const sessionStorage = createCookieSessionStorage({

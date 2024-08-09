@@ -3,6 +3,7 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
 	echojwt "github.com/labstack/echo-jwt/v4"
 	"github.com/labstack/echo/v4"
@@ -10,6 +11,11 @@ import (
 )
 
 func main() {
+	jwtSecret := os.Getenv("ALBATROSS_JWT_SECRET")
+	if jwtSecret == "" {
+		log.Fatal("ALBATROSS_JWT_SECRET is not set")
+	}
+
 	if err := prepareDirectories(); err != nil {
 		log.Fatal(err)
 	}
@@ -20,7 +26,7 @@ func main() {
 	e.Use(middleware.Recover())
 
 	e.Use(echojwt.WithConfig(echojwt.Config{
-		SigningKey: []byte("TODO"),
+		SigningKey: []byte(jwtSecret),
 	}))
 
 	e.POST("/api/swiftc", handleSwiftCompile)
