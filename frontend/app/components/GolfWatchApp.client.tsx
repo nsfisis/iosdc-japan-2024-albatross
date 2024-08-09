@@ -20,11 +20,10 @@ export default function GolfWatchApp({
 	game: Game;
 	sockToken: string;
 }) {
-	// const socketUrl = `wss://t.nil.ninja/iosdc-japan/2024/sock/golf/${game.game_id}/watch?token=${sockToken}`;
 	const socketUrl =
 		process.env.NODE_ENV === "development"
-			? `ws://localhost:8002/sock/golf/${game.game_id}/watch?token=${sockToken}`
-			: `ws://api-server/sock/golf/${game.game_id}/watch?token=${sockToken}`;
+			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`
+			: `wss://t.nil.ninja/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`;
 
 	const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
 		socketUrl,

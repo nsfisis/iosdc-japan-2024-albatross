@@ -1,14 +1,14 @@
 {{ template "base.html" . }}
 
 {{ define "breadcrumb" }}
-<a href="/admin/dashboard">Dashboard</a>
+<a href="/iosdc-japan/2024/code-battle/admin/dashboard">Dashboard</a>
 {{ end }}
 
 {{ define "content" }}
 <ul>
   {{ range .Users }}
     <li>
-      <a href="/admin/users/{{ .UserID }}">
+      <a href="/iosdc-japan/2024/code-battle/admin/users/{{ .UserID }}">
         {{ .DisplayName }} (id={{ .UserID }} username={{ .Username }}){{ if .IsAdmin }} <em>admin</em>{{ end }}
       </a>
     </li>

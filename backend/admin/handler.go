@@ -37,11 +37,11 @@ func newAdminMiddleware() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			jwt, err := c.Cookie("albatross_token")
 			if err != nil {
-				return c.Redirect(http.StatusSeeOther, "/login")
+				return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/login")
 			}
 			claims, err := auth.ParseJWT(jwt.Value)
 			if err != nil {
-				return c.Redirect(http.StatusSeeOther, "/login")
+				return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/login")
 			}
 			if !claims.IsAdmin {
 				return echo.NewHTTPError(http.StatusForbidden)

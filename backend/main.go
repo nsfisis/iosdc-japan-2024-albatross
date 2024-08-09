@@ -38,7 +38,7 @@ func main() {
 		log.Fatalf("Error loading env %v", err)
 	}
 
-	openAPISpec, err := api.GetSwaggerWithPrefix("/api")
+	openAPISpec, err := api.GetSwaggerWithPrefix("/iosdc-japan/2024/code-battle/api")
 	if err != nil {
 		log.Fatalf("Error loading OpenAPI spec\n: %s", err)
 	}
@@ -69,7 +69,7 @@ func main() {
 		log.Fatalf("Error restoring game hubs from db %v", err)
 	}
 	defer gameHubs.Close()
-	sockGroup := e.Group("/sock")
+	sockGroup := e.Group("/iosdc-japan/2024/code-battle/sock")
 	sockHandler := gameHubs.SockHandler()
 	sockGroup.GET("/golf/:gameID/play", func(c echo.Context) error {
 		return sockHandler.HandleSockGolfPlay(c)
@@ -78,22 +78,22 @@ func main() {
 		return sockHandler.HandleSockGolfWatch(c)
 	})
 
-	apiGroup := e.Group("/api")
+	apiGroup := e.Group("/iosdc-japan/2024/code-battle/api")
 	apiGroup.Use(oapimiddleware.OapiRequestValidator(openAPISpec))
 	apiHandler := api.NewHandler(queries, gameHubs)
 	api.RegisterHandlers(apiGroup, api.NewStrictHandler(apiHandler, nil))
 
 	adminHandler := admin.NewHandler(queries, gameHubs)
-	adminGroup := e.Group("/admin")
+	adminGroup := e.Group("/iosdc-japan/2024/code-battle/admin")
 	adminHandler.RegisterHandlers(adminGroup)
 
 	// For local dev: This is never used in production because the reverse
 	// proxy sends /login and /logout to the app server.
 	e.GET("/login", func(c echo.Context) error {
-		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/login")
+		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/iosdc-japan/2024/code-battle/login")
 	})
 	e.POST("/logout", func(c echo.Context) error {
-		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/logout")
+		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/iosdc-japan/2024/code-battle/logout")
 	})
 
 	go gameHubs.Run()

@@ -22,11 +22,10 @@ export default function GolfPlayApp({
 	game: Game;
 	sockToken: string;
 }) {
-	// const socketUrl = `wss://t.nil.ninja/iosdc-japan/2024/sock/golf/${game.game_id}/play?token=${sockToken}`;
 	const socketUrl =
 		process.env.NODE_ENV === "development"
-			? `ws://localhost:8002/sock/golf/${game.game_id}/play?token=${sockToken}`
-			: `ws://api-server/sock/golf/${game.game_id}/play?token=${sockToken}`;
+			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`
+			: `wss://t.nil.ninja/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`;
 
 	const { sendJsonMessage, lastJsonMessage, readyState } =
 		useWebSocket<WebSocketMessage>(socketUrl, {});
