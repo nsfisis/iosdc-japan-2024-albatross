@@ -3,6 +3,7 @@ import { defineConfig } from "vite";
 import tsconfigPaths from "vite-tsconfig-paths";
 
 export default defineConfig({
+	base: "/iosdc-japan/2024/code-battle/",
 	plugins: [
 		remix({
 			future: {
