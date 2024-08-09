@@ -89,10 +89,10 @@ func main() {
 
 	// For local dev: This is never used in production because the reverse
 	// proxy sends /login and /logout to the app server.
-	e.GET("/login", func(c echo.Context) error {
+	e.GET("/iosdc-japan/2024/code-battle/login", func(c echo.Context) error {
 		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/iosdc-japan/2024/code-battle/login")
 	})
-	e.POST("/logout", func(c echo.Context) error {
+	e.POST("/iosdc-japan/2024/code-battle/logout", func(c echo.Context) error {
 		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173/iosdc-japan/2024/code-battle/logout")
 	})
 
