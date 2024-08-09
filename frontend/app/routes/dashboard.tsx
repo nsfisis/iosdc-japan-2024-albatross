@@ -14,7 +14,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 		return redirect(
 			process.env.NODE_ENV === "development"
 				? "http://localhost:8002/iosdc-japan/2024/code-battle/admin/dashboard"
-				: "/iosdc-japan/2024/code-battle/admin/dashboard",
+				: "/admin/dashboard",
 		);
 	}
 	const { games } = await apiGetGames(token);
