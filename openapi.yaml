@@ -20,6 +20,9 @@ paths:
                 password:
                   type: string
                   example: "password123"
+                registration_token:
+                  type: string
+                  example: "xxxxxxxxxxxxxxxx"
               required:
                 - username
                 - password

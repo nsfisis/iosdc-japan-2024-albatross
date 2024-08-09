@@ -14,7 +14,14 @@ authenticator.use(
 	new FormStrategy(async ({ form }) => {
 		const username = String(form.get("username"));
 		const password = String(form.get("password"));
-		return (await apiPostLogin(username, password)).token;
+		const registrationToken = String(form.get("registration_token"));
+		return (
+			await apiPostLogin(
+				username,
+				password,
+				registrationToken === "" ? null : registrationToken,
+			)
+		).token;
 	}),
 	"default",
 );
@@ -27,7 +34,7 @@ const tokenCookie = createUnstructuredCookie("albatross_token", cookieOptions);
 
 export async function login(request: Request): Promise<never> {
 	const jwt = await authenticator.authenticate("default", request, {
-		failureRedirect: "/login",
+		failureRedirect: request.url,
 	});
 
 	const session = await sessionStorage.getSession(

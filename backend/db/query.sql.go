@@ -106,6 +106,34 @@ func (q *Queries) CreateTestcaseResult(ctx context.Context, arg CreateTestcaseRe
 	return err
 }
 
+const createUser = `-- name: CreateUser :one
+INSERT INTO users (username, display_name, is_admin)
+VALUES ($1, $1, false)
+RETURNING user_id
+`
+
+func (q *Queries) CreateUser(ctx context.Context, username string) (int32, error) {
+	row := q.db.QueryRow(ctx, createUser, username)
+	var user_id int32
+	err := row.Scan(&user_id)
+	return user_id, err
+}
+
+const createUserAuth = `-- name: CreateUserAuth :exec
+INSERT INTO user_auths (user_id, auth_type)
+VALUES ($1, $2)
+`
+
+type CreateUserAuthParams struct {
+	UserID   int32
+	AuthType string
+}
+
+func (q *Queries) CreateUserAuth(ctx context.Context, arg CreateUserAuthParams) error {
+	_, err := q.db.Exec(ctx, createUserAuth, arg.UserID, arg.AuthType)
+	return err
+}
+
 const getGameByID = `-- name: GetGameByID :one
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
 LEFT JOIN problems ON games.problem_id = problems.problem_id
@@ -202,6 +230,20 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
 		&i.CreatedAt,
 	)
 	return i, err
+}
+
+const isRegistrationTokenValid = `-- name: IsRegistrationTokenValid :one
+SELECT EXISTS (
+    SELECT 1 FROM registration_tokens
+    WHERE token = $1
+)
+`
+
+func (q *Queries) IsRegistrationTokenValid(ctx context.Context, token string) (bool, error) {
+	row := q.db.QueryRow(ctx, isRegistrationTokenValid, token)
+	var exists bool
+	err := row.Scan(&exists)
+	return exists, err
 }
 
 const listGamePlayers = `-- name: ListGamePlayers :many
