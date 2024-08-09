@@ -1,0 +1,26 @@
+name: Update submodule
+on:
+  push:
+    branches: [main]
+jobs:
+  update-submodule:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          repository: nsfisis/nil.ninja
+          submodules: true
+          token: ${{ secrets.GH_PAT }}
+          path: nil.ninja
+
+      - run: |
+          cd nil.ninja
+          cd vhosts/t/albatross-swift
+          git fetch --prune origin
+          git switch -d origin/main
+          cd "$(git rev-parse --show-superproject-working-tree)"
+          git add vhosts/t/albatross-swift
+          git config user.name nsfisis
+          git config user.email nsfisis@gmail.com
+          git commit -m "[automated] Update 'vhosts/t/albatross-swift' (${GITHUB_SHA})"
+          git push origin main
