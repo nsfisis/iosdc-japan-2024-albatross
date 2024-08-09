@@ -30,6 +30,11 @@ type Problem struct {
 	Description string
 }
 
+type RegistrationToken struct {
+	RegistrationTokenID int32
+	Token               string
+}
+
 type Submission struct {
 	SubmissionID int32
 	GameID       int32

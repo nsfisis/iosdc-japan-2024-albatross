@@ -8,9 +8,19 @@ const apiClient = createClient<paths>({
 			: "http://api-server/api/",
 });
 
-export async function apiPostLogin(username: string, password: string) {
+export async function apiPostLogin(
+	username: string,
+	password: string,
+	registrationToken: string | null,
+) {
 	const { data, error } = await apiClient.POST("/login", {
-		body: { username, password },
+		body: {
+			username,
+			password,
+			...(registrationToken !== null
+				? { registration_token: registrationToken }
+				: {}),
+		},
 	});
 	if (error) throw new Error(error.message);
 	return data;

@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
@@ -24,8 +25,10 @@ type GameHubsInterface interface {
 func (h *Handler) PostLogin(ctx context.Context, request PostLoginRequestObject) (PostLoginResponseObject, error) {
 	username := request.Body.Username
 	password := request.Body.Password
-	userID, err := auth.Login(ctx, h.q, username, password)
+	registrationToken := request.Body.RegistrationToken
+	userID, err := auth.Login(ctx, h.q, username, password, registrationToken)
 	if err != nil {
+		log.Printf("login failed: %v", err)
 		return PostLogin401JSONResponse{
 			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
 				Message: "Invalid username or password",

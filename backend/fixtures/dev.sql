@@ -12,6 +12,9 @@ VALUES
     (2, 'password', '$2a$10$4Wl1M4jQs.GwkB4oT32KvuMQtF.EdqKuOc8z8KKOupnuMJRAVk32W'),
     (3, 'password', '$2a$10$F/TePpu1pyJRWgn0e6A14.VL9D/17sRxT/2DyZ2Oi4Eg/lR6n7JcK');
 
+INSERT INTO registration_tokens (token)
+VALUES ('shah3Iheix6cheig');
+
 INSERT INTO problems
 (title, description)
 VALUES

@@ -17,6 +17,12 @@ CREATE TABLE user_auths (
 );
 CREATE INDEX idx_user_auths_user_id ON user_auths(user_id);
 
+CREATE TABLE registration_tokens (
+    registration_token_id SERIAL   PRIMARY KEY,
+    token                 CHAR(16) NOT NULL
+);
+CREATE INDEX idx_registration_tokens_token ON registration_tokens(token);
+
 CREATE TABLE problems (
     problem_id  SERIAL       PRIMARY KEY,
     title       VARCHAR(255) NOT NULL,

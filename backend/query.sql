@@ -3,6 +3,11 @@ SELECT * FROM users
 WHERE users.user_id = $1
 LIMIT 1;
 
+-- name: CreateUser :one
+INSERT INTO users (username, display_name, is_admin)
+VALUES ($1, $1, false)
+RETURNING user_id;
+
 -- name: ListUsers :many
 SELECT * FROM users
 ORDER BY users.user_id;
@@ -12,6 +17,16 @@ SELECT * FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id
 WHERE users.username = $1
 LIMIT 1;
+
+-- name: CreateUserAuth :exec
+INSERT INTO user_auths (user_id, auth_type)
+VALUES ($1, $2);
+
+-- name: IsRegistrationTokenValid :one
+SELECT EXISTS (
+    SELECT 1 FROM registration_tokens
+    WHERE token = $1
+);
 
 -- name: ListGames :many
 SELECT * FROM games

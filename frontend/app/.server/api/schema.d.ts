@@ -286,6 +286,8 @@ export interface operations {
                     username: string;
                     /** @example password123 */
                     password: string;
+                    /** @example xxxxxxxxxxxxxxxx */
+                    registration_token?: string;
                 };
             };
         };

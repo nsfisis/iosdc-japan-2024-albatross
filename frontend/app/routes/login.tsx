@@ -3,7 +3,7 @@ import type {
 	LoaderFunctionArgs,
 	MetaFunction,
 } from "@remix-run/node";
-import { Form } from "@remix-run/react";
+import { Form, useLocation } from "@remix-run/react";
 import { ensureUserNotLoggedIn, login } from "../.server/auth";
 
 export const meta: MetaFunction = () => [
@@ -20,6 +20,10 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function Login() {
+	const location = useLocation();
+	const searchParams = new URLSearchParams(location.search);
+	const registrationToken = searchParams.get("registration_token");
+
 	return (
 		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
 			<Form
@@ -58,6 +62,11 @@ export default function Login() {
 						className="mt-1 p-2 block w-full border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
 					/>
 				</div>
+				<input
+					type="hidden"
+					name="registration_token"
+					value={registrationToken ?? ""}
+				/>
 				<button
 					type="submit"
 					className="w-full bg-blue-500 text-white py-2 rounded hover:bg-blue-600 transition duration-300"
