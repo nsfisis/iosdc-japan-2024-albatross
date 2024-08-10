@@ -58,7 +58,7 @@ LIMIT 1;
 
 -- name: ListGamePlayers :many
 SELECT * FROM game_players
-LEFT JOIN users ON game_players.user_id = users.user_id
+JOIN users ON game_players.user_id = users.user_id
 WHERE game_players.game_id = $1
 ORDER BY game_players.user_id;
 
@@ -80,6 +80,11 @@ RETURNING submission_id;
 
 -- name: ListTestcasesByGameID :many
 SELECT * FROM testcases
+WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
+ORDER BY testcases.testcase_id;
+
+-- name: ListTestcaseIDsByGameID :many
+SELECT testcases.testcase_id FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
 ORDER BY testcases.testcase_id;
 

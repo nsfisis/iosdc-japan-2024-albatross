@@ -112,6 +112,14 @@ export interface components {
             /** @example 946684800 */
             started_at?: number;
             problem?: components["schemas"]["Problem"];
+            players: components["schemas"]["User"][];
+            verification_steps: components["schemas"]["VerificationStep"][];
+        };
+        VerificationStep: {
+            /** @example 1 */
+            testcase_id: number | null;
+            /** @example Test case 1 */
+            label: string;
         };
         Problem: {
             /** @example 1 */
@@ -182,7 +190,7 @@ export interface components {
             code: string;
         };
         GameWatcherMessage: components["schemas"]["GameWatcherMessageS2C"];
-        GameWatcherMessageS2C: components["schemas"]["GameWatcherMessageS2CStart"] | components["schemas"]["GameWatcherMessageS2CCode"] | components["schemas"]["GameWatcherMessageS2CExecResult"];
+        GameWatcherMessageS2C: components["schemas"]["GameWatcherMessageS2CStart"] | components["schemas"]["GameWatcherMessageS2CCode"] | components["schemas"]["GameWatcherMessageS2CSubmit"] | components["schemas"]["GameWatcherMessageS2CExecResult"] | components["schemas"]["GameWatcherMessageS2CSubmitResult"];
         GameWatcherMessageS2CStart: {
             /** @constant */
             type: "watcher:s2c:start";
@@ -203,6 +211,17 @@ export interface components {
             /** @example print('Hello, world!') */
             code: string;
         };
+        GameWatcherMessageS2CSubmit: {
+            /** @constant */
+            type: "watcher:s2c:submit";
+            data: components["schemas"]["GameWatcherMessageS2CSubmitPayload"];
+        };
+        GameWatcherMessageS2CSubmitPayload: {
+            /** @example 1 */
+            player_id: number;
+            /** @example 100 */
+            preliminary_score: number;
+        };
         GameWatcherMessageS2CExecResult: {
             /** @constant */
             type: "watcher:s2c:execresult";
@@ -211,17 +230,31 @@ export interface components {
         GameWatcherMessageS2CExecResultPayload: {
             /** @example 1 */
             player_id: number;
+            /** @example 1 */
+            testcase_id: number | null;
             /**
              * @example success
              * @enum {string}
              */
-            status: "success";
-            /** @example 100 */
-            score: number | null;
+            status: "success" | "wrong_answer" | "timeout" | "runtime_error" | "internal_error" | "compile_error";
             /** @example Hello, world! */
             stdout: string;
             /** @example  */
             stderr: string;
+        };
+        GameWatcherMessageS2CSubmitResult: {
+            /** @constant */
+            type: "watcher:s2c:submitresult";
+            data: components["schemas"]["GameWatcherMessageS2CSubmitResultPayload"];
+        };
+        GameWatcherMessageS2CSubmitResultPayload: {
+            /** @example 1 */
+            player_id: number;
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success" | "wrong_answer" | "timeout" | "runtime_error" | "internal_error" | "compile_error";
         };
     };
     responses: {
