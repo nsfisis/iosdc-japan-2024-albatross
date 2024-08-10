@@ -14,6 +14,9 @@
 		"start": "remix-serve ./build/server/index.js"
 	},
 	"dependencies": {
+		"@fortawesome/fontawesome-svg-core": "^6.6.0",
+		"@fortawesome/free-solid-svg-icons": "^6.6.0",
+		"@fortawesome/react-fontawesome": "^0.2.2",
 		"@remix-run/node": "^2.10.3",
 		"@remix-run/react": "^2.10.3",
 		"@remix-run/serve": "^2.10.3",

@@ -1,6 +1,10 @@
+import { config } from "@fortawesome/fontawesome-svg-core";
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
+import "@fortawesome/fontawesome-svg-core/styles.css";
 import { ensureUserNotLoggedIn } from "../.server/auth";
+
+config.autoAddCss = false;
 
 export const meta: MetaFunction = () => [
 	{ title: "iOSDC Japan 2024 Albatross.swift" },

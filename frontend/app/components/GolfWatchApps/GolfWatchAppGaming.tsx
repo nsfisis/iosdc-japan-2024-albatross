@@ -1,3 +1,5 @@
+import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
+
 type Props = {
 	problem: string;
 	playerInfoA: PlayerInfo;
@@ -128,7 +130,8 @@ export default function GolfWatchAppGaming({
 									<li key={idx}>
 										<div>
 											<div>
-												{result.status} {result.label}
+												<ExecStatusIndicatorIcon status={result.status} />{" "}
+												{result.label}
 											</div>
 											<div>
 												{result.stdout}
@@ -160,7 +163,8 @@ export default function GolfWatchAppGaming({
 									<li key={idx}>
 										<div>
 											<div>
-												{result.status} {result.label}
+												<ExecStatusIndicatorIcon status={result.status} />{" "}
+												{result.label}
 											</div>
 											<div>
 												{result.stdout}
