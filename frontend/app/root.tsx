@@ -1,3 +1,4 @@
+import { config } from "@fortawesome/fontawesome-svg-core";
 import type { LinksFunction } from "@remix-run/node";
 import {
 	Links,
@@ -7,6 +8,8 @@ import {
 	ScrollRestoration,
 } from "@remix-run/react";
 import "./tailwind.css";
+
+config.autoAddCss = false;
 
 export const links: LinksFunction = () => [
 	{ rel: "icon", href: "/iosdc-japan/2024/code-battle/favicon.svg" },
