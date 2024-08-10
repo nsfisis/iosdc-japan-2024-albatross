@@ -126,8 +126,8 @@ export default function GolfWatchAppGaming({
 					<div>
 						<ol>
 							{playerInfoA.submissionResult?.verificationResults.map(
-								(result, idx) => (
-									<li key={idx}>
+								(result) => (
+									<li key={result.testcase_id ?? -1}>
 										<div>
 											<div>
 												<ExecStatusIndicatorIcon status={result.status} />{" "}
