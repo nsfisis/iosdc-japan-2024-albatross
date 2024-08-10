@@ -406,7 +406,9 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GameWatcherMessageS2CStart'
         - $ref: '#/components/schemas/GameWatcherMessageS2CCode'
+        - $ref: '#/components/schemas/GameWatcherMessageS2CSubmit'
         - $ref: '#/components/schemas/GameWatcherMessageS2CExecResult'
+        - $ref: '#/components/schemas/GameWatcherMessageS2CSubmitResult'
     GameWatcherMessageS2CStart:
       type: object
       properties:
@@ -449,6 +451,29 @@ components:
       required:
         - player_id
         - code
+    GameWatcherMessageS2CSubmit:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "watcher:s2c:submit"
+        data:
+          $ref: '#/components/schemas/GameWatcherMessageS2CSubmitPayload'
+      required:
+        - type
+        - data
+    GameWatcherMessageS2CSubmitPayload:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          example: 1
+        preliminary_score:
+          type: integer
+          example: 100
+      required:
+        - player_id
+        - preliminary_score
     GameWatcherMessageS2CExecResult:
       type: object
       properties:
@@ -466,15 +491,20 @@ components:
         player_id:
           type: integer
           example: 1
+        testcase_id:
+          type: integer
+          nullable: true
+          example: 1
         status:
           type: string
           example: "success"
           enum:
             - success
-        score:
-          type: integer
-          nullable: true
-          example: 100
+            - wrong_answer
+            - timeout
+            - runtime_error
+            - internal_error
+            - compile_error
         stdout:
           type: string
           example: "Hello, world!"
@@ -483,9 +513,39 @@ components:
           example: ""
       required:
         - player_id
+        - testcase_id
         - status
-        - score
         - stdout
         - stderr
+    GameWatcherMessageS2CSubmitResult:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "watcher:s2c:submitresult"
+        data:
+          $ref: '#/components/schemas/GameWatcherMessageS2CSubmitResultPayload'
+      required:
+        - type
+        - data
+    GameWatcherMessageS2CSubmitResultPayload:
+      type: object
+      properties:
+        player_id:
+          type: integer
+          example: 1
+        status:
+          type: string
+          example: "success"
+          enum:
+            - success
+            - wrong_answer
+            - timeout
+            - runtime_error
+            - internal_error
+            - compile_error
+      required:
+        - player_id
+        - status
     # GameWatcherMessageC2S:
     #   oneOf:
