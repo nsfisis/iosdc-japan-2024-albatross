@@ -98,7 +98,7 @@ export default function GolfWatchAppGaming({
 			</div>
 			<div className="grid grid-cols-[auto_1fr_auto]">
 				<div className="grid justify-start bg-red-500 p-2 text-lg font-bold text-white">
-					{playerInfoA.score ?? "-"}
+					{playerInfoA.score}
 				</div>
 				<div className="w-full bg-blue-500">
 					<div
@@ -107,7 +107,7 @@ export default function GolfWatchAppGaming({
 					></div>
 				</div>
 				<div className="grid justify-end bg-blue-500 p-2 text-lg font-bold text-white">
-					{playerInfoB.score ?? "-"}
+					{playerInfoB.score}
 				</div>
 			</div>
 			<div className="grid grid-cols-[3fr_2fr_3fr_2fr] p-2">
