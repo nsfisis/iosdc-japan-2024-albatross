@@ -3,11 +3,13 @@ package api
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/labstack/echo/v4"
+	"github.com/oapi-codegen/nullable"
 
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
@@ -149,15 +151,30 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 			IsAdmin:     playerRow.IsAdmin,
 		}
 	}
+	testcaseIDs, err := h.q.ListTestcaseIDsByGameID(ctx, int32(gameID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	verificationSteps := make([]VerificationStep, len(testcaseIDs)+1)
+	verificationSteps[0] = VerificationStep{
+		Label: "Compile",
+	}
+	for i, testcaseID := range testcaseIDs {
+		verificationSteps[i+1] = VerificationStep{
+			TestcaseID: nullable.NewNullableWithValue(int(testcaseID)),
+			Label:      fmt.Sprintf("Testcase %d", i+1),
+		}
+	}
 	game := Game{
-		GameID:          int(row.GameID),
-		GameType:        GameGameType(row.GameType),
-		State:           GameState(row.State),
-		DisplayName:     row.DisplayName,
-		DurationSeconds: int(row.DurationSeconds),
-		StartedAt:       startedAt,
-		Problem:         problem,
-		Players:         players,
+		GameID:            int(row.GameID),
+		GameType:          GameGameType(row.GameType),
+		State:             GameState(row.State),
+		DisplayName:       row.DisplayName,
+		DurationSeconds:   int(row.DurationSeconds),
+		StartedAt:         startedAt,
+		Problem:           problem,
+		Players:           players,
+		VerificationSteps: verificationSteps,
 	}
 	return GetGame200JSONResponse{
 		Game: game,

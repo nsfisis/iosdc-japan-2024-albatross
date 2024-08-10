@@ -113,6 +113,13 @@ export interface components {
             started_at?: number;
             problem?: components["schemas"]["Problem"];
             players: components["schemas"]["User"][];
+            verification_steps: components["schemas"]["VerificationStep"][];
+        };
+        VerificationStep: {
+            /** @example 1 */
+            testcase_id: number | null;
+            /** @example Test case 1 */
+            label: string;
         };
         Problem: {
             /** @example 1 */

@@ -403,6 +403,32 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 	return items, nil
 }
 
+const listTestcaseIDsByGameID = `-- name: ListTestcaseIDsByGameID :many
+SELECT testcases.testcase_id FROM testcases
+WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)
+ORDER BY testcases.testcase_id
+`
+
+func (q *Queries) ListTestcaseIDsByGameID(ctx context.Context, gameID int32) ([]int32, error) {
+	rows, err := q.db.Query(ctx, listTestcaseIDsByGameID, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []int32
+	for rows.Next() {
+		var testcase_id int32
+		if err := rows.Scan(&testcase_id); err != nil {
+			return nil, err
+		}
+		items = append(items, testcase_id)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const listTestcasesByGameID = `-- name: ListTestcasesByGameID :many
 SELECT testcase_id, problem_id, stdin, stdout FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)

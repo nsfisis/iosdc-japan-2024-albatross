@@ -220,6 +220,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
+        verification_steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationStep'
       required:
         - game_id
         - game_type
@@ -227,6 +231,20 @@ components:
         - display_name
         - duration_seconds
         - players
+        - verification_steps
+    VerificationStep:
+      type: object
+      properties:
+        testcase_id:
+          type: integer
+          nullable: true
+          example: 1
+        label:
+          type: string
+          example: "Test case 1"
+      required:
+        - testcase_id
+        - label
     Problem:
       type: object
       properties:
