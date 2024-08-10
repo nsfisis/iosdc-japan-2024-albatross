@@ -135,6 +135,20 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 			}
 		}
 	}
+	playerRows, err := h.q.ListGamePlayers(ctx, int32(gameID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	players := make([]User, len(playerRows))
+	for i, playerRow := range playerRows {
+		players[i] = User{
+			UserID:      int(playerRow.UserID),
+			Username:    playerRow.Username,
+			DisplayName: playerRow.DisplayName,
+			IconPath:    playerRow.IconPath,
+			IsAdmin:     playerRow.IsAdmin,
+		}
+	}
 	game := Game{
 		GameID:          int(row.GameID),
 		GameType:        GameGameType(row.GameType),
@@ -143,6 +157,7 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 		DurationSeconds: int(row.DurationSeconds),
 		StartedAt:       startedAt,
 		Problem:         problem,
+		Players:         players,
 	}
 	return GetGame200JSONResponse{
 		Game: game,

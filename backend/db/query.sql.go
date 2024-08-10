@@ -248,7 +248,7 @@ func (q *Queries) IsRegistrationTokenValid(ctx context.Context, token string) (b
 
 const listGamePlayers = `-- name: ListGamePlayers :many
 SELECT game_id, game_players.user_id, users.user_id, username, display_name, icon_path, is_admin, created_at FROM game_players
-LEFT JOIN users ON game_players.user_id = users.user_id
+JOIN users ON game_players.user_id = users.user_id
 WHERE game_players.game_id = $1
 ORDER BY game_players.user_id
 `
@@ -256,11 +256,11 @@ ORDER BY game_players.user_id
 type ListGamePlayersRow struct {
 	GameID      int32
 	UserID      int32
-	UserID_2    *int32
-	Username    *string
-	DisplayName *string
+	UserID_2    int32
+	Username    string
+	DisplayName string
 	IconPath    *string
-	IsAdmin     *bool
+	IsAdmin     bool
 	CreatedAt   pgtype.Timestamp
 }
 

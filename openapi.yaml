@@ -216,12 +216,17 @@ components:
           example: 946684800
         problem:
           $ref: '#/components/schemas/Problem'
+        players:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
       required:
         - game_id
         - game_type
         - state
         - display_name
         - duration_seconds
+        - players
     Problem:
       type: object
       properties:

@@ -112,6 +112,7 @@ export interface components {
             /** @example 946684800 */
             started_at?: number;
             problem?: components["schemas"]["Problem"];
+            players: components["schemas"]["User"][];
         };
         Problem: {
             /** @example 1 */

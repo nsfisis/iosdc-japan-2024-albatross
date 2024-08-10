@@ -58,7 +58,7 @@ LIMIT 1;
 
 -- name: ListGamePlayers :many
 SELECT * FROM game_players
-LEFT JOIN users ON game_players.user_id = users.user_id
+JOIN users ON game_players.user_id = users.user_id
 WHERE game_players.game_id = $1
 ORDER BY game_players.user_id;
 
