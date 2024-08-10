@@ -77,9 +77,11 @@ func asPlayerMessageC2S(raw map[string]json.RawMessage) (playerMessageC2S, error
 }
 
 const (
-	watcherMessageTypeS2CStart      = "watcher:s2c:start"
-	watcherMessageTypeS2CExecResult = "watcher:s2c:execresult"
-	watcherMessageTypeS2CCode       = "watcher:s2c:code"
+	watcherMessageTypeS2CStart        = "watcher:s2c:start"
+	watcherMessageTypeS2CCode         = "watcher:s2c:code"
+	watcherMessageTypeS2CSubmit       = "watcher:s2c:submit"
+	watcherMessageTypeS2CExecResult   = "watcher:s2c:execresult"
+	watcherMessageTypeS2CSubmitResult = "watcher:s2c:submitresult"
 )
 
 type watcherMessageS2C = interface{}
@@ -87,3 +89,9 @@ type watcherMessageS2CStart = api.GameWatcherMessageS2CStart
 type watcherMessageS2CStartPayload = api.GameWatcherMessageS2CStartPayload
 type watcherMessageS2CCode = api.GameWatcherMessageS2CCode
 type watcherMessageS2CCodePayload = api.GameWatcherMessageS2CCodePayload
+type watcherMessageS2CSubmit = api.GameWatcherMessageS2CSubmit
+type watcherMessageS2CSubmitPayload = api.GameWatcherMessageS2CSubmitPayload
+type watcherMessageS2CExecResult = api.GameWatcherMessageS2CExecResult
+type watcherMessageS2CExecResultPayload = api.GameWatcherMessageS2CExecResultPayload
+type watcherMessageS2CSubmitResult = api.GameWatcherMessageS2CSubmitResult
+type watcherMessageS2CSubmitResultPayload = api.GameWatcherMessageS2CSubmitResultPayload

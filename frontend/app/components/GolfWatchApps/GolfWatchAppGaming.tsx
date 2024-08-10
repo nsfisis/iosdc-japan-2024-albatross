@@ -14,16 +14,56 @@ export type PlayerInfo = {
 };
 
 type SubmissionResult = {
-	status: string;
-	nextScore: number;
-	executionResults: ExecutionResult[];
+	status:
+		| "running"
+		| "success"
+		| "wrong_answer"
+		| "timeout"
+		| "compile_error"
+		| "runtime_error"
+		| "internal_error";
+	preliminaryScore: number;
+	verificationResults: VerificationResult[];
 };
 
-type ExecutionResult = {
-	status: string;
+type VerificationResult = {
+	testcase_id: number | null;
+	status:
+		| "running"
+		| "success"
+		| "wrong_answer"
+		| "timeout"
+		| "compile_error"
+		| "runtime_error"
+		| "internal_error"
+		| "canceled";
 	label: string;
-	output: string;
+	stdout: string;
+	stderr: string;
 };
+
+function submissionResultStatusToLabel(
+	status: SubmissionResult["status"] | null,
+) {
+	switch (status) {
+		case null:
+			return "-";
+		case "running":
+			return "Running...";
+		case "success":
+			return "Accepted";
+		case "wrong_answer":
+			return "Wrong Answer";
+		case "timeout":
+			return "Time Limit Exceeded";
+		case "compile_error":
+			return "Compile Error";
+		case "runtime_error":
+			return "Runtime Error";
+		case "internal_error":
+			return "Internal Error";
+	}
+}
 
 export default function GolfWatchAppGaming({
 	problem,
@@ -40,7 +80,7 @@ export default function GolfWatchAppGaming({
 		const scoreA = playerInfoA.score ?? 0;
 		const scoreB = playerInfoB.score ?? 0;
 		const totalScore = scoreA + scoreB;
-		return totalScore === 0 ? 50 : (scoreA / totalScore) * 100;
+		return totalScore === 0 ? 50 : (scoreB / totalScore) * 100;
 	})();
 
 	return (
@@ -68,7 +108,7 @@ export default function GolfWatchAppGaming({
 					{playerInfoB.score ?? "-"}
 				</div>
 			</div>
-			<div className="grid grid-cols-[2fr_1fr_2fr_1fr] p-2">
+			<div className="grid grid-cols-[3fr_2fr_3fr_2fr] p-2">
 				<div>
 					<pre>
 						<code>{playerInfoA.code}</code>
@@ -76,19 +116,24 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{playerInfoA.submissionResult?.status}(
-						{playerInfoA.submissionResult?.nextScore})
+						{submissionResultStatusToLabel(
+							playerInfoA.submissionResult?.status ?? null,
+						)}{" "}
+						({playerInfoA.submissionResult?.preliminaryScore})
 					</div>
 					<div>
 						<ol>
-							{playerInfoA.submissionResult?.executionResults.map(
+							{playerInfoA.submissionResult?.verificationResults.map(
 								(result, idx) => (
 									<li key={idx}>
 										<div>
 											<div>
 												{result.status} {result.label}
 											</div>
-											<div>{result.output}</div>
+											<div>
+												{result.stdout}
+												{result.stderr}
+											</div>
 										</div>
 									</li>
 								),
@@ -103,19 +148,24 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{playerInfoB.submissionResult?.status}(
-						{playerInfoB.submissionResult?.nextScore})
+						{submissionResultStatusToLabel(
+							playerInfoB.submissionResult?.status ?? null,
+						)}{" "}
+						({playerInfoB.submissionResult?.preliminaryScore ?? "-"})
 					</div>
 					<div>
 						<ol>
-							{playerInfoB.submissionResult?.executionResults.map(
+							{playerInfoB.submissionResult?.verificationResults.map(
 								(result, idx) => (
 									<li key={idx}>
 										<div>
 											<div>
 												{result.status} {result.label}
 											</div>
-											<div>{result.output}</div>
+											<div>
+												{result.stdout}
+												{result.stderr}
+											</div>
 										</div>
 									</li>
 								),

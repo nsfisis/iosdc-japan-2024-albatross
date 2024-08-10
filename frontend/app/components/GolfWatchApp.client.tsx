@@ -116,29 +116,91 @@ export default function GolfWatchApp({
 					}
 				} else if (lastJsonMessage.type === "watcher:s2c:code") {
 					const { player_id, code } = lastJsonMessage.data;
-					if (player_id === playerA?.user_id) {
-						setPlayerInfoA((prev) => ({ ...prev, code }));
-					} else if (player_id === playerB?.user_id) {
-						setPlayerInfoB((prev) => ({ ...prev, code }));
-					} else {
-						throw new Error("Unknown player_id");
-					}
+					const setter =
+						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+					setter((prev) => ({ ...prev, code }));
+				} else if (lastJsonMessage.type === "watcher:s2c:submit") {
+					const { player_id, preliminary_score } = lastJsonMessage.data;
+					const setter =
+						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+					setter((prev) => ({
+						...prev,
+						submissionResult: {
+							status: "running",
+							preliminaryScore: preliminary_score,
+							verificationResults: game.verification_steps.map((v) => ({
+								testcase_id: v.testcase_id,
+								status: "running",
+								label: v.label,
+								stdout: "",
+								stderr: "",
+							})),
+						},
+					}));
 				} else if (lastJsonMessage.type === "watcher:s2c:execresult") {
-					// const { score } = lastJsonMessage.data;
-					// if (score !== null && (scoreA === null || score < scoreA)) {
-					// 	setScoreA(score);
-					// }
+					const { player_id, testcase_id, status, stdout, stderr } =
+						lastJsonMessage.data;
+					const setter =
+						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+					setter((prev) => {
+						const ret = { ...prev };
+						if (ret.submissionResult === undefined) {
+							return ret;
+						}
+						ret.submissionResult = {
+							...ret.submissionResult,
+							verificationResults: ret.submissionResult.verificationResults.map(
+								(v) =>
+									v.testcase_id === testcase_id && v.status === "running"
+										? {
+												...v,
+												status,
+												stdout,
+												stderr,
+											}
+										: v,
+							),
+						};
+						return ret;
+					});
+				} else if (lastJsonMessage.type === "watcher:s2c:submitresult") {
+					const { player_id, status } = lastJsonMessage.data;
+					const setter =
+						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+					setter((prev) => {
+						const ret = { ...prev };
+						if (ret.submissionResult === undefined) {
+							return ret;
+						}
+						ret.submissionResult = {
+							...ret.submissionResult,
+							status,
+						};
+						if (status === "success") {
+							if (
+								ret.score === null ||
+								ret.submissionResult.preliminaryScore < ret.score
+							) {
+								ret.score = ret.submissionResult.preliminaryScore;
+							}
+						} else {
+							ret.submissionResult.verificationResults =
+								ret.submissionResult.verificationResults.map((v) =>
+									v.status === "running" ? { ...v, status: "canceled" } : v,
+								);
+						}
+						return ret;
+					});
 				}
 			} else {
 				setGameState("waiting");
 			}
 		}
 	}, [
+		game.verification_steps,
 		lastJsonMessage,
 		readyState,
 		gameState,
-		playerInfoA,
-		playerInfoB,
 		playerA?.user_id,
 		playerB?.user_id,
 	]);
