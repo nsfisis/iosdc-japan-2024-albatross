@@ -14,19 +14,35 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 export default function Index() {
 	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
+		<div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center gap-y-6">
+			<img
+				src="/iosdc-japan/2024/code-battle/favicon.svg"
+				alt="iOSDC Japan 2024"
+				className="w-24 h-24"
+			/>
 			<div className="text-center">
-				<h1 className="text-4xl font-bold text-blue-600 mb-4">
-					iOSDC Japan 2024 Albatross.swift
-				</h1>
-				<p>
-					<Link
-						to="/login"
-						className="text-lg text-white bg-blue-500 px-4 py-2 rounded hover:bg-blue-600 transition duration-300"
-					>
-						Login
-					</Link>
-				</p>
+				<div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-400 flex flex-col gap-y-2">
+					<div className="text-3xl">iOSDC Japan 2024</div>
+					<div className="text-6xl">
+						Swift <wbr />
+						Code Battle
+					</div>
+				</div>
+			</div>
+			<p className="text-gray-900 max-w-prose bg-white p-4 rounded-xl border-2 border-pink-600 mx-2">
+				Swift コードバトルは指示された動作をする Swift
+				コードをより短く書けた方が勝ち、という 1 対 1
+				の対戦コンテンツです。8/22（木）day0 前夜祭では 8/12
+				に実施された予選を勝ち抜いたプレイヤーによるトーナメント形式での Swift
+				コードバトルを実施します。ここでは短いコードが正義です！可読性も保守性も放り投げた、イベントならではのコードをお楽しみください！
+			</p>
+			<div>
+				<Link
+					to="/login"
+					className="text-lg text-white bg-pink-600 px-4 py-2 rounded transition duration-300 hover:bg-pink-500"
+				>
+					ログイン
+				</Link>
 			</div>
 		</div>
 	);
