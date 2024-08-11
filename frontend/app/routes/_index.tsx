@@ -1,8 +1,8 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { Link } from "@remix-run/react";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { ensureUserNotLoggedIn } from "../.server/auth";
 import BorderedContainer from "../components/BorderedContainer";
+import NavigateLink from "../components/NavigateLink";
 
 export const meta: MetaFunction = () => [
 	{ title: "iOSDC Japan 2024 Albatross.swift" },
@@ -40,12 +40,7 @@ export default function Index() {
 				</BorderedContainer>
 			</div>
 			<div>
-				<Link
-					to="/login"
-					className="text-lg text-white bg-pink-600 px-4 py-2 rounded transition duration-300 hover:bg-pink-500"
-				>
-					ログイン
-				</Link>
+				<NavigateLink to="/login">ログイン</NavigateLink>
 			</div>
 		</div>
 	);
