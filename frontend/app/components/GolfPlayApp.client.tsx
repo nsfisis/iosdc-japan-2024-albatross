@@ -36,12 +36,12 @@ export default function GolfPlayApp({
 
 	const [startedAt, setStartedAt] = useState<number | null>(null);
 
-	const [timeLeftSeconds, setTimeLeftSeconds] = useState<number | null>(null);
+	const [leftTimeSeconds, setLeftTimeSeconds] = useState<number | null>(null);
 
 	useEffect(() => {
 		if (gameState === "starting" && startedAt !== null) {
 			const timer1 = setInterval(() => {
-				setTimeLeftSeconds((prev) => {
+				setLeftTimeSeconds((prev) => {
 					if (prev === null) {
 						return null;
 					}
@@ -113,7 +113,7 @@ export default function GolfPlayApp({
 						const { start_at } = lastJsonMessage.data;
 						setStartedAt(start_at);
 						const nowSec = Math.floor(Date.now() / 1000);
-						setTimeLeftSeconds(start_at - nowSec);
+						setLeftTimeSeconds(start_at - nowSec);
 						setGameState("starting");
 					}
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
@@ -127,17 +127,47 @@ export default function GolfPlayApp({
 					setLastExecStatus(status);
 				}
 			} else {
-				setGameState("waiting");
+				if (game.started_at) {
+					const nowSec = Math.floor(Date.now() / 1000);
+					if (game.started_at <= nowSec) {
+						// The game has already started.
+						if (gameState !== "gaming" && gameState !== "finished") {
+							setStartedAt(game.started_at);
+							setLeftTimeSeconds(0);
+							setGameState("gaming");
+						}
+					} else {
+						// The game is starting.
+						if (
+							gameState !== "starting" &&
+							gameState !== "gaming" &&
+							gameState !== "finished"
+						) {
+							setStartedAt(game.started_at);
+							setLeftTimeSeconds(game.started_at - nowSec);
+							setGameState("starting");
+						}
+					}
+				} else {
+					setGameState("waiting");
+				}
 			}
 		}
-	}, [sendJsonMessage, lastJsonMessage, readyState, gameState, currentScore]);
+	}, [
+		game.started_at,
+		sendJsonMessage,
+		lastJsonMessage,
+		readyState,
+		gameState,
+		currentScore,
+	]);
 
 	if (gameState === "connecting") {
 		return <GolfPlayAppConnecting />;
 	} else if (gameState === "waiting") {
 		return <GolfPlayAppWaiting />;
 	} else if (gameState === "starting") {
-		return <GolfPlayAppStarting timeLeft={timeLeftSeconds!} />;
+		return <GolfPlayAppStarting leftTimeSeconds={leftTimeSeconds!} />;
 	} else if (gameState === "gaming") {
 		return (
 			<GolfPlayAppGaming

@@ -1,8 +1,10 @@
 type Props = {
-	timeLeft: number;
+	leftTimeSeconds: number;
 };
 
-export default function GolfPlayAppStarting({ timeLeft }: Props) {
+export default function GolfPlayAppStarting({
+	leftTimeSeconds: timeLeft,
+}: Props) {
 	return (
 		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
 			<div className="text-center">

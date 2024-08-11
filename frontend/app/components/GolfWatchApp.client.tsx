@@ -194,11 +194,35 @@ export default function GolfWatchApp({
 					});
 				}
 			} else {
-				setGameState("waiting");
+				if (game.started_at) {
+					const nowSec = Math.floor(Date.now() / 1000);
+					if (game.started_at <= nowSec) {
+						// The game has already started.
+						if (gameState !== "gaming" && gameState !== "finished") {
+							setStartedAt(game.started_at);
+							setLeftTimeSeconds(0);
+							setGameState("gaming");
+						}
+					} else {
+						// The game is starting.
+						if (
+							gameState !== "starting" &&
+							gameState !== "gaming" &&
+							gameState !== "finished"
+						) {
+							setStartedAt(game.started_at);
+							setLeftTimeSeconds(game.started_at - nowSec);
+							setGameState("starting");
+						}
+					}
+				} else {
+					setGameState("waiting");
+				}
 			}
 		}
 	}, [
 		game.verification_steps,
+		game.started_at,
 		lastJsonMessage,
 		readyState,
 		gameState,
