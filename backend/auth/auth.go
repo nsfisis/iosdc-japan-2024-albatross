@@ -1,24 +1,26 @@
 package auth
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"net/http"
-	"net/url"
+	"time"
 
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth/fortee"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
 var (
 	ErrInvalidRegistrationToken = errors.New("invalid registration token")
 	ErrNoRegistrationToken      = errors.New("no registration token")
-	ErrForteeLoginFailed        = errors.New("fortee login failed")
+	ErrForteeLoginTimeout       = errors.New("fortee login timeout")
+)
+
+const (
+	forteeAPITimeout = 3 * time.Second
 )
 
 func Login(
@@ -100,35 +102,13 @@ func verifyRegistrationToken(ctx context.Context, queries *db.Queries, registrat
 	return nil
 }
 
-func verifyForteeAccount(_ context.Context, username string, password string) error {
-	reqData := url.Values{}
-	reqData.Set("username", username)
-	reqData.Set("password", password)
-	reqBody := reqData.Encode()
+func verifyForteeAccount(ctx context.Context, username string, password string) error {
+	ctx, cancel := context.WithTimeout(ctx, forteeAPITimeout)
+	defer cancel()
 
-	req, err := http.NewRequest("POST", "https://fortee.jp/api/user/login", bytes.NewBufferString(reqBody))
-	if err != nil {
-		return fmt.Errorf("http.NewRequest failed: %w", err)
+	err := fortee.LoginFortee(ctx, username, password)
+	if errors.Is(err, context.DeadlineExceeded) {
+		return ErrForteeLoginTimeout
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	req.Header.Set("Accept", "application/json")
-
-	client := &http.Client{}
-	res, err := client.Do(req)
-	if err != nil {
-		return fmt.Errorf("client.Do failed: %v", err)
-	}
-	defer res.Body.Close()
-
-	resData := struct {
-		LoggedIn bool `json:"loggedIn"`
-	}{}
-	if err := json.NewDecoder(res.Body).Decode(&resData); err != nil {
-		return fmt.Errorf("json.Decode failed: %v", err)
-	}
-
-	if !resData.LoggedIn {
-		return ErrForteeLoginFailed
-	}
-	return nil
+	return err
 }
