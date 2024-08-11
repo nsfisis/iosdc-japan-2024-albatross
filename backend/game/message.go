@@ -24,7 +24,6 @@ type playerMessageC2SWithClient struct {
 
 type playerMessageS2C = interface{}
 type playerMessageS2CPrepare = api.GamePlayerMessageS2CPrepare
-type playerMessageS2CPreparePayload = api.GamePlayerMessageS2CPreparePayload
 type playerMessageS2CStart = api.GamePlayerMessageS2CStart
 type playerMessageS2CStartPayload = api.GamePlayerMessageS2CStartPayload
 type playerMessageS2CExecResult = api.GamePlayerMessageS2CExecResult

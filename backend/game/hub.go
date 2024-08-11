@@ -611,13 +611,6 @@ func (hub *gameHub) startGame() error {
 	for player := range hub.players {
 		player.s2cMessages <- &playerMessageS2CPrepare{
 			Type: playerMessageTypeS2CPrepare,
-			Data: playerMessageS2CPreparePayload{
-				Problem: api.Problem{
-					ProblemID:   1,
-					Title:       "the answer",
-					Description: "print 42",
-				},
-			},
 		}
 	}
 

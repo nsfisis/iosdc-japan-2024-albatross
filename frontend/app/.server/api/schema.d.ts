@@ -134,10 +134,6 @@ export interface components {
         GamePlayerMessageS2CPrepare: {
             /** @constant */
             type: "player:s2c:prepare";
-            data: components["schemas"]["GamePlayerMessageS2CPreparePayload"];
-        };
-        GamePlayerMessageS2CPreparePayload: {
-            problem: components["schemas"]["Problem"];
         };
         GamePlayerMessageS2CStart: {
             /** @constant */

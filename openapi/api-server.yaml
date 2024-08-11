@@ -277,18 +277,8 @@ components:
         type:
           type: string
           const: "player:s2c:prepare"
-        data:
-          $ref: '#/components/schemas/GamePlayerMessageS2CPreparePayload'
       required:
         - type
-        - data
-    GamePlayerMessageS2CPreparePayload:
-      type: object
-      properties:
-        problem:
-          $ref: '#/components/schemas/Problem'
-      required:
-        - problem
     GamePlayerMessageS2CStart:
       type: object
       properties:
