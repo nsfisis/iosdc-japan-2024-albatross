@@ -2,6 +2,7 @@ import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
 import { Link } from "@remix-run/react";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { ensureUserNotLoggedIn } from "../.server/auth";
+import BorderedContainer from "../components/BorderedContainer";
 
 export const meta: MetaFunction = () => [
 	{ title: "iOSDC Japan 2024 Albatross.swift" },
@@ -23,19 +24,21 @@ export default function Index() {
 			<div className="text-center">
 				<div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-400 flex flex-col gap-y-2">
 					<div className="text-3xl">iOSDC Japan 2024</div>
-					<div className="text-6xl">
-						Swift <wbr />
-						Code Battle
-					</div>
+					<div className="text-6xl">Swift Code Battle</div>
 				</div>
 			</div>
-			<p className="text-gray-900 max-w-prose bg-white p-4 rounded-xl border-2 border-pink-600 mx-2">
-				Swift コードバトルは指示された動作をする Swift
-				コードをより短く書けた方が勝ち、という 1 対 1
-				の対戦コンテンツです。8/22（木）day0 前夜祭では 8/12
-				に実施された予選を勝ち抜いたプレイヤーによるトーナメント形式での Swift
-				コードバトルを実施します。ここでは短いコードが正義です！可読性も保守性も放り投げた、イベントならではのコードをお楽しみください！
-			</p>
+			<div className="mx-2">
+				<BorderedContainer>
+					<p className="text-gray-900 max-w-prose">
+						Swift コードバトルは指示された動作をする Swift
+						コードをより短く書けた方が勝ち、という 1 対 1
+						の対戦コンテンツです。8/22（木）day0 前夜祭では 8/12
+						に実施された予選を勝ち抜いたプレイヤーによるトーナメント形式での
+						Swift
+						コードバトルを実施します。ここでは短いコードが正義です！可読性も保守性も放り投げた、イベントならではのコードをお楽しみください！
+					</p>
+				</BorderedContainer>
+			</div>
 			<div>
 				<Link
 					to="/login"

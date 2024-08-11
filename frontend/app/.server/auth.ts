@@ -32,9 +32,12 @@ export type User = components["schemas"]["User"];
 // Remix's createCookie() returns "structured" cookies, which cannot be reused directly by non-Remix servers.
 const tokenCookie = createUnstructuredCookie("albatross_token", cookieOptions);
 
+/**
+ * @throws Error on failure
+ */
 export async function login(request: Request): Promise<never> {
 	const jwt = await authenticator.authenticate("default", request, {
-		failureRedirect: request.url,
+		throwOnError: true,
 	});
 
 	const session = await sessionStorage.getSession(

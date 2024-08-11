@@ -31,9 +31,19 @@ func (h *Handler) PostLogin(ctx context.Context, request PostLoginRequestObject)
 	userID, err := auth.Login(ctx, h.q, username, password, registrationToken)
 	if err != nil {
 		log.Printf("login failed: %v", err)
+		var msg string
+		if errors.Is(err, auth.ErrInvalidRegistrationToken) {
+			msg = "登録用 URL が無効です。イベントスタッフにお声がけください"
+		} else if errors.Is(err, auth.ErrNoRegistrationToken) {
+			msg = "登録用 URL からログインしてください。登録用 URL は Connpass のイベントページに記載しています"
+		} else if errors.Is(err, auth.ErrForteeLoginTimeout) {
+			msg = "ログインに失敗しました"
+		} else {
+			msg = "ユーザー名またはパスワードが誤っています"
+		}
 		return PostLogin401JSONResponse{
 			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
-				Message: "Invalid username or password",
+				Message: msg,
 			},
 		}, nil
 	}
@@ -42,7 +52,7 @@ func (h *Handler) PostLogin(ctx context.Context, request PostLoginRequestObject)
 	if err != nil {
 		return PostLogin401JSONResponse{
 			UnauthorizedJSONResponse: UnauthorizedJSONResponse{
-				Message: "Invalid username or password",
+				Message: "ログインに失敗しました",
 			},
 		}, nil
 	}
