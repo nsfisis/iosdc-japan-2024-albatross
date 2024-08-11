@@ -13,24 +13,3 @@ export type SubmitResult = {
 	status: SubmitResultStatus;
 	execResults: ExecResult[];
 };
-
-export function submitResultStatusToLabel(status: SubmitResultStatus | null) {
-	switch (status) {
-		case null:
-			return "-";
-		case "running":
-			return "Running...";
-		case "success":
-			return "Accepted";
-		case "wrong_answer":
-			return "Wrong Answer";
-		case "timeout":
-			return "Time Limit Exceeded";
-		case "compile_error":
-			return "Compile Error";
-		case "runtime_error":
-			return "Runtime Error";
-		case "internal_error":
-			return "Internal Error";
-	}
-}

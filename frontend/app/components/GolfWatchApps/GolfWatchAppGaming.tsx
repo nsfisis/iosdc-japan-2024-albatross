@@ -1,6 +1,6 @@
 import { PlayerInfo } from "../../models/PlayerInfo";
-import { submitResultStatusToLabel } from "../../models/SubmitResult";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
+import SubmitStatusLabel from "../SubmitStatusLabel";
 
 type Props = {
 	problem: string;
@@ -60,8 +60,10 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submitResultStatusToLabel(
-							playerInfoA.submitResult?.status ?? null,
+						{playerInfoA.submitResult?.status ? (
+							<SubmitStatusLabel status={playerInfoA.submitResult?.status} />
+						) : (
+							<span>-</span>
 						)}
 					</div>
 					<div>
@@ -90,8 +92,10 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submitResultStatusToLabel(
-							playerInfoB.submitResult?.status ?? null,
+						{playerInfoB.submitResult?.status ? (
+							<SubmitStatusLabel status={playerInfoB.submitResult?.status} />
+						) : (
+							<span>-</span>
 						)}
 					</div>
 					<div>
