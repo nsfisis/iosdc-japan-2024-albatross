@@ -10,7 +10,7 @@
 		"check:eslint": "eslint --ignore-path .gitignore --cache --cache-location ./node_modules/.cache/eslint .",
 		"check:ts": "tsc",
 		"dev": "remix vite:dev",
-		"openapi-typescript": "openapi-typescript --output ./app/.server/api/schema.d.ts ../openapi.yaml",
+		"openapi-typescript": "openapi-typescript --output ./app/.server/api/schema.d.ts ../openapi/api-server.yaml",
 		"start": "remix-serve ./build/server/index.js"
 	},
 	"dependencies": {
