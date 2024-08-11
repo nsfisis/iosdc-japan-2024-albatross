@@ -1,21 +1,26 @@
+import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PlayerInfo } from "../../models/PlayerInfo";
+import BorderedContainer from "../BorderedContainer";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
 import SubmitStatusLabel from "../SubmitStatusLabel";
 
 type Props = {
+	gameDisplayName: string;
 	gameDurationSeconds: number;
 	leftTimeSeconds: number;
 	playerInfoA: PlayerInfo;
 	playerInfoB: PlayerInfo;
-	problem: string;
+	problemTitle: string;
+	problemDescription: string;
 };
 
 export default function GolfWatchAppGaming({
+	gameDisplayName,
 	gameDurationSeconds,
 	leftTimeSeconds,
 	playerInfoA,
 	playerInfoB,
-	problem,
 }: Props) {
 	const leftTime = (() => {
 		const k = gameDurationSeconds + leftTimeSeconds;
@@ -25,96 +30,135 @@ export default function GolfWatchAppGaming({
 	})();
 
 	const scoreRatio = (() => {
-		const scoreA = playerInfoA.score ?? 0;
-		const scoreB = playerInfoB.score ?? 0;
-		const totalScore = scoreA + scoreB;
-		return totalScore === 0 ? 50 : (scoreB / totalScore) * 100;
+		const scoreA = playerInfoA.score;
+		const scoreB = playerInfoB.score;
+		if (scoreA === null && scoreB === null) {
+			return 50;
+		} else if (scoreA === null) {
+			return 0;
+		} else if (scoreB === null) {
+			return 100;
+		} else {
+			return (scoreB / (scoreA + scoreB)) * 100;
+		}
 	})();
 
 	return (
-		<div className="grid h-full w-full grid-rows-[auto_auto_1fr_auto]">
-			<div className="grid grid-cols-[1fr_auto_1fr]">
-				<div className="grid justify-start bg-red-500 p-2 text-white">
-					{playerInfoA.displayName}
+		<div className="min-h-screen bg-gray-100 flex flex-col">
+			<div className="text-white bg-iosdc-japan grid grid-cols-3 px-4 py-2">
+				<div className="font-bold flex justify-between my-auto">
+					<div>
+						<div className="text-gray-100">Player 1</div>
+						<div className="text-2xl">{playerInfoA.displayName}</div>
+					</div>
+					<div className="text-6xl">{playerInfoA.score}</div>
 				</div>
-				<div className="grid justify-center p-2">{leftTime}</div>
-				<div className="grid justify-end bg-blue-500 p-2 text-white">
-					{playerInfoB.displayName}
+				<div className="font-bold text-center">
+					<div className="text-gray-100">{gameDisplayName}</div>
+					<div className="text-3xl">{leftTime}</div>
 				</div>
-			</div>
-			<div className="grid grid-cols-[auto_1fr_auto]">
-				<div className="grid justify-start bg-red-500 p-2 text-lg font-bold text-white">
-					{playerInfoA.score}
-				</div>
-				<div className="w-full bg-blue-500">
-					<div
-						className="h-full bg-red-500"
-						style={{ width: `${scoreRatio}%` }}
-					></div>
-				</div>
-				<div className="grid justify-end bg-blue-500 p-2 text-lg font-bold text-white">
-					{playerInfoB.score}
+				<div className="font-bold flex justify-between my-auto">
+					<div className="text-6xl">{playerInfoB.score}</div>
+					<div>
+						<div className="text-gray-100">Player 2</div>
+						<div className="text-2xl">{playerInfoB.displayName}</div>
+					</div>
 				</div>
 			</div>
-			<div className="grid grid-cols-[3fr_2fr_3fr_2fr] p-2">
-				<div>
-					<pre>
+			<div className="w-full bg-purple-400">
+				<div
+					className="h-6 bg-orange-400"
+					style={{ width: `${scoreRatio}%` }}
+				></div>
+			</div>
+			<div className="grow grid grid-cols-10 p-4 gap-4">
+				<div className="col-span-3">
+					<pre className="bg-white resize-none h-full w-full rounded-lg border border-gray-300 p-2">
 						<code>{playerInfoA.code}</code>
 					</pre>
 				</div>
-				<div>
-					<div>
-						<SubmitStatusLabel status={playerInfoA.submitResult.status} />
+				<div className="col-span-2 flex flex-col gap-4">
+					<div className="flex">
+						<div className="grow font-bold text-xl text-center">
+							<SubmitStatusLabel status={playerInfoA.submitResult.status} />
+						</div>
 					</div>
-					<div>
-						<ol>
-							{playerInfoA.submitResult?.execResults.map((result) => (
-								<li key={result.testcase_id ?? -1}>
-									<div>
-										<div>
-											<ExecStatusIndicatorIcon status={result.status} />{" "}
-											{result.label}
-										</div>
-										<div>
-											{result.stdout}
-											{result.stderr}
-										</div>
+					<ul className="flex flex-col gap-2">
+						{playerInfoA.submitResult.execResults.map((r, idx) => (
+							<li key={r.testcase_id ?? -1} className="flex gap-2">
+								<div className="flex flex-col gap-2 p-2">
+									<div className="w-6">
+										<ExecStatusIndicatorIcon status={r.status} />
 									</div>
-								</li>
-							))}
-						</ol>
-					</div>
+									{idx !== playerInfoA.submitResult.execResults.length - 1 && (
+										<div>
+											<FontAwesomeIcon
+												icon={faArrowDown}
+												fixedWidth
+												className="text-gray-500"
+											/>
+										</div>
+									)}
+								</div>
+								<div className="grow p-2 overflow-x-scroll">
+									<BorderedContainer>
+										<div className="font-semibold">{r.label}</div>
+										<div>
+											<code>
+												{r.stdout}
+												{r.stderr}
+											</code>
+										</div>
+									</BorderedContainer>
+								</div>
+							</li>
+						))}
+					</ul>
 				</div>
-				<div>
-					<pre>
+				<div className="col-span-2 flex flex-col gap-4">
+					<div className="flex">
+						<div className="grow font-bold text-xl text-center">
+							<SubmitStatusLabel status={playerInfoB.submitResult.status} />
+						</div>
+					</div>
+					<ul className="flex flex-col gap-2">
+						{playerInfoB.submitResult.execResults.map((r, idx) => (
+							<li key={r.testcase_id ?? -1} className="flex gap-2">
+								<div className="flex flex-col gap-2 p-2">
+									<div className="w-6">
+										<ExecStatusIndicatorIcon status={r.status} />
+									</div>
+									{idx !== playerInfoB.submitResult.execResults.length - 1 && (
+										<div>
+											<FontAwesomeIcon
+												icon={faArrowDown}
+												fixedWidth
+												className="text-gray-500"
+											/>
+										</div>
+									)}
+								</div>
+								<div className="grow p-2 overflow-x-scroll">
+									<BorderedContainer>
+										<div className="font-semibold">{r.label}</div>
+										<div>
+											<code>
+												{r.stdout}
+												{r.stderr}
+											</code>
+										</div>
+									</BorderedContainer>
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
+				<div className="col-span-3">
+					<pre className="bg-white resize-none h-full w-full rounded-lg border border-gray-300 p-2">
 						<code>{playerInfoB.code}</code>
 					</pre>
 				</div>
-				<div>
-					<div>
-						<SubmitStatusLabel status={playerInfoB.submitResult.status} />
-					</div>
-					<div>
-						<ol>
-							{playerInfoB.submitResult?.execResults.map((result, idx) => (
-								<li key={idx}>
-									<div>
-										<div>
-											<ExecStatusIndicatorIcon status={result.status} />{" "}
-											{result.label}
-										</div>
-										<div>
-											{result.stdout}
-											{result.stderr}
-										</div>
-									</div>
-								</li>
-							))}
-						</ol>
-					</div>
-				</div>
 			</div>
-			<div className="grid justify-center p-2 bg-slate-300">{problem}</div>
 		</div>
 	);
 }
