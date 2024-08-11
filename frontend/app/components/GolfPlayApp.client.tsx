@@ -104,10 +104,7 @@ export default function GolfPlayApp({
 		} else if (readyState === ReadyState.OPEN) {
 			if (lastJsonMessage !== null) {
 				console.log(lastJsonMessage.type);
-				if (lastJsonMessage.type === "player:s2c:prepare") {
-					console.log("player:c2s:ready");
-					sendJsonMessage({ type: "player:c2s:ready" });
-				} else if (lastJsonMessage.type === "player:s2c:start") {
+				if (lastJsonMessage.type === "player:s2c:start") {
 					if (
 						gameState !== "starting" &&
 						gameState !== "gaming" &&
@@ -131,8 +128,6 @@ export default function GolfPlayApp({
 				}
 			} else {
 				setGameState("waiting");
-				console.log("player:c2s:entry");
-				sendJsonMessage({ type: "player:c2s:entry" });
 			}
 		}
 	}, [sendJsonMessage, lastJsonMessage, readyState, gameState, currentScore]);

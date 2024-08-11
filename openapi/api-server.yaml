@@ -199,9 +199,7 @@ components:
           example: "closed"
           enum:
             - closed
-            - waiting_entries
-            - waiting_start
-            - prepare
+            - waiting
             - starting
             - gaming
             - finished
@@ -268,17 +266,8 @@ components:
         - $ref: '#/components/schemas/GamePlayerMessageC2S'
     GamePlayerMessageS2C:
       oneOf:
-        - $ref: '#/components/schemas/GamePlayerMessageS2CPrepare'
         - $ref: '#/components/schemas/GamePlayerMessageS2CStart'
         - $ref: '#/components/schemas/GamePlayerMessageS2CExecResult'
-    GamePlayerMessageS2CPrepare:
-      type: object
-      properties:
-        type:
-          type: string
-          const: "player:s2c:prepare"
-      required:
-        - type
     GamePlayerMessageS2CStart:
       type: object
       properties:
@@ -331,26 +320,8 @@ components:
         - score
     GamePlayerMessageC2S:
       oneOf:
-        - $ref: '#/components/schemas/GamePlayerMessageC2SEntry'
-        - $ref: '#/components/schemas/GamePlayerMessageC2SReady'
         - $ref: '#/components/schemas/GamePlayerMessageC2SCode'
         - $ref: '#/components/schemas/GamePlayerMessageC2SSubmit'
-    GamePlayerMessageC2SEntry:
-      type: object
-      properties:
-        type:
-          type: string
-          const: "player:c2s:entry"
-      required:
-        - type
-    GamePlayerMessageC2SReady:
-      type: object
-      properties:
-        type:
-          type: string
-          const: "player:c2s:ready"
-      required:
-        - type
     GamePlayerMessageC2SCode:
       type: object
       properties:

@@ -25,9 +25,7 @@
     <label>State</label>
     <select name="state" required>
       <option value="closed"{{ if eq .Game.State "closed" }} selected{{ end }}>Closed</option>
-      <option value="waiting_entries"{{ if eq .Game.State "waiting_entries" }} selected{{ end }}>Waiting Entries</option>
-      <option value="waiting_start"{{ if eq .Game.State "waiting_start" }} selected{{ end }}>Waiting Start</option>
-      <option value="prepare"{{ if eq .Game.State "prepare" }} selected{{ end }}>Prepare</option>
+      <option value="waiting"{{ if eq .Game.State "waiting" }} selected{{ end }}>Waiting</option>
       <option value="starting"{{ if eq .Game.State "starting" }} selected{{ end }}>Starting</option>
       <option value="gaming"{{ if eq .Game.State "gaming" }} selected{{ end }}>Gaming</option>
       <option value="finished"{{ if eq .Game.State "finished" }} selected{{ end }}>Finished</option>

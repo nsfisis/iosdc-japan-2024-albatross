@@ -29,13 +29,13 @@ VALUES
 INSERT INTO games
 (game_type, state, display_name, duration_seconds, problem_id)
 VALUES
-    ('1v1',         'waiting_entries', 'TEST game 1', 180, 1),
-    ('1v1',         'closed',          'TEST game 2', 180, 2),
-    ('1v1',         'finished',        'TEST game 3', 180, 3),
-    ('multiplayer', 'waiting_start',   'TEST game 4', 180, 4),
-    ('multiplayer', 'closed',          'TEST game 5', 180, 5),
-    ('multiplayer', 'finished',        'TEST game 6', 180, 6),
-    ('multiplayer', 'waiting_entries', 'TEST game 7', 180, 7);
+    ('1v1',         'waiting',  'TEST game 1', 180, 1),
+    ('1v1',         'closed',   'TEST game 2', 180, 2),
+    ('1v1',         'finished', 'TEST game 3', 180, 3),
+    ('multiplayer', 'waiting',  'TEST game 4', 180, 4),
+    ('multiplayer', 'closed',   'TEST game 5', 180, 5),
+    ('multiplayer', 'finished', 'TEST game 6', 180, 6),
+    ('multiplayer', 'waiting',  'TEST game 7', 180, 7);
 
 INSERT INTO game_players
 (game_id, user_id)
