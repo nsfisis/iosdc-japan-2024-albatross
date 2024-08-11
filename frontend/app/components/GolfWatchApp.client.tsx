@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
 import type { components } from "../.server/api/schema";
+import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
 import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
 import GolfWatchAppGaming, {
@@ -9,7 +9,8 @@ import GolfWatchAppGaming, {
 import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
 import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
 
-type WebSocketMessage = components["schemas"]["GameWatcherMessageS2C"];
+type GameWatcherMessageS2C = components["schemas"]["GameWatcherMessageS2C"];
+type GameWatcherMessageC2S = never;
 
 type Game = components["schemas"]["Game"];
 
@@ -27,10 +28,10 @@ export default function GolfWatchApp({
 			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`
 			: `wss://t.nil.ninja/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`;
 
-	const { lastJsonMessage, readyState } = useWebSocket<WebSocketMessage>(
-		socketUrl,
-		{},
-	);
+	const { lastJsonMessage, readyState } = useWebSocket<
+		GameWatcherMessageS2C,
+		GameWatcherMessageC2S
+	>(socketUrl);
 
 	const [gameState, setGameState] = useState<GameState>("connecting");
 

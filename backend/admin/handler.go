@@ -231,7 +231,7 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 
 	{
 		// TODO:
-		if state != row.State && state == "prepare" {
+		if state != row.State && state == "starting" {
 			err := h.hubs.StartGame(int(gameID))
 			if err != nil {
 				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

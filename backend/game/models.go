@@ -13,13 +13,11 @@ const (
 	gameType1v1         = api.N1V1
 	gameTypeMultiplayer = api.Multiplayer
 
-	gameStateClosed         gameState = api.Closed
-	gameStateWaitingEntries gameState = api.WaitingEntries
-	gameStateWaitingStart   gameState = api.WaitingStart
-	gameStatePrepare        gameState = api.Prepare
-	gameStateStarting       gameState = api.Starting
-	gameStateGaming         gameState = api.Gaming
-	gameStateFinished       gameState = api.Finished
+	gameStateClosed   gameState = api.Closed
+	gameStateWaiting  gameState = api.Waiting
+	gameStateStarting gameState = api.Starting
+	gameStateGaming   gameState = api.Gaming
+	gameStateFinished gameState = api.Finished
 )
 
 type game struct {

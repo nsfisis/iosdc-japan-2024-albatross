@@ -30,13 +30,11 @@ const (
 
 // Defines values for GameState.
 const (
-	Closed         GameState = "closed"
-	Finished       GameState = "finished"
-	Gaming         GameState = "gaming"
-	Prepare        GameState = "prepare"
-	Starting       GameState = "starting"
-	WaitingEntries GameState = "waiting_entries"
-	WaitingStart   GameState = "waiting_start"
+	Closed   GameState = "closed"
+	Finished GameState = "finished"
+	Gaming   GameState = "gaming"
+	Starting GameState = "starting"
+	Waiting  GameState = "waiting"
 )
 
 // Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
@@ -114,16 +112,6 @@ type GamePlayerMessageC2SCodePayload struct {
 	Code string `json:"code"`
 }
 
-// GamePlayerMessageC2SEntry defines model for GamePlayerMessageC2SEntry.
-type GamePlayerMessageC2SEntry struct {
-	Type string `json:"type"`
-}
-
-// GamePlayerMessageC2SReady defines model for GamePlayerMessageC2SReady.
-type GamePlayerMessageC2SReady struct {
-	Type string `json:"type"`
-}
-
 // GamePlayerMessageC2SSubmit defines model for GamePlayerMessageC2SSubmit.
 type GamePlayerMessageC2SSubmit struct {
 	Data GamePlayerMessageC2SSubmitPayload `json:"data"`
@@ -154,11 +142,6 @@ type GamePlayerMessageS2CExecResultPayload struct {
 
 // GamePlayerMessageS2CExecResultPayloadStatus defines model for GamePlayerMessageS2CExecResultPayload.Status.
 type GamePlayerMessageS2CExecResultPayloadStatus string
-
-// GamePlayerMessageS2CPrepare defines model for GamePlayerMessageS2CPrepare.
-type GamePlayerMessageS2CPrepare struct {
-	Type string `json:"type"`
-}
 
 // GamePlayerMessageS2CStart defines model for GamePlayerMessageS2CStart.
 type GamePlayerMessageS2CStart struct {
@@ -376,58 +359,6 @@ func (t *GamePlayerMessage) UnmarshalJSON(b []byte) error {
 	return err
 }
 
-// AsGamePlayerMessageC2SEntry returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SEntry
-func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SEntry() (GamePlayerMessageC2SEntry, error) {
-	var body GamePlayerMessageC2SEntry
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromGamePlayerMessageC2SEntry overwrites any union data inside the GamePlayerMessageC2S as the provided GamePlayerMessageC2SEntry
-func (t *GamePlayerMessageC2S) FromGamePlayerMessageC2SEntry(v GamePlayerMessageC2SEntry) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeGamePlayerMessageC2SEntry performs a merge with any union data inside the GamePlayerMessageC2S, using the provided GamePlayerMessageC2SEntry
-func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SEntry(v GamePlayerMessageC2SEntry) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
-// AsGamePlayerMessageC2SReady returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SReady
-func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SReady() (GamePlayerMessageC2SReady, error) {
-	var body GamePlayerMessageC2SReady
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromGamePlayerMessageC2SReady overwrites any union data inside the GamePlayerMessageC2S as the provided GamePlayerMessageC2SReady
-func (t *GamePlayerMessageC2S) FromGamePlayerMessageC2SReady(v GamePlayerMessageC2SReady) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeGamePlayerMessageC2SReady performs a merge with any union data inside the GamePlayerMessageC2S, using the provided GamePlayerMessageC2SReady
-func (t *GamePlayerMessageC2S) MergeGamePlayerMessageC2SReady(v GamePlayerMessageC2SReady) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
-	return err
-}
-
 // AsGamePlayerMessageC2SCode returns the union data inside the GamePlayerMessageC2S as a GamePlayerMessageC2SCode
 func (t GamePlayerMessageC2S) AsGamePlayerMessageC2SCode() (GamePlayerMessageC2SCode, error) {
 	var body GamePlayerMessageC2SCode
@@ -487,32 +418,6 @@ func (t GamePlayerMessageC2S) MarshalJSON() ([]byte, error) {
 
 func (t *GamePlayerMessageC2S) UnmarshalJSON(b []byte) error {
 	err := t.union.UnmarshalJSON(b)
-	return err
-}
-
-// AsGamePlayerMessageS2CPrepare returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CPrepare
-func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CPrepare() (GamePlayerMessageS2CPrepare, error) {
-	var body GamePlayerMessageS2CPrepare
-	err := json.Unmarshal(t.union, &body)
-	return body, err
-}
-
-// FromGamePlayerMessageS2CPrepare overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CPrepare
-func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CPrepare(v GamePlayerMessageS2CPrepare) error {
-	b, err := json.Marshal(v)
-	t.union = b
-	return err
-}
-
-// MergeGamePlayerMessageS2CPrepare performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CPrepare
-func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CPrepare(v GamePlayerMessageS2CPrepare) error {
-	b, err := json.Marshal(v)
-	if err != nil {
-		return err
-	}
-
-	merged, err := runtime.JSONMerge(t.union, b)
-	t.union = merged
 	return err
 }
 
@@ -1203,34 +1108,33 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

@@ -104,7 +104,7 @@ export interface components {
              * @example closed
              * @enum {string}
              */
-            state: "closed" | "waiting_entries" | "waiting_start" | "prepare" | "starting" | "gaming" | "finished";
+            state: "closed" | "waiting" | "starting" | "gaming" | "finished";
             /** @example Game 1 */
             display_name: string;
             /** @example 360 */
@@ -130,11 +130,7 @@ export interface components {
             description: string;
         };
         GamePlayerMessage: components["schemas"]["GamePlayerMessageS2C"] | components["schemas"]["GamePlayerMessageC2S"];
-        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CPrepare"] | components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"];
-        GamePlayerMessageS2CPrepare: {
-            /** @constant */
-            type: "player:s2c:prepare";
-        };
+        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"];
         GamePlayerMessageS2CStart: {
             /** @constant */
             type: "player:s2c:start";
@@ -158,15 +154,7 @@ export interface components {
             /** @example 100 */
             score: number | null;
         };
-        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SEntry"] | components["schemas"]["GamePlayerMessageC2SReady"] | components["schemas"]["GamePlayerMessageC2SCode"] | components["schemas"]["GamePlayerMessageC2SSubmit"];
-        GamePlayerMessageC2SEntry: {
-            /** @constant */
-            type: "player:c2s:entry";
-        };
-        GamePlayerMessageC2SReady: {
-            /** @constant */
-            type: "player:c2s:ready";
-        };
+        GamePlayerMessageC2S: components["schemas"]["GamePlayerMessageC2SCode"] | components["schemas"]["GamePlayerMessageC2SSubmit"];
         GamePlayerMessageC2SCode: {
             /** @constant */
             type: "player:c2s:code";

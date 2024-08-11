@@ -17,20 +17,12 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/taskqueue"
 )
 
-type playerClientState int
-
-const (
-	playerClientStateWaitingEntries playerClientState = iota
-	playerClientStateEntried
-	playerClientStateReady
-)
-
 type gameHub struct {
 	ctx               context.Context
 	game              *game
 	q                 *db.Queries
 	taskQueue         *taskqueue.Queue
-	players           map[*playerClient]playerClientState
+	players           map[*playerClient]bool
 	registerPlayer    chan *playerClient
 	unregisterPlayer  chan *playerClient
 	playerC2SMessages chan *playerMessageC2SWithClient
@@ -46,7 +38,7 @@ func newGameHub(ctx context.Context, game *game, q *db.Queries, taskQueue *taskq
 		game:              game,
 		q:                 q,
 		taskQueue:         taskQueue,
-		players:           make(map[*playerClient]playerClientState),
+		players:           make(map[*playerClient]bool),
 		registerPlayer:    make(chan *playerClient),
 		unregisterPlayer:  make(chan *playerClient),
 		playerC2SMessages: make(chan *playerMessageC2SWithClient),
@@ -66,7 +58,7 @@ func (hub *gameHub) run() {
 	for {
 		select {
 		case player := <-hub.registerPlayer:
-			hub.players[player] = playerClientStateWaitingEntries
+			hub.players[player] = true
 		case player := <-hub.unregisterPlayer:
 			if _, ok := hub.players[player]; ok {
 				hub.closePlayerClient(player)
@@ -79,73 +71,6 @@ func (hub *gameHub) run() {
 			}
 		case message := <-hub.playerC2SMessages:
 			switch msg := message.message.(type) {
-			case *playerMessageC2SEntry:
-				log.Printf("entry: %v", message.message)
-				// TODO: assert state is waiting_entries
-				hub.players[message.client] = playerClientStateEntried
-				entriedPlayerCount := 0
-				for _, state := range hub.players {
-					if playerClientStateEntried <= state {
-						entriedPlayerCount++
-					}
-				}
-				if entriedPlayerCount == hub.game.playerCount {
-					err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
-						GameID: int32(hub.game.gameID),
-						State:  string(gameStateWaitingStart),
-					})
-					if err != nil {
-						log.Fatalf("failed to set game state: %v", err)
-					}
-					hub.game.state = gameStateWaitingStart
-				}
-			case *playerMessageC2SReady:
-				log.Printf("ready: %v", message.message)
-				// TODO: assert state is prepare
-				hub.players[message.client] = playerClientStateReady
-				readyPlayerCount := 0
-				for _, state := range hub.players {
-					if playerClientStateReady <= state {
-						readyPlayerCount++
-					}
-				}
-				if readyPlayerCount == hub.game.playerCount {
-					startAt := time.Now().Add(11 * time.Second).UTC()
-					for player := range hub.players {
-						player.s2cMessages <- &playerMessageS2CStart{
-							Type: playerMessageTypeS2CStart,
-							Data: playerMessageS2CStartPayload{
-								StartAt: int(startAt.Unix()),
-							},
-						}
-					}
-					hub.broadcastToWatchers(&watcherMessageS2CStart{
-						Type: watcherMessageTypeS2CStart,
-						Data: watcherMessageS2CStartPayload{
-							StartAt: int(startAt.Unix()),
-						},
-					})
-					err := hub.q.UpdateGameStartedAt(hub.ctx, db.UpdateGameStartedAtParams{
-						GameID: int32(hub.game.gameID),
-						StartedAt: pgtype.Timestamp{
-							Time:             startAt,
-							InfinityModifier: pgtype.Finite,
-							Valid:            true,
-						},
-					})
-					if err != nil {
-						log.Fatalf("failed to set game state: %v", err)
-					}
-					hub.game.startedAt = &startAt
-					err = hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
-						GameID: int32(hub.game.gameID),
-						State:  string(gameStateStarting),
-					})
-					if err != nil {
-						log.Fatalf("failed to set game state: %v", err)
-					}
-					hub.game.state = gameStateStarting
-				}
 			case *playerMessageC2SCode:
 				// TODO: assert game state is gaming
 				log.Printf("code: %v", message.message)
@@ -608,26 +533,47 @@ func (hub *gameHub) processTaskResultRunTestcase(
 }
 
 func (hub *gameHub) startGame() error {
+	startAt := time.Now().Add(11 * time.Second).UTC()
 	for player := range hub.players {
-		player.s2cMessages <- &playerMessageS2CPrepare{
-			Type: playerMessageTypeS2CPrepare,
+		player.s2cMessages <- &playerMessageS2CStart{
+			Type: playerMessageTypeS2CStart,
+			Data: playerMessageS2CStartPayload{
+				StartAt: int(startAt.Unix()),
+			},
 		}
 	}
-
-	err := hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
+	hub.broadcastToWatchers(&watcherMessageS2CStart{
+		Type: watcherMessageTypeS2CStart,
+		Data: watcherMessageS2CStartPayload{
+			StartAt: int(startAt.Unix()),
+		},
+	})
+	err := hub.q.UpdateGameStartedAt(hub.ctx, db.UpdateGameStartedAtParams{
 		GameID: int32(hub.game.gameID),
-		State:  string(gameStatePrepare),
+		StartedAt: pgtype.Timestamp{
+			Time:             startAt,
+			InfinityModifier: pgtype.Finite,
+			Valid:            true,
+		},
 	})
 	if err != nil {
-		return err
+		log.Fatalf("failed to set game state: %v", err)
 	}
-	hub.game.state = gameStatePrepare
+	hub.game.startedAt = &startAt
+	err = hub.q.UpdateGameState(hub.ctx, db.UpdateGameStateParams{
+		GameID: int32(hub.game.gameID),
+		State:  string(gameStateStarting),
+	})
+	if err != nil {
+		log.Fatalf("failed to set game state: %v", err)
+	}
+	hub.game.state = gameStateStarting
 	return nil
 }
 
 func (hub *gameHub) close() {
-	for client := range hub.players {
-		hub.closePlayerClient(client)
+	for player := range hub.players {
+		hub.closePlayerClient(player)
 	}
 	close(hub.registerPlayer)
 	close(hub.unregisterPlayer)
