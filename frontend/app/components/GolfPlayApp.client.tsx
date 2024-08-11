@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
-import useWebSocket, { ReadyState } from "react-use-websocket";
 import { useDebouncedCallback } from "use-debounce";
 import type { components } from "../.server/api/schema";
+import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
 import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
 import GolfPlayAppStarting from "./GolfPlayApps/GolfPlayAppStarting";
 import GolfPlayAppWaiting from "./GolfPlayApps/GolfPlayAppWaiting";
 
-type WebSocketMessage = components["schemas"]["GamePlayerMessageS2C"];
+type GamePlayerMessageS2C = components["schemas"]["GamePlayerMessageS2C"];
+type GamePlayerMessageC2S = components["schemas"]["GamePlayerMessageC2S"];
 
 type Game = components["schemas"]["Game"];
 
@@ -26,8 +27,10 @@ export default function GolfPlayApp({
 			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`
 			: `wss://t.nil.ninja/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`;
 
-	const { sendJsonMessage, lastJsonMessage, readyState } =
-		useWebSocket<WebSocketMessage>(socketUrl, {});
+	const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket<
+		GamePlayerMessageS2C,
+		GamePlayerMessageC2S
+	>(socketUrl);
 
 	const [gameState, setGameState] = useState<GameState>("connecting");
 
