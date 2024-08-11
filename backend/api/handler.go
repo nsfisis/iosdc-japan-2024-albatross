@@ -84,9 +84,9 @@ func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *a
 	}
 	games := make([]Game, len(gameRows))
 	for i, row := range gameRows {
-		var startedAt *int
+		var startedAt *int64
 		if row.StartedAt.Valid {
-			startedAtTimestamp := int(row.StartedAt.Time.Unix())
+			startedAtTimestamp := row.StartedAt.Time.Unix()
 			startedAt = &startedAtTimestamp
 		}
 		games[i] = Game{
@@ -123,9 +123,9 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 		}
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	var startedAt *int
+	var startedAt *int64
 	if row.StartedAt.Valid {
-		startedAtTimestamp := int(row.StartedAt.Time.Unix())
+		startedAtTimestamp := row.StartedAt.Time.Unix()
 		startedAt = &startedAtTimestamp
 	}
 	playerRows, err := h.q.ListGamePlayers(ctx, int32(gameID))

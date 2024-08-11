@@ -509,14 +509,14 @@ func (hub *gameHub) startGame() error {
 		player.s2cMessages <- &playerMessageS2CStart{
 			Type: playerMessageTypeS2CStart,
 			Data: playerMessageS2CStartPayload{
-				StartAt: int(startAt.Unix()),
+				StartAt: startAt.Unix(),
 			},
 		}
 	}
 	hub.broadcastToWatchers(&watcherMessageS2CStart{
 		Type: watcherMessageTypeS2CStart,
 		Data: watcherMessageS2CStartPayload{
-			StartAt: int(startAt.Unix()),
+			StartAt: startAt.Unix(),
 		},
 	})
 	err := hub.q.UpdateGameStartedAt(hub.ctx, db.UpdateGameStartedAtParams{

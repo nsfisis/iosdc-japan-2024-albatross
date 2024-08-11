@@ -39,16 +39,17 @@ export default function GolfWatchApp({
 	const [leftTimeSeconds, setLeftTimeSeconds] = useState<number | null>(null);
 
 	useEffect(() => {
-		if (gameState === "starting" && startedAt !== null) {
+		if (
+			(gameState === "starting" || gameState === "gaming") &&
+			startedAt !== null
+		) {
 			const timer1 = setInterval(() => {
 				setLeftTimeSeconds((prev) => {
 					if (prev === null) {
 						return null;
 					}
 					if (prev <= 1) {
-						clearInterval(timer1);
 						setGameState("gaming");
-						return 0;
 					}
 					return prev - 1;
 				});
@@ -207,7 +208,7 @@ export default function GolfWatchApp({
 						// The game has already started.
 						if (gameState !== "gaming" && gameState !== "finished") {
 							setStartedAt(game.started_at);
-							setLeftTimeSeconds(0);
+							setLeftTimeSeconds(game.started_at - nowSec);
 							setGameState("gaming");
 						}
 					} else {
@@ -245,10 +246,11 @@ export default function GolfWatchApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfWatchAppGaming
-				problem={game.problem!.description}
+				gameDurationSeconds={game.duration_seconds}
+				leftTimeSeconds={leftTimeSeconds!}
 				playerInfoA={playerInfoA}
 				playerInfoB={playerInfoB}
-				leftTimeSeconds={leftTimeSeconds!}
+				problem={game.problem!.description}
 			/>
 		);
 	} else if (gameState === "finished") {

@@ -3,23 +3,27 @@ import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
 import SubmitStatusLabel from "../SubmitStatusLabel";
 
 type Props = {
-	problem: string;
+	gameDurationSeconds: number;
+	leftTimeSeconds: number;
 	playerInfoA: PlayerInfo;
 	playerInfoB: PlayerInfo;
-	leftTimeSeconds: number;
+	problem: string;
 };
 
 export default function GolfWatchAppGaming({
-	problem,
+	gameDurationSeconds,
+	leftTimeSeconds,
 	playerInfoA,
 	playerInfoB,
-	leftTimeSeconds,
+	problem,
 }: Props) {
 	const leftTime = (() => {
-		const m = Math.floor(leftTimeSeconds / 60);
-		const s = leftTimeSeconds % 60;
+		const k = gameDurationSeconds + leftTimeSeconds;
+		const m = Math.floor(k / 60);
+		const s = k % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 	})();
+
 	const scoreRatio = (() => {
 		const scoreA = playerInfoA.score ?? 0;
 		const scoreB = playerInfoB.score ?? 0;

@@ -1,15 +1,17 @@
+import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "@remix-run/react";
 import React, { useRef } from "react";
 import SubmitButton from "../../components/SubmitButton";
 import type { PlayerInfo } from "../../models/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
-import SubmitStatusLabel from "../SubmitStatusLabel";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import SubmitStatusLabel from "../SubmitStatusLabel";
 
 type Props = {
 	gameDisplayName: string;
+	gameDurationSeconds: number;
+	leftTimeSeconds: number;
 	playerInfo: Omit<PlayerInfo, "code">;
 	problemTitle: string;
 	problemDescription: string;
@@ -19,6 +21,8 @@ type Props = {
 
 export default function GolfPlayAppGaming({
 	gameDisplayName,
+	gameDurationSeconds,
+	leftTimeSeconds,
 	playerInfo,
 	problemTitle,
 	problemDescription,
@@ -37,12 +41,19 @@ export default function GolfPlayAppGaming({
 		}
 	};
 
+	const leftTime = (() => {
+		const k = gameDurationSeconds + leftTimeSeconds;
+		const m = Math.floor(k / 60);
+		const s = k % 60;
+		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+	})();
+
 	return (
 		<div className="min-h-screen bg-gray-100 flex flex-col">
 			<div className="text-white bg-iosdc-japan flex flex-row justify-between px-4 py-2">
 				<div className="font-bold">
 					<div className="text-gray-100">{gameDisplayName}</div>
-					<div className="text-2xl">03:21</div>
+					<div className="text-2xl">{leftTime}</div>
 				</div>
 				<div className="font-bold text-end">
 					<Link to={"/dashboard"} className="text-gray-100">
