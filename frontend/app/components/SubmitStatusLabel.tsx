@@ -7,20 +7,20 @@ type Props = {
 export default function SubmitStatusLabel({ status }: Props) {
 	switch (status) {
 		case "waiting_submission":
-			return <span>-</span>;
+			return null;
 		case "running":
-			return <span>Running...</span>;
+			return "実行中...";
 		case "success":
-			return <span>Accepted</span>;
+			return "成功";
 		case "wrong_answer":
-			return <span>Wrong Answer</span>;
+			return "テスト失敗";
 		case "timeout":
-			return <span>Time Limit Exceeded</span>;
+			return "時間切れ";
 		case "compile_error":
-			return <span>Compile Error</span>;
+			return "コンパイルエラー";
 		case "runtime_error":
-			return <span>Runtime Error</span>;
+			return "実行時エラー";
 		case "internal_error":
-			return <span>Internal Error</span>;
+			return "！内部エラー！";
 	}
 }
