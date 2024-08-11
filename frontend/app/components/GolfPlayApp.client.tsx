@@ -12,14 +12,17 @@ type GamePlayerMessageS2C = components["schemas"]["GamePlayerMessageS2C"];
 type GamePlayerMessageC2S = components["schemas"]["GamePlayerMessageC2S"];
 
 type Game = components["schemas"]["Game"];
+type User = components["schemas"]["User"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
 export default function GolfPlayApp({
 	game,
+	player,
 	sockToken,
 }: {
 	game: Game;
+	player: User;
 	sockToken: string;
 }) {
 	const socketUrl =
@@ -83,6 +86,9 @@ export default function GolfPlayApp({
 	}, 1000);
 
 	const onCodeSubmit = useDebouncedCallback((code: string) => {
+		if (code === "") {
+			return;
+		}
 		console.log("player:c2s:submit");
 		sendJsonMessage({
 			type: "player:c2s:submit",
@@ -171,6 +177,8 @@ export default function GolfPlayApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfPlayAppGaming
+				gameDisplayName={game.display_name}
+				playerDisplayName={player.display_name}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
 				onCodeChange={onCodeChange}

@@ -15,7 +15,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => [
 ];
 
 export async function loader({ params, request }: LoaderFunctionArgs) {
-	const { token } = await ensureUserLoggedIn(request);
+	const { token, user } = await ensureUserLoggedIn(request);
 
 	const fetchGame = async () => {
 		return (await apiGetGame(token, Number(params.gameId))).game;
@@ -27,16 +27,17 @@ export async function loader({ params, request }: LoaderFunctionArgs) {
 	const [game, sockToken] = await Promise.all([fetchGame(), fetchSockToken()]);
 	return {
 		game,
+		player: user,
 		sockToken,
 	};
 }
 
 export default function GolfPlay() {
-	const { game, sockToken } = useLoaderData<typeof loader>();
+	const { game, player, sockToken } = useLoaderData<typeof loader>();
 
 	return (
 		<ClientOnly fallback={<GolfPlayAppConnecting />}>
-			{() => <GolfPlayApp game={game} sockToken={sockToken} />}
+			{() => <GolfPlayApp game={game} player={player} sockToken={sockToken} />}
 		</ClientOnly>
 	);
 }

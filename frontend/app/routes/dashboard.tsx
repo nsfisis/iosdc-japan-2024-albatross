@@ -31,8 +31,8 @@ export default function Dashboard() {
 
 	return (
 		<div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
-			<h1 className="text-2xl font-bold mb-4 text-gray-800">
-				<span>{user.display_name}</span>
+			<h1 className="text-2xl font-bold mb-4">
+				<span className="text-gray-800">{user.display_name}</span>
 				<span className="text-gray-500 ml-2">@{user.username}</span>
 			</h1>
 			<h2 className="text-xl font-semibold mb-4 text-gray-700">試合</h2>
