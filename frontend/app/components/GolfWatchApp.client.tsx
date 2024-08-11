@@ -127,7 +127,7 @@ export default function GolfWatchApp({
 						...prev,
 						submitResult: {
 							status: "running",
-							execResults: game.verification_steps.map((r) => ({
+							execResults: game.exec_steps.map((r) => ({
 								testcase_id: r.testcase_id,
 								status: "running",
 								label: r.label,
@@ -217,7 +217,7 @@ export default function GolfWatchApp({
 			}
 		}
 	}, [
-		game.verification_steps,
+		game.exec_steps,
 		game.started_at,
 		lastJsonMessage,
 		readyState,

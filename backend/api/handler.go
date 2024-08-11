@@ -146,12 +146,12 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
 	}
-	verificationSteps := make([]VerificationStep, len(testcaseIDs)+1)
-	verificationSteps[0] = VerificationStep{
+	execSteps := make([]ExecStep, len(testcaseIDs)+1)
+	execSteps[0] = ExecStep{
 		Label: "Compile",
 	}
 	for i, testcaseID := range testcaseIDs {
-		verificationSteps[i+1] = VerificationStep{
+		execSteps[i+1] = ExecStep{
 			TestcaseID: nullable.NewNullableWithValue(int(testcaseID)),
 			Label:      fmt.Sprintf("Testcase %d", i+1),
 		}
@@ -168,8 +168,8 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 			Title:       row.Title,
 			Description: row.Description,
 		},
-		Players:           players,
-		VerificationSteps: verificationSteps,
+		Players:   players,
+		ExecSteps: execSteps,
 	}
 	return GetGame200JSONResponse{
 		Game: game,

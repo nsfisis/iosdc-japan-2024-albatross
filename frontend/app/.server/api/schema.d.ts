@@ -113,9 +113,9 @@ export interface components {
             started_at?: number;
             problem: components["schemas"]["Problem"];
             players: components["schemas"]["User"][];
-            verification_steps: components["schemas"]["VerificationStep"][];
+            exec_steps: components["schemas"]["ExecStep"][];
         };
-        VerificationStep: {
+        ExecStep: {
             /** @example 1 */
             testcase_id: number | null;
             /** @example Test case 1 */

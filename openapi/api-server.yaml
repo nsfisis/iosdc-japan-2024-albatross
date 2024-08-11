@@ -218,10 +218,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/User'
-        verification_steps:
+        exec_steps:
           type: array
           items:
-            $ref: '#/components/schemas/VerificationStep'
+            $ref: '#/components/schemas/ExecStep'
       required:
         - game_id
         - game_type
@@ -230,8 +230,8 @@ components:
         - duration_seconds
         - problem
         - players
-        - verification_steps
-    VerificationStep:
+        - exec_steps
+    ExecStep:
       type: object
       properties:
         testcase_id:
