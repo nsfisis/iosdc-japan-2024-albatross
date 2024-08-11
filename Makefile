@@ -3,7 +3,7 @@ DOCKER_COMPOSE := docker compose -f compose.local.yaml
 all: down build reset up
 
 reset:
-	echo "UPDATE games SET state = 'waiting', started_at = NULL WHERE game_id = 7;" | make psql-query
+	echo "UPDATE games SET state = 'waiting', started_at = NULL WHERE game_id = 1;" | make psql-query
 
 .PHONY: build
 build:

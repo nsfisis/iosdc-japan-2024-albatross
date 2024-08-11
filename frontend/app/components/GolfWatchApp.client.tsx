@@ -246,11 +246,13 @@ export default function GolfWatchApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfWatchAppGaming
+				gameDisplayName={game.display_name}
 				gameDurationSeconds={game.duration_seconds}
 				leftTimeSeconds={leftTimeSeconds!}
 				playerInfoA={playerInfoA}
 				playerInfoB={playerInfoB}
-				problem={game.problem!.description}
+				problemTitle={game.problem.title}
+				problemDescription={game.problem.description}
 			/>
 		);
 	} else if (gameState === "finished") {
