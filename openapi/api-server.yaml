@@ -430,12 +430,8 @@ components:
         player_id:
           type: integer
           example: 1
-        preliminary_score:
-          type: integer
-          example: 100
       required:
         - player_id
-        - preliminary_score
     GameWatcherMessageS2CExecResult:
       type: object
       properties:
@@ -506,8 +502,13 @@ components:
             - runtime_error
             - internal_error
             - compile_error
+        score:
+          type: integer
+          nullable: true
+          example: 100
       required:
         - player_id
         - status
+        - score
     # GameWatcherMessageC2S:
     #   oneOf:

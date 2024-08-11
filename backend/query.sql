@@ -78,6 +78,11 @@ INSERT INTO submissions (game_id, user_id, code, code_size, code_hash)
 VALUES ($1, $2, $3, $4, $5)
 RETURNING submission_id;
 
+-- name: GetSubmissionCodeSizeByID :one
+SELECT code_size FROM submissions
+WHERE submission_id = $1
+LIMIT 1;
+
 -- name: ListTestcasesByGameID :many
 SELECT * FROM testcases
 WHERE testcases.problem_id = (SELECT problem_id FROM games WHERE game_id = $1)

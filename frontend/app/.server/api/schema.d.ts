@@ -203,8 +203,6 @@ export interface components {
         GameWatcherMessageS2CSubmitPayload: {
             /** @example 1 */
             player_id: number;
-            /** @example 100 */
-            preliminary_score: number;
         };
         GameWatcherMessageS2CExecResult: {
             /** @constant */
@@ -239,6 +237,8 @@ export interface components {
              * @enum {string}
              */
             status: "success" | "wrong_answer" | "timeout" | "runtime_error" | "internal_error" | "compile_error";
+            /** @example 100 */
+            score: number | null;
         };
     };
     responses: {

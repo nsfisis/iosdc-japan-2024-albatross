@@ -24,7 +24,6 @@ type SubmissionResult = {
 		| "compile_error"
 		| "runtime_error"
 		| "internal_error";
-	preliminaryScore: number;
 	verificationResults: VerificationResult[];
 };
 
@@ -120,8 +119,7 @@ export default function GolfWatchAppGaming({
 					<div>
 						{submissionResultStatusToLabel(
 							playerInfoA.submissionResult?.status ?? null,
-						)}{" "}
-						({playerInfoA.submissionResult?.preliminaryScore})
+						)}
 					</div>
 					<div>
 						<ol>
@@ -153,8 +151,7 @@ export default function GolfWatchAppGaming({
 					<div>
 						{submissionResultStatusToLabel(
 							playerInfoB.submissionResult?.status ?? null,
-						)}{" "}
-						({playerInfoB.submissionResult?.preliminaryScore ?? "-"})
+						)}
 					</div>
 					<div>
 						<ol>

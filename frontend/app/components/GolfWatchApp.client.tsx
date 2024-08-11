@@ -121,14 +121,13 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => ({ ...prev, code }));
 				} else if (lastJsonMessage.type === "watcher:s2c:submit") {
-					const { player_id, preliminary_score } = lastJsonMessage.data;
+					const { player_id } = lastJsonMessage.data;
 					const setter =
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => ({
 						...prev,
 						submissionResult: {
 							status: "running",
-							preliminaryScore: preliminary_score,
 							verificationResults: game.verification_steps.map((v) => ({
 								testcase_id: v.testcase_id,
 								status: "running",
@@ -165,7 +164,7 @@ export default function GolfWatchApp({
 						return ret;
 					});
 				} else if (lastJsonMessage.type === "watcher:s2c:submitresult") {
-					const { player_id, status } = lastJsonMessage.data;
+					const { player_id, status, score } = lastJsonMessage.data;
 					const setter =
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
@@ -178,11 +177,10 @@ export default function GolfWatchApp({
 							status,
 						};
 						if (status === "success") {
-							if (
-								ret.score === null ||
-								ret.submissionResult.preliminaryScore < ret.score
-							) {
-								ret.score = ret.submissionResult.preliminaryScore;
+							if (score) {
+								if (ret.score === null || score < ret.score) {
+									ret.score = score;
+								}
 							}
 						} else {
 							ret.submissionResult.verificationResults =

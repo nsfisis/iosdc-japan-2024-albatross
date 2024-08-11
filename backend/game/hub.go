@@ -101,8 +101,7 @@ func (hub *gameHub) run() {
 				hub.broadcastToWatchers(&watcherMessageS2CSubmit{
 					Type: watcherMessageTypeS2CSubmit,
 					Data: watcherMessageS2CSubmitPayload{
-						PlayerID:         message.client.playerID,
-						PreliminaryScore: codeSize,
+						PlayerID: message.client.playerID,
 					},
 				})
 			default:
@@ -338,11 +337,19 @@ func (hub *gameHub) processTaskResults() {
 				})
 			}
 			if aggregatedStatus != "running" {
+				var score nullable.Nullable[int]
+				if aggregatedStatus == "success" {
+					codeSize, err := hub.q.GetSubmissionCodeSizeByID(hub.ctx, int32(taskResult.TaskPayload.SubmissionID))
+					if err == nil {
+						score = nullable.NewNullableWithValue(int(codeSize))
+					}
+				}
 				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
 					Type: watcherMessageTypeS2CSubmitResult,
 					Data: watcherMessageS2CSubmitResultPayload{
 						PlayerID: taskResult.TaskPayload.UserID(),
 						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(aggregatedStatus),
+						Score:    score,
 					},
 				})
 			}
