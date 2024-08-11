@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -86,7 +87,7 @@ func (hub *gameHub) run() {
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
-				codeSize := len(code) // TODO: exclude whitespaces.
+				codeSize := calcCodeSize(code)
 				codeHash := calcHash(code)
 				if err := hub.taskQueue.EnqueueTaskCreateSubmissionRecord(
 					hub.game.gameID,
@@ -662,4 +663,9 @@ func isTestcaseResultCorrect(expectedStdout, actualStdout string) bool {
 
 func calcHash(code string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(code)))
+}
+
+func calcCodeSize(code string) int {
+	re := regexp.MustCompile(`\s+`)
+	return len(re.ReplaceAllString(code, ""))
 }
