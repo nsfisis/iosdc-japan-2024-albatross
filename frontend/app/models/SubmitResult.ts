@@ -1,6 +1,6 @@
-import type { VerificationResult } from "./VerificationResult";
+import type { ExecResult } from "./ExecResult";
 
-export type SubmissionResultStatus =
+export type SubmitResultStatus =
 	| "running"
 	| "success"
 	| "wrong_answer"
@@ -9,14 +9,12 @@ export type SubmissionResultStatus =
 	| "runtime_error"
 	| "internal_error";
 
-export type SubmissionResult = {
-	status: SubmissionResultStatus;
-	verificationResults: VerificationResult[];
+export type SubmitResult = {
+	status: SubmitResultStatus;
+	execResults: ExecResult[];
 };
 
-export function submissionResultStatusToLabel(
-	status: SubmissionResultStatus | null,
-) {
+export function submitResultStatusToLabel(status: SubmitResultStatus | null) {
 	switch (status) {
 		case null:
 			return "-";

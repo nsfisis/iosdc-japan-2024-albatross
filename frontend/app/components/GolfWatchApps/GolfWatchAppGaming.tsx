@@ -1,5 +1,5 @@
 import { PlayerInfo } from "../../models/PlayerInfo";
-import { submissionResultStatusToLabel } from "../../models/SubmissionResult";
+import { submitResultStatusToLabel } from "../../models/SubmitResult";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
 
 type Props = {
@@ -60,28 +60,26 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submissionResultStatusToLabel(
-							playerInfoA.submissionResult?.status ?? null,
+						{submitResultStatusToLabel(
+							playerInfoA.submitResult?.status ?? null,
 						)}
 					</div>
 					<div>
 						<ol>
-							{playerInfoA.submissionResult?.verificationResults.map(
-								(result) => (
-									<li key={result.testcase_id ?? -1}>
+							{playerInfoA.submitResult?.execResults.map((result) => (
+								<li key={result.testcase_id ?? -1}>
+									<div>
 										<div>
-											<div>
-												<ExecStatusIndicatorIcon status={result.status} />{" "}
-												{result.label}
-											</div>
-											<div>
-												{result.stdout}
-												{result.stderr}
-											</div>
+											<ExecStatusIndicatorIcon status={result.status} />{" "}
+											{result.label}
 										</div>
-									</li>
-								),
-							)}
+										<div>
+											{result.stdout}
+											{result.stderr}
+										</div>
+									</div>
+								</li>
+							))}
 						</ol>
 					</div>
 				</div>
@@ -92,28 +90,26 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submissionResultStatusToLabel(
-							playerInfoB.submissionResult?.status ?? null,
+						{submitResultStatusToLabel(
+							playerInfoB.submitResult?.status ?? null,
 						)}
 					</div>
 					<div>
 						<ol>
-							{playerInfoB.submissionResult?.verificationResults.map(
-								(result, idx) => (
-									<li key={idx}>
+							{playerInfoB.submitResult?.execResults.map((result, idx) => (
+								<li key={idx}>
+									<div>
 										<div>
-											<div>
-												<ExecStatusIndicatorIcon status={result.status} />{" "}
-												{result.label}
-											</div>
-											<div>
-												{result.stdout}
-												{result.stderr}
-											</div>
+											<ExecStatusIndicatorIcon status={result.status} />{" "}
+											{result.label}
 										</div>
-									</li>
-								),
-							)}
+										<div>
+											{result.stdout}
+											{result.stderr}
+										</div>
+									</div>
+								</li>
+							))}
 						</ol>
 					</div>
 				</div>

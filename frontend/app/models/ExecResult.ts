@@ -1,4 +1,4 @@
-export type VerificationResultStatus =
+export type ExecResultStatus =
 	| "running"
 	| "success"
 	| "wrong_answer"
@@ -8,9 +8,9 @@ export type VerificationResultStatus =
 	| "internal_error"
 	| "canceled";
 
-export type VerificationResult = {
+export type ExecResult = {
 	testcase_id: number | null;
-	status: VerificationResultStatus;
+	status: ExecResultStatus;
 	label: string;
 	stdout: string;
 	stderr: string;

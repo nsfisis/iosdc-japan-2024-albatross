@@ -78,14 +78,14 @@ export default function GolfWatchApp({
 		iconPath: playerA?.icon_path ?? null,
 		score: null,
 		code: "",
-		submissionResult: undefined,
+		submitResult: undefined,
 	});
 	const [playerInfoB, setPlayerInfoB] = useState<PlayerInfo>({
 		displayName: playerB?.display_name ?? null,
 		iconPath: playerB?.icon_path ?? null,
 		score: null,
 		code: "",
-		submissionResult: undefined,
+		submitResult: undefined,
 	});
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -125,12 +125,12 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => ({
 						...prev,
-						submissionResult: {
+						submitResult: {
 							status: "running",
-							verificationResults: game.verification_steps.map((v) => ({
-								testcase_id: v.testcase_id,
+							execResults: game.verification_steps.map((r) => ({
+								testcase_id: r.testcase_id,
 								status: "running",
-								label: v.label,
+								label: r.label,
 								stdout: "",
 								stderr: "",
 							})),
@@ -143,21 +143,20 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submissionResult === undefined) {
+						if (ret.submitResult === undefined) {
 							return ret;
 						}
-						ret.submissionResult = {
-							...ret.submissionResult,
-							verificationResults: ret.submissionResult.verificationResults.map(
-								(v) =>
-									v.testcase_id === testcase_id && v.status === "running"
-										? {
-												...v,
-												status,
-												stdout,
-												stderr,
-											}
-										: v,
+						ret.submitResult = {
+							...ret.submitResult,
+							execResults: ret.submitResult.execResults.map((r) =>
+								r.testcase_id === testcase_id && r.status === "running"
+									? {
+											...r,
+											status,
+											stdout,
+											stderr,
+										}
+									: r,
 							),
 						};
 						return ret;
@@ -168,11 +167,11 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submissionResult === undefined) {
+						if (ret.submitResult === undefined) {
 							return ret;
 						}
-						ret.submissionResult = {
-							...ret.submissionResult,
+						ret.submitResult = {
+							...ret.submitResult,
 							status,
 						};
 						if (status === "success") {
@@ -182,10 +181,10 @@ export default function GolfWatchApp({
 								}
 							}
 						} else {
-							ret.submissionResult.verificationResults =
-								ret.submissionResult.verificationResults.map((v) =>
-									v.status === "running" ? { ...v, status: "canceled" } : v,
-								);
+							ret.submitResult.execResults = ret.submitResult.execResults.map(
+								(r) =>
+									r.status === "running" ? { ...r, status: "canceled" } : r,
+							);
 						}
 						return ret;
 					});
