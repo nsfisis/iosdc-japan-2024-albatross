@@ -38,34 +38,40 @@ export default function Dashboard() {
 			<h2 className="text-xl font-semibold mb-4 text-gray-700">試合</h2>
 			<BorderedContainer>
 				<div className="px-4">
-					<ul className="divide-y">
-						{games.map((game) => (
-							<li
-								key={game.game_id}
-								className="flex justify-between items-center py-3 gap-3"
-							>
-								<div>
-									<span className="font-medium text-gray-800">
-										{game.display_name}
-									</span>
-									<span className="text-sm text-gray-500 ml-2">
-										{game.game_type === "multiplayer" ? " (マルチ)" : " (1v1)"}
-									</span>
-								</div>
-								<span>
-									{game.state === "closed" || game.state === "finished" ? (
-										<span className="text-lg text-gray-400 bg-gray-200 px-4 py-2 rounded">
-											入室
+					{games.length === 0 ? (
+						<p>エントリーしている試合はありません</p>
+					) : (
+						<ul className="divide-y">
+							{games.map((game) => (
+								<li
+									key={game.game_id}
+									className="flex justify-between items-center py-3 gap-3"
+								>
+									<div>
+										<span className="font-medium text-gray-800">
+											{game.display_name}
 										</span>
-									) : (
-										<NavigateLink to={`/golf/${game.game_id}/play`}>
-											入室
-										</NavigateLink>
-									)}
-								</span>
-							</li>
-						))}
-					</ul>
+										<span className="text-sm text-gray-500 ml-2">
+											{game.game_type === "multiplayer"
+												? " (マルチ)"
+												: " (1v1)"}
+										</span>
+									</div>
+									<span>
+										{game.state === "closed" || game.state === "finished" ? (
+											<span className="text-lg text-gray-400 bg-gray-200 px-4 py-2 rounded">
+												入室
+											</span>
+										) : (
+											<NavigateLink to={`/golf/${game.game_id}/play`}>
+												入室
+											</NavigateLink>
+										)}
+									</span>
+								</li>
+							))}
+						</ul>
+					)}
 				</div>
 			</BorderedContainer>
 			<div className="mt-6">
