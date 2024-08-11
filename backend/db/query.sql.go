@@ -136,7 +136,7 @@ func (q *Queries) CreateUserAuth(ctx context.Context, arg CreateUserAuthParams) 
 
 const getGameByID = `-- name: GetGameByID :one
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1
 `
@@ -149,10 +149,10 @@ type GetGameByIDRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       *int32
-	ProblemID_2     *int32
-	Title           *string
-	Description     *string
+	ProblemID       int32
+	ProblemID_2     int32
+	Title           string
+	Description     string
 }
 
 func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow, error) {
@@ -295,7 +295,7 @@ func (q *Queries) ListGamePlayers(ctx context.Context, gameID int32) ([]ListGame
 
 const listGames = `-- name: ListGames :many
 SELECT game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 ORDER BY games.game_id
 `
 
@@ -307,10 +307,10 @@ type ListGamesRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       *int32
-	ProblemID_2     *int32
-	Title           *string
-	Description     *string
+	ProblemID       int32
+	ProblemID_2     int32
+	Title           string
+	Description     string
 }
 
 func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
@@ -347,7 +347,7 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 
 const listGamesForPlayer = `-- name: ListGamesForPlayer :many
 SELECT games.game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
 WHERE game_players.user_id = $1
 ORDER BY games.game_id
@@ -361,10 +361,10 @@ type ListGamesForPlayerRow struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       *int32
-	ProblemID_2     *int32
-	Title           *string
-	Description     *string
+	ProblemID       int32
+	ProblemID_2     int32
+	Title           string
+	Description     string
 	GameID_2        int32
 	UserID          int32
 }
@@ -511,7 +511,7 @@ type UpdateGameParams struct {
 	DisplayName     string
 	DurationSeconds int32
 	StartedAt       pgtype.Timestamp
-	ProblemID       *int32
+	ProblemID       int32
 }
 
 func (q *Queries) UpdateGame(ctx context.Context, arg UpdateGameParams) error {

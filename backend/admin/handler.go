@@ -196,16 +196,14 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 	if err != nil {
 		return echo.NewHTTPError(http.StatusBadRequest, "Invalid duration_seconds")
 	}
-	var problemID *int
+	var problemID int
 	{
 		problemIDRaw := c.FormValue("problem_id")
-		if problemIDRaw != "" {
-			problemIDInt, err := strconv.Atoi(problemIDRaw)
-			if err != nil {
-				return echo.NewHTTPError(http.StatusBadRequest, "Invalid problem_id")
-			}
-			problemID = &problemIDInt
+		problemIDInt, err := strconv.Atoi(problemIDRaw)
+		if err != nil {
+			return echo.NewHTTPError(http.StatusBadRequest, "Invalid problem_id")
 		}
+		problemID = problemIDInt
 	}
 	var startedAt *time.Time
 	{
@@ -230,13 +228,6 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 			Valid: true,
 		}
 	}
-	var changedProblemID *int32
-	if problemID == nil {
-		changedProblemID = nil
-	} else {
-		changedProblemID = new(int32)
-		*changedProblemID = int32(*problemID)
-	}
 
 	{
 		// TODO:
@@ -255,7 +246,7 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 		DisplayName:     displayName,
 		DurationSeconds: int32(durationSeconds),
 		StartedAt:       changedStartedAt,
-		ProblemID:       changedProblemID,
+		ProblemID:       int32(problemID),
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())

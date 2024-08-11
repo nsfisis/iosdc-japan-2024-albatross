@@ -89,16 +89,10 @@ func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *a
 			startedAtTimestamp := int(row.StartedAt.Time.Unix())
 			startedAt = &startedAtTimestamp
 		}
-		var problem *Problem
-		if row.ProblemID != nil {
-			if row.Title == nil || row.Description == nil {
-				panic("inconsistent data")
-			}
-			problem = &Problem{
-				ProblemID:   int(*row.ProblemID),
-				Title:       *row.Title,
-				Description: *row.Description,
-			}
+		problem := &Problem{
+			ProblemID:   int(row.ProblemID),
+			Title:       row.Title,
+			Description: row.Description,
 		}
 		games[i] = Game{
 			GameID:          int(row.GameID),
@@ -135,16 +129,11 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 		startedAt = &startedAtTimestamp
 	}
 	var problem *Problem
-	if row.ProblemID != nil {
-		if row.Title == nil || row.Description == nil {
-			panic("inconsistent data")
-		}
-		if user.IsAdmin || (GameState(row.State) != Closed && GameState(row.State) != WaitingEntries) {
-			problem = &Problem{
-				ProblemID:   int(*row.ProblemID),
-				Title:       *row.Title,
-				Description: *row.Description,
-			}
+	if user.IsAdmin || (GameState(row.State) != Closed && GameState(row.State) != WaitingEntries) {
+		problem = &Problem{
+			ProblemID:   int(row.ProblemID),
+			Title:       row.Title,
+			Description: row.Description,
 		}
 	}
 	playerRows, err := h.q.ListGamePlayers(ctx, int32(gameID))
