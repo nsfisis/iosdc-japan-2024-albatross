@@ -5,5 +5,5 @@ export type PlayerInfo = {
 	iconPath: string | null;
 	score: number | null;
 	code: string | null;
-	submitResult?: SubmitResult;
+	submitResult: SubmitResult;
 };

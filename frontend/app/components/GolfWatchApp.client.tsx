@@ -78,14 +78,32 @@ export default function GolfWatchApp({
 		iconPath: playerA?.icon_path ?? null,
 		score: null,
 		code: "",
-		submitResult: undefined,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
 	});
 	const [playerInfoB, setPlayerInfoB] = useState<PlayerInfo>({
 		displayName: playerB?.display_name ?? null,
 		iconPath: playerB?.icon_path ?? null,
 		score: null,
 		code: "",
-		submitResult: undefined,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
 	});
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -127,10 +145,9 @@ export default function GolfWatchApp({
 						...prev,
 						submitResult: {
 							status: "running",
-							execResults: game.exec_steps.map((r) => ({
-								testcase_id: r.testcase_id,
+							execResults: prev.submitResult.execResults.map((r) => ({
+								...r,
 								status: "running",
-								label: r.label,
 								stdout: "",
 								stderr: "",
 							})),
@@ -143,9 +160,6 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submitResult === undefined) {
-							return ret;
-						}
 						ret.submitResult = {
 							...ret.submitResult,
 							execResults: ret.submitResult.execResults.map((r) =>
@@ -167,9 +181,6 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submitResult === undefined) {
-							return ret;
-						}
 						ret.submitResult = {
 							...ret.submitResult,
 							status,
@@ -217,7 +228,6 @@ export default function GolfWatchApp({
 			}
 		}
 	}, [
-		game.exec_steps,
 		game.started_at,
 		lastJsonMessage,
 		readyState,

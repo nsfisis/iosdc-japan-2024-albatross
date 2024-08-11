@@ -6,6 +6,8 @@ type Props = {
 
 export default function SubmitStatusLabel({ status }: Props) {
 	switch (status) {
+		case "waiting_submission":
+			return <span>-</span>;
 		case "running":
 			return <span>Running...</span>;
 		case "success":

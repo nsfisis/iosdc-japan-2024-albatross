@@ -1,6 +1,7 @@
 import type { ExecResult } from "./ExecResult";
 
 export type SubmitResultStatus =
+	| "waiting_submission"
 	| "running"
 	| "success"
 	| "wrong_answer"

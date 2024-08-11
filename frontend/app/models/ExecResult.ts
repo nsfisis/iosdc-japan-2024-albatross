@@ -1,4 +1,5 @@
 export type ExecResultStatus =
+	| "waiting_submission"
 	| "running"
 	| "success"
 	| "wrong_answer"

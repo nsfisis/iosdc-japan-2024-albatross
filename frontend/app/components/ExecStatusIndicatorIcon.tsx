@@ -1,5 +1,6 @@
 import {
 	faBan,
+	faCircle,
 	faCircleCheck,
 	faCircleExclamation,
 	faRotate,
@@ -13,6 +14,10 @@ type Props = {
 
 export default function ExecStatusIndicatorIcon({ status }: Props) {
 	switch (status) {
+		case "waiting_submission":
+			return (
+				<FontAwesomeIcon icon={faCircle} fixedWidth className="text-gray-400" />
+			);
 		case "running":
 			return (
 				<FontAwesomeIcon

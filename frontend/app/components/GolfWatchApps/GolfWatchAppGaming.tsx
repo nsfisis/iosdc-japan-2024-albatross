@@ -60,11 +60,7 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{playerInfoA.submitResult?.status ? (
-							<SubmitStatusLabel status={playerInfoA.submitResult?.status} />
-						) : (
-							<span>-</span>
-						)}
+						<SubmitStatusLabel status={playerInfoA.submitResult.status} />
 					</div>
 					<div>
 						<ol>
@@ -92,11 +88,7 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{playerInfoB.submitResult?.status ? (
-							<SubmitStatusLabel status={playerInfoB.submitResult?.status} />
-						) : (
-							<span>-</span>
-						)}
+						<SubmitStatusLabel status={playerInfoB.submitResult.status} />
 					</div>
 					<div>
 						<ol>
