@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
+import type { PlayerInfo } from "../models/PlayerInfo";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
 import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
@@ -73,9 +74,21 @@ export default function GolfPlayApp({
 		}
 	}, [gameState, startedAt, game.duration_seconds]);
 
-	const [currentScore, setCurrentScore] = useState<number | null>(null);
-
-	const [lastExecStatus, setLastExecStatus] = useState<string | null>(null);
+	const [playerInfo, setPlayerInfo] = useState<Omit<PlayerInfo, "code">>({
+		displayName: player.display_name,
+		iconPath: player.icon_path ?? null,
+		score: null,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
+	});
 
 	const onCodeChange = useDebouncedCallback((code: string) => {
 		console.log("player:c2s:code");
@@ -94,6 +107,18 @@ export default function GolfPlayApp({
 			type: "player:c2s:submit",
 			data: { code },
 		});
+		setPlayerInfo((prev) => ({
+			...prev,
+			submitResult: {
+				status: "running",
+				execResults: prev.submitResult.execResults.map((r) => ({
+					...r,
+					status: "running",
+					stdout: "",
+					stderr: "",
+				})),
+			},
+		}));
 	}, 1000);
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -123,14 +148,46 @@ export default function GolfPlayApp({
 						setGameState("starting");
 					}
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
+					const { testcase_id, status, stdout, stderr } = lastJsonMessage.data;
+					setPlayerInfo((prev) => {
+						const ret = { ...prev };
+						ret.submitResult = {
+							...prev.submitResult,
+							execResults: prev.submitResult.execResults.map((r) =>
+								r.testcase_id === testcase_id && r.status === "running"
+									? {
+											...r,
+											status,
+											stdout,
+											stderr,
+										}
+									: r,
+							),
+						};
+						return ret;
+					});
+				} else if (lastJsonMessage.type === "player:s2c:submitresult") {
 					const { status, score } = lastJsonMessage.data;
-					if (
-						score !== null &&
-						(currentScore === null || score < currentScore)
-					) {
-						setCurrentScore(score);
-					}
-					setLastExecStatus(status);
+					setPlayerInfo((prev) => {
+						const ret = { ...prev };
+						ret.submitResult = {
+							...prev.submitResult,
+							status,
+						};
+						if (status === "success") {
+							if (score) {
+								if (ret.score === null || score < ret.score) {
+									ret.score = score;
+								}
+							}
+						} else {
+							ret.submitResult.execResults = prev.submitResult.execResults.map(
+								(r) =>
+									r.status === "running" ? { ...r, status: "canceled" } : r,
+							);
+						}
+						return ret;
+					});
 				}
 			} else {
 				if (game.started_at) {
@@ -165,7 +222,6 @@ export default function GolfPlayApp({
 		lastJsonMessage,
 		readyState,
 		gameState,
-		currentScore,
 	]);
 
 	if (gameState === "connecting") {
@@ -178,13 +234,11 @@ export default function GolfPlayApp({
 		return (
 			<GolfPlayAppGaming
 				gameDisplayName={game.display_name}
-				playerDisplayName={player.display_name}
+				playerInfo={playerInfo}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
 				onCodeChange={onCodeChange}
 				onCodeSubmit={onCodeSubmit}
-				currentScore={currentScore}
-				lastExecStatus={lastExecStatus}
 			/>
 		);
 	} else if (gameState === "finished") {

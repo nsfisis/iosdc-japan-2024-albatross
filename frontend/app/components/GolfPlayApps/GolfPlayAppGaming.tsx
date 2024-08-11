@@ -1,28 +1,25 @@
 import { Link } from "@remix-run/react";
 import React, { useRef } from "react";
 import SubmitButton from "../../components/SubmitButton";
+import type { PlayerInfo } from "../../models/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
 
 type Props = {
 	gameDisplayName: string;
-	playerDisplayName: string;
+	playerInfo: Omit<PlayerInfo, "code">;
 	problemTitle: string;
 	problemDescription: string;
 	onCodeChange: (code: string) => void;
 	onCodeSubmit: (code: string) => void;
-	currentScore: number | null;
-	lastExecStatus: string | null;
 };
 
 export default function GolfPlayAppGaming({
 	gameDisplayName,
-	playerDisplayName,
+	playerInfo,
 	problemTitle,
 	problemDescription,
 	onCodeChange,
 	onCodeSubmit,
-	currentScore,
-	lastExecStatus,
 }: Props) {
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -45,7 +42,7 @@ export default function GolfPlayAppGaming({
 				</div>
 				<div>
 					<Link to={"/dashboard"} className="font-bold text-xl">
-						{playerDisplayName}
+						{playerInfo.displayName}
 					</Link>
 				</div>
 			</div>
@@ -69,7 +66,7 @@ export default function GolfPlayAppGaming({
 					<SubmitButton onClick={handleSubmitButtonClick}>提出</SubmitButton>
 					<div className="mb-2 mt-auto">
 						<div className="font-semibold text-green-500">
-							Score: {currentScore ?? "-"} ({lastExecStatus ?? "-"})
+							Score: {playerInfo.score ?? "-"}
 						</div>
 					</div>
 				</div>

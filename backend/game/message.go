@@ -8,10 +8,11 @@ import (
 )
 
 const (
-	playerMessageTypeS2CStart      = "player:s2c:start"
-	playerMessageTypeS2CExecResult = "player:s2c:execresult"
-	playerMessageTypeC2SCode       = "player:c2s:code"
-	playerMessageTypeC2SSubmit     = "player:c2s:submit"
+	playerMessageTypeS2CStart        = "player:s2c:start"
+	playerMessageTypeS2CExecResult   = "player:s2c:execresult"
+	playerMessageTypeS2CSubmitResult = "player:s2c:submitresult"
+	playerMessageTypeC2SCode         = "player:c2s:code"
+	playerMessageTypeC2SSubmit       = "player:c2s:submit"
 )
 
 type playerMessageC2SWithClient struct {
@@ -24,6 +25,8 @@ type playerMessageS2CStart = api.GamePlayerMessageS2CStart
 type playerMessageS2CStartPayload = api.GamePlayerMessageS2CStartPayload
 type playerMessageS2CExecResult = api.GamePlayerMessageS2CExecResult
 type playerMessageS2CExecResultPayload = api.GamePlayerMessageS2CExecResultPayload
+type playerMessageS2CSubmitResult = api.GamePlayerMessageS2CSubmitResult
+type playerMessageS2CSubmitResultPayload = api.GamePlayerMessageS2CSubmitResultPayload
 
 type playerMessageC2S = interface{}
 type playerMessageC2SCode = api.GamePlayerMessageC2SCode

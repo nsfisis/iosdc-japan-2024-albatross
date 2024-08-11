@@ -161,8 +161,8 @@ export default function GolfWatchApp({
 					setter((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
-							...ret.submitResult,
-							execResults: ret.submitResult.execResults.map((r) =>
+							...prev.submitResult,
+							execResults: prev.submitResult.execResults.map((r) =>
 								r.testcase_id === testcase_id && r.status === "running"
 									? {
 											...r,
@@ -182,7 +182,7 @@ export default function GolfWatchApp({
 					setter((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
-							...ret.submitResult,
+							...prev.submitResult,
 							status,
 						};
 						if (status === "success") {
@@ -192,7 +192,7 @@ export default function GolfWatchApp({
 								}
 							}
 						} else {
-							ret.submitResult.execResults = ret.submitResult.execResults.map(
+							ret.submitResult.execResults = prev.submitResult.execResults.map(
 								(r) =>
 									r.status === "running" ? { ...r, status: "canceled" } : r,
 							);

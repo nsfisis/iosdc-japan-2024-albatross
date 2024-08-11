@@ -130,7 +130,7 @@ export interface components {
             description: string;
         };
         GamePlayerMessage: components["schemas"]["GamePlayerMessageS2C"] | components["schemas"]["GamePlayerMessageC2S"];
-        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"];
+        GamePlayerMessageS2C: components["schemas"]["GamePlayerMessageS2CStart"] | components["schemas"]["GamePlayerMessageS2CExecResult"] | components["schemas"]["GamePlayerMessageS2CSubmitResult"];
         GamePlayerMessageS2CStart: {
             /** @constant */
             type: "player:s2c:start";
@@ -146,11 +146,29 @@ export interface components {
             data: components["schemas"]["GamePlayerMessageS2CExecResultPayload"];
         };
         GamePlayerMessageS2CExecResultPayload: {
+            /** @example 1 */
+            testcase_id: number | null;
             /**
              * @example success
              * @enum {string}
              */
-            status: "success" | "failure" | "timeout" | "internal_error" | "compile_error" | "wrong_answer";
+            status: "success" | "wrong_answer" | "timeout" | "runtime_error" | "internal_error" | "compile_error";
+            /** @example Hello, world! */
+            stdout: string;
+            /** @example  */
+            stderr: string;
+        };
+        GamePlayerMessageS2CSubmitResult: {
+            /** @constant */
+            type: "player:s2c:submitresult";
+            data: components["schemas"]["GamePlayerMessageS2CSubmitResultPayload"];
+        };
+        GamePlayerMessageS2CSubmitResultPayload: {
+            /**
+             * @example success
+             * @enum {string}
+             */
+            status: "success" | "wrong_answer" | "timeout" | "runtime_error" | "internal_error" | "compile_error";
             /** @example 100 */
             score: number | null;
         };

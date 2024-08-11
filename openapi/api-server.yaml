@@ -268,6 +268,7 @@ components:
       oneOf:
         - $ref: '#/components/schemas/GamePlayerMessageS2CStart'
         - $ref: '#/components/schemas/GamePlayerMessageS2CExecResult'
+        - $ref: '#/components/schemas/GamePlayerMessageS2CSubmitResult'
     GamePlayerMessageS2CStart:
       type: object
       properties:
@@ -301,16 +302,55 @@ components:
     GamePlayerMessageS2CExecResultPayload:
       type: object
       properties:
+        testcase_id:
+          type: integer
+          nullable: true
+          example: 1
         status:
           type: string
           example: "success"
           enum:
             - success
-            - failure
+            - wrong_answer
             - timeout
+            - runtime_error
             - internal_error
             - compile_error
+        stdout:
+          type: string
+          example: "Hello, world!"
+        stderr:
+          type: string
+          example: ""
+      required:
+        - testcase_id
+        - status
+        - stdout
+        - stderr
+    GamePlayerMessageS2CSubmitResult:
+      type: object
+      properties:
+        type:
+          type: string
+          const: "player:s2c:submitresult"
+        data:
+          $ref: '#/components/schemas/GamePlayerMessageS2CSubmitResultPayload'
+      required:
+        - type
+        - data
+    GamePlayerMessageS2CSubmitResultPayload:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+          enum:
+            - success
             - wrong_answer
+            - timeout
+            - runtime_error
+            - internal_error
+            - compile_error
         score:
           type: integer
           nullable: true

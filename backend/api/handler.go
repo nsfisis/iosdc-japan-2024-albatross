@@ -148,7 +148,8 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 	}
 	execSteps := make([]ExecStep, len(testcaseIDs)+1)
 	execSteps[0] = ExecStep{
-		Label: "Compile",
+		TestcaseID: nullable.NewNullNullable[int](),
+		Label:      "Compile",
 	}
 	for i, testcaseID := range testcaseIDs {
 		execSteps[i+1] = ExecStep{

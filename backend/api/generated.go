@@ -40,11 +40,21 @@ const (
 // Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
 const (
 	GamePlayerMessageS2CExecResultPayloadStatusCompileError  GamePlayerMessageS2CExecResultPayloadStatus = "compile_error"
-	GamePlayerMessageS2CExecResultPayloadStatusFailure       GamePlayerMessageS2CExecResultPayloadStatus = "failure"
 	GamePlayerMessageS2CExecResultPayloadStatusInternalError GamePlayerMessageS2CExecResultPayloadStatus = "internal_error"
+	GamePlayerMessageS2CExecResultPayloadStatusRuntimeError  GamePlayerMessageS2CExecResultPayloadStatus = "runtime_error"
 	GamePlayerMessageS2CExecResultPayloadStatusSuccess       GamePlayerMessageS2CExecResultPayloadStatus = "success"
 	GamePlayerMessageS2CExecResultPayloadStatusTimeout       GamePlayerMessageS2CExecResultPayloadStatus = "timeout"
 	GamePlayerMessageS2CExecResultPayloadStatusWrongAnswer   GamePlayerMessageS2CExecResultPayloadStatus = "wrong_answer"
+)
+
+// Defines values for GamePlayerMessageS2CSubmitResultPayloadStatus.
+const (
+	GamePlayerMessageS2CSubmitResultPayloadStatusCompileError  GamePlayerMessageS2CSubmitResultPayloadStatus = "compile_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusInternalError GamePlayerMessageS2CSubmitResultPayloadStatus = "internal_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusRuntimeError  GamePlayerMessageS2CSubmitResultPayloadStatus = "runtime_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusSuccess       GamePlayerMessageS2CSubmitResultPayloadStatus = "success"
+	GamePlayerMessageS2CSubmitResultPayloadStatusTimeout       GamePlayerMessageS2CSubmitResultPayloadStatus = "timeout"
+	GamePlayerMessageS2CSubmitResultPayloadStatusWrongAnswer   GamePlayerMessageS2CSubmitResultPayloadStatus = "wrong_answer"
 )
 
 // Defines values for GameWatcherMessageS2CExecResultPayloadStatus.
@@ -59,12 +69,12 @@ const (
 
 // Defines values for GameWatcherMessageS2CSubmitResultPayloadStatus.
 const (
-	CompileError  GameWatcherMessageS2CSubmitResultPayloadStatus = "compile_error"
-	InternalError GameWatcherMessageS2CSubmitResultPayloadStatus = "internal_error"
-	RuntimeError  GameWatcherMessageS2CSubmitResultPayloadStatus = "runtime_error"
-	Success       GameWatcherMessageS2CSubmitResultPayloadStatus = "success"
-	Timeout       GameWatcherMessageS2CSubmitResultPayloadStatus = "timeout"
-	WrongAnswer   GameWatcherMessageS2CSubmitResultPayloadStatus = "wrong_answer"
+	GameWatcherMessageS2CSubmitResultPayloadStatusCompileError  GameWatcherMessageS2CSubmitResultPayloadStatus = "compile_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusInternalError GameWatcherMessageS2CSubmitResultPayloadStatus = "internal_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusRuntimeError  GameWatcherMessageS2CSubmitResultPayloadStatus = "runtime_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusSuccess       GameWatcherMessageS2CSubmitResultPayloadStatus = "success"
+	GameWatcherMessageS2CSubmitResultPayloadStatusTimeout       GameWatcherMessageS2CSubmitResultPayloadStatus = "timeout"
+	GameWatcherMessageS2CSubmitResultPayloadStatusWrongAnswer   GameWatcherMessageS2CSubmitResultPayloadStatus = "wrong_answer"
 )
 
 // Error defines model for Error.
@@ -142,8 +152,10 @@ type GamePlayerMessageS2CExecResult struct {
 
 // GamePlayerMessageS2CExecResultPayload defines model for GamePlayerMessageS2CExecResultPayload.
 type GamePlayerMessageS2CExecResultPayload struct {
-	Score  nullable.Nullable[int]                      `json:"score"`
-	Status GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
+	Status     GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
+	Stderr     string                                      `json:"stderr"`
+	Stdout     string                                      `json:"stdout"`
+	TestcaseID nullable.Nullable[int]                      `json:"testcase_id"`
 }
 
 // GamePlayerMessageS2CExecResultPayloadStatus defines model for GamePlayerMessageS2CExecResultPayload.Status.
@@ -159,6 +171,21 @@ type GamePlayerMessageS2CStart struct {
 type GamePlayerMessageS2CStartPayload struct {
 	StartAt int `json:"start_at"`
 }
+
+// GamePlayerMessageS2CSubmitResult defines model for GamePlayerMessageS2CSubmitResult.
+type GamePlayerMessageS2CSubmitResult struct {
+	Data GamePlayerMessageS2CSubmitResultPayload `json:"data"`
+	Type string                                  `json:"type"`
+}
+
+// GamePlayerMessageS2CSubmitResultPayload defines model for GamePlayerMessageS2CSubmitResultPayload.
+type GamePlayerMessageS2CSubmitResultPayload struct {
+	Score  nullable.Nullable[int]                        `json:"score"`
+	Status GamePlayerMessageS2CSubmitResultPayloadStatus `json:"status"`
+}
+
+// GamePlayerMessageS2CSubmitResultPayloadStatus defines model for GamePlayerMessageS2CSubmitResultPayload.Status.
+type GamePlayerMessageS2CSubmitResultPayloadStatus string
 
 // GameWatcherMessage defines model for GameWatcherMessage.
 type GameWatcherMessage struct {
@@ -463,6 +490,32 @@ func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CExecResult(v GamePlayerMe
 
 // MergeGamePlayerMessageS2CExecResult performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CExecResult
 func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CExecResult(v GamePlayerMessageS2CExecResult) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageS2CSubmitResult returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CSubmitResult
+func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CSubmitResult() (GamePlayerMessageS2CSubmitResult, error) {
+	var body GamePlayerMessageS2CSubmitResult
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2CSubmitResult overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CSubmitResult
+func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CSubmitResult(v GamePlayerMessageS2CSubmitResult) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2CSubmitResult performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CSubmitResult
+func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CSubmitResult(v GamePlayerMessageS2CSubmitResult) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1108,33 +1161,33 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
-	"/UzJPYQeNuY8CzBN0/TfAAAA//9NY96x1CQAAA==",
+	"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",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file
