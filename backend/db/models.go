@@ -16,7 +16,7 @@ type Game struct {
 	DurationSeconds int32
 	CreatedAt       pgtype.Timestamp
 	StartedAt       pgtype.Timestamp
-	ProblemID       *int32
+	ProblemID       int32
 }
 
 type GamePlayer struct {

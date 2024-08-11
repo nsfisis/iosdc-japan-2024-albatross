@@ -89,17 +89,6 @@ func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *a
 			startedAtTimestamp := int(row.StartedAt.Time.Unix())
 			startedAt = &startedAtTimestamp
 		}
-		var problem *Problem
-		if row.ProblemID != nil {
-			if row.Title == nil || row.Description == nil {
-				panic("inconsistent data")
-			}
-			problem = &Problem{
-				ProblemID:   int(*row.ProblemID),
-				Title:       *row.Title,
-				Description: *row.Description,
-			}
-		}
 		games[i] = Game{
 			GameID:          int(row.GameID),
 			GameType:        GameGameType(row.GameType),
@@ -107,7 +96,11 @@ func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *a
 			DisplayName:     row.DisplayName,
 			DurationSeconds: int(row.DurationSeconds),
 			StartedAt:       startedAt,
-			Problem:         problem,
+			Problem: Problem{
+				ProblemID:   int(row.ProblemID),
+				Title:       row.Title,
+				Description: row.Description,
+			},
 		}
 	}
 	return GetGames200JSONResponse{
@@ -117,6 +110,7 @@ func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *a
 
 func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, user *auth.JWTClaims) (GetGameResponseObject, error) {
 	// TODO: check user permission
+	_ = user
 	gameID := request.GameID
 	row, err := h.q.GetGameByID(ctx, int32(gameID))
 	if err != nil {
@@ -133,19 +127,6 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 	if row.StartedAt.Valid {
 		startedAtTimestamp := int(row.StartedAt.Time.Unix())
 		startedAt = &startedAtTimestamp
-	}
-	var problem *Problem
-	if row.ProblemID != nil {
-		if row.Title == nil || row.Description == nil {
-			panic("inconsistent data")
-		}
-		if user.IsAdmin || (GameState(row.State) != Closed && GameState(row.State) != WaitingEntries) {
-			problem = &Problem{
-				ProblemID:   int(*row.ProblemID),
-				Title:       *row.Title,
-				Description: *row.Description,
-			}
-		}
 	}
 	playerRows, err := h.q.ListGamePlayers(ctx, int32(gameID))
 	if err != nil {
@@ -176,13 +157,17 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 		}
 	}
 	game := Game{
-		GameID:            int(row.GameID),
-		GameType:          GameGameType(row.GameType),
-		State:             GameState(row.State),
-		DisplayName:       row.DisplayName,
-		DurationSeconds:   int(row.DurationSeconds),
-		StartedAt:         startedAt,
-		Problem:           problem,
+		GameID:          int(row.GameID),
+		GameType:        GameGameType(row.GameType),
+		State:           GameState(row.State),
+		DisplayName:     row.DisplayName,
+		DurationSeconds: int(row.DurationSeconds),
+		StartedAt:       startedAt,
+		Problem: Problem{
+			ProblemID:   int(row.ProblemID),
+			Title:       row.Title,
+			Description: row.Description,
+		},
 		Players:           players,
 		VerificationSteps: verificationSteps,
 	}

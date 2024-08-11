@@ -37,7 +37,7 @@ CREATE TABLE games (
     duration_seconds INT          NOT NULL,
     created_at       TIMESTAMP    NOT NULL DEFAULT NOW(),
     started_at       TIMESTAMP,
-    problem_id       INT,
+    problem_id       INT          NOT NULL,
     CONSTRAINT fk_problem_id FOREIGN KEY(problem_id) REFERENCES problems(problem_id)
 );
 CREATE INDEX idx_games_problem_id ON games(problem_id);

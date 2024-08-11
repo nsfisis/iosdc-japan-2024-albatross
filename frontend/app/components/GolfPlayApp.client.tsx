@@ -11,7 +11,6 @@ import GolfPlayAppWaiting from "./GolfPlayApps/GolfPlayAppWaiting";
 type WebSocketMessage = components["schemas"]["GamePlayerMessageS2C"];
 
 type Game = components["schemas"]["Game"];
-type Problem = components["schemas"]["Problem"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
@@ -31,8 +30,6 @@ export default function GolfPlayApp({
 		useWebSocket<WebSocketMessage>(socketUrl, {});
 
 	const [gameState, setGameState] = useState<GameState>("connecting");
-
-	const [problem, setProblem] = useState<Problem | null>(null);
 
 	const [startedAt, setStartedAt] = useState<number | null>(null);
 
@@ -105,8 +102,6 @@ export default function GolfPlayApp({
 			if (lastJsonMessage !== null) {
 				console.log(lastJsonMessage.type);
 				if (lastJsonMessage.type === "player:s2c:prepare") {
-					const { problem } = lastJsonMessage.data;
-					setProblem(problem);
 					console.log("player:c2s:ready");
 					sendJsonMessage({ type: "player:c2s:ready" });
 				} else if (lastJsonMessage.type === "player:s2c:start") {
@@ -148,7 +143,8 @@ export default function GolfPlayApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfPlayAppGaming
-				problem={problem!.description}
+				problemTitle={game.problem.title}
+				problemDescription={game.problem.description}
 				onCodeChange={onCodeChange}
 				onCodeSubmit={onCodeSubmit}
 				currentScore={currentScore}

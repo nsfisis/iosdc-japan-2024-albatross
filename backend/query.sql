@@ -30,12 +30,12 @@ SELECT EXISTS (
 
 -- name: ListGames :many
 SELECT * FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 ORDER BY games.game_id;
 
 -- name: ListGamesForPlayer :many
 SELECT * FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 JOIN game_players ON games.game_id = game_players.game_id
 WHERE game_players.user_id = $1
 ORDER BY games.game_id;
@@ -52,7 +52,7 @@ WHERE game_id = $1;
 
 -- name: GetGameByID :one
 SELECT * FROM games
-LEFT JOIN problems ON games.problem_id = problems.problem_id
+JOIN problems ON games.problem_id = problems.problem_id
 WHERE games.game_id = $1
 LIMIT 1;
 

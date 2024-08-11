@@ -111,7 +111,7 @@ export interface components {
             duration_seconds: number;
             /** @example 946684800 */
             started_at?: number;
-            problem?: components["schemas"]["Problem"];
+            problem: components["schemas"]["Problem"];
             players: components["schemas"]["User"][];
             verification_steps: components["schemas"]["VerificationStep"][];
         };
@@ -134,10 +134,6 @@ export interface components {
         GamePlayerMessageS2CPrepare: {
             /** @constant */
             type: "player:s2c:prepare";
-            data: components["schemas"]["GamePlayerMessageS2CPreparePayload"];
-        };
-        GamePlayerMessageS2CPreparePayload: {
-            problem: components["schemas"]["Problem"];
         };
         GamePlayerMessageS2CStart: {
             /** @constant */

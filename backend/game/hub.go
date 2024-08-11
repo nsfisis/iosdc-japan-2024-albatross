@@ -611,13 +611,6 @@ func (hub *gameHub) startGame() error {
 	for player := range hub.players {
 		player.s2cMessages <- &playerMessageS2CPrepare{
 			Type: playerMessageTypeS2CPrepare,
-			Data: playerMessageS2CPreparePayload{
-				Problem: api.Problem{
-					ProblemID:   1,
-					Title:       "the answer",
-					Description: "print 42",
-				},
-			},
 		}
 	}
 
@@ -693,16 +686,10 @@ func (hubs *Hubs) RestoreFromDB(ctx context.Context) error {
 		if row.StartedAt.Valid {
 			startedAt = &row.StartedAt.Time
 		}
-		var pr *problem
-		if row.ProblemID != nil {
-			if row.Title == nil || row.Description == nil {
-				panic("inconsistent data")
-			}
-			pr = &problem{
-				problemID:   int(*row.ProblemID),
-				title:       *row.Title,
-				description: *row.Description,
-			}
+		pr := &problem{
+			problemID:   int(row.ProblemID),
+			title:       row.Title,
+			description: row.Description,
 		}
 		// TODO: N+1
 		playerRows, err := hubs.q.ListGamePlayers(ctx, int32(row.GameID))
