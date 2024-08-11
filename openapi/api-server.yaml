@@ -230,6 +230,7 @@ components:
         - state
         - display_name
         - duration_seconds
+        - problem
         - players
         - verification_steps
     VerificationStep:

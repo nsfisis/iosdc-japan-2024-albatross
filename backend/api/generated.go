@@ -81,7 +81,7 @@ type Game struct {
 	GameID            int                `json:"game_id"`
 	GameType          GameGameType       `json:"game_type"`
 	Players           []User             `json:"players"`
-	Problem           *Problem           `json:"problem,omitempty"`
+	Problem           Problem            `json:"problem"`
 	StartedAt         *int               `json:"started_at,omitempty"`
 	State             GameState          `json:"state"`
 	VerificationSteps []VerificationStep `json:"verification_steps"`
@@ -1218,26 +1218,26 @@ var swaggerSpec = []string{
 	"xTnX0ZoKiBiNhSN39nwYNogfospm2i493bnQfP2AgOap8uv0TgFJ80QShRa48rCEah43cJqlGh6RkIq2",
 	"dH4UBoJVhDnHa62Hs1kCaZv4tV2m0i0xlxBPsXQc/uX8+fMX5y+G3ggJiaXjdJQwAeqAWWEiCV1MgUqu",
 	"0lZ+o+0ghRAyzAFZy8p/HUnzx5xQIpYQu0Hbqm/E7Q44mdsdMRUSsu4h/KsiOpGQNcNZY2x5jJaJ38Qi",
-	"dNnpIV6ZYy/qXdvgWgv9Ue44RuHPORp/2u9cQ3QyukRFeKDQ5WiCihsfEvXkeDCXo8krKvn6KETvAcfH",
-	"SV6yGI4SnOSzlMjdodCKm+cVlq3H8i5t13idMByXnNRlQNVeS6NxNBLjSNltO2gtTzWaTiyrQWj4FVlv",
-	"y/2ZcULlj89+gyRhYbBiPIm/e/ZTKzKtqCskQ5gGmD3RAS3RKTxdQRjuHQKCa4leQVg29sY3o68b44Sx",
-	"/RScc2F8DaxTZ+ajTtxrW+sOPnMmo8uJrpfHSL66h+g9iDzZdWK5a/rhkaOznUtiFI3hHiJuMPTOJy+c",
-	"hqciYtwl1alqeGieJHimPppbkr8BykW1AxJ5FIFQxX2OSZLrBkeSFFiuvFOinOJkCrqjDvXVkSSw/bzi",
-	"jC6mmIpVvWEsFe8PkYUUWqe6RmlD0d5YYBV2o0DZDPaf/xqQhoOHtso1SBvxrnDMfu4tzFpdtyBvOu/+",
-	"Q+yAaO4u9fSAe0WT0EZ8F5q/sYyWR/bGrqxujm+8ag+uAQ3x7gd5Q7Rzw9o0ajvWY2Sr9eN42/UK5Hfu",
-	"6P3gVbdnP6zMer0hemub94LosYPZ3B07/CpRP6W2cuH+xmcfC/pLUqcWoZqqnnuEDoCadaJr6Pe3BU6F",
-	"r/YGPKfqw7YVaOkVujUHCksMnLt827FO4XDWOYT0CUkQMsLC9zNZW/O0h6BVrWGloTEIty51Tu4jS65f",
-	"X0fi9ld098P4n6tuWWp6DHPbfdSJc38X0hYgjzkYMg4JSQnFfD3dcek4YJ80tR3oUu/nelXtQYl7yrPd",
-	"B+rbON33cMOC9AXpurzw1NJeHQhV68CHJREBEQEONrcdX2tiHnUKoSQyqfVAFpVvfOO/cdlaoTW5wyyf",
-	"03pQcsAo6Xe2pMGvDHyekojRqR6tOiIDkuIFiMEtW9KT22zhFRVTHKfEje8cJ6KskDPGEsB68JgLDyVH",
-	"Z76IqqVNLxSU1nhurFSUNMYYW9y+2DYmKI04J3gGSY1TIGSgqrx/YNdfZ+F2EwZJ0wslReic6Z9xDTvR",
-	"RTLDkjMhgs1uDVYwCy6u35jZjTCT0+HJ6clQYWYZUJwRNEZnJ8OTITJDeR2AwQKnJhQL0Aeuio4O2JsY",
-	"jdEVyCu9IHReH9hxzSyXDLyvFxQ3tZn9aDg8aIDsJm8LvdM4Tc9su4zQxI4suGPpt0TIgM0DI1GE6Hx4",
-	"ugvC1ueBO8xWQmftQpWZvzrl8zTFfL2BYO0XoU3l4MGOAYu2pPaU07BVznkD5Ak40C3znkx3SvSFDvEX",
-	"y7CSOG+X2L764VLiCmSALWBFiYQtzJmeMeFhwjUT8q1eYoIDQr5kZoB0ZD4yLMSK8bj2O4L99nR05jtT",
-	"OSyIkHYeLdk/UCvz97V/Ph2PrDN0syEsfD8z3NeTil6ZvMvvk8r/7X2oVtKF1hPTu83zJFkHirJApYK6",
-	"Ye3BVHd4qLqawJBP83Dr3K4D6YNe8DVWmW8qL+Z8EEvG5c8JuYM4wNpcYAAWRVH8FwAA//9jcKI8NygA",
-	"AA==",
+	"dNnpIV6ZmzLbXvy7NsS1Fvqj3HuMwp9zNP60382G6GR0iYrwQKHL0QQVNz4k6snxYC5Hk1dU8vVRiN4D",
+	"jo+TvGQxHCU4yWcpkbtDoRU3Ty4sWw/oXdqu8TphOC7ZqQuCqsKWRuNoJMaRstt25FrGajSdWFaD0PAr",
+	"st6WOzXjhMofn/0GScLCYMV4En/37KdWZFpRV0iGMA0we6IDWqJTeLqCMNw7BATXEr2CsGzsjW9GXzfG",
+	"CWP7KTjnwvgaWKfOzEeduNe26h185kxGlxNdOY+RfHUP0XsQebLrxHLX9MMjR2c7l8QoGsM9RNxg6J1P",
+	"XjgNT0XEuEuqU9X60DxJ8Ex9NPclfyuUi2ovJPIoAqGK+xyTJNetjiQpsFx5p0Q5xckUdG8d6kskSWD7",
+	"ecUZXUwxFat661gq3h8iCym0TnWN0oaivbHAKuxGgbIt7D//NSANBw9tmmuQNuJd4Zj93FuYtbpuQd70",
+	"4P2H2AHR3F3q6QE3jCahjfguNH9jGS2P7I1dWd0c33jVHlwDGuLdD/KGaOeGtWnUdqzHyFbrx/G26xXI",
+	"79zR+8Grbs9+WJn1ekP01jbvBdFjB7O5O3b4faJ+Sm3lwv2Nzz4W9JekTi1CNVU99wgdADXrRNfQ728L",
+	"nApf7Q14TtWHbSvQ0it0aw4Ulhg4d/m2Y53C4axzCOkTkiBkhIXvB7O25mkPQataw0pDYxBuXeqc3EeW",
+	"XL++jsTtr+juh/E/V92y1PQY5rb7qBPn/i6kLUAeczBkHBKSEor5errj0nHAPmlqO9Cl3s/1qtqDEveU",
+	"Z7sP1Ldxuu/hhgXpC9J1eeGppb06GqrWgQ9LIgIiAhyUv2I3WxPzqFMIJZFJrQeyqHyDHP+Ny9YKrckd",
+	"a/mc1iOTA4ZKv7MlDX5l4POURIxO9ZDVERmQFC9ADG7Zkp7cZguvqJjiOCVufOc4EWWFnDGWANYjyFx4",
+	"KDk680VULW16oaC0xnNjpaKkMdDY4vbFtjFLacQ5wTNIapwCIQNV5f2ju/46C7ebMEiaXigpQudM/4xr",
+	"2IkukhmWnAkRbHZrsIJZcHH9xsxuhJmhDk9OT4YKM8uA4oygMTo7GZ4MkRnP6wAMFjg1oViAPnBVdHTA",
+	"3sRojK5AXukFofMiwY5rZrlk4H3RoLipTe9Hw+FBo2Q3eVvonQZrenrbZZgmdmTBHVC/JUIGbB4YiSJE",
+	"58PTXRC2Pg/csbYSOmsXqkz/1Smfpynm6w0Ea78IbSoHD3YgWLQltaechq1yzrsgT8CBbpn3ZLpToi90",
+	"iL9YhpXEebvE9iUQlxJXIANsAStKJGxhzvSMCQ8TrpmQb/USExwQ8iUzA6Qj85FhIVaMx7XfEey3p6Mz",
+	"35nKYUGEtJNpyf6BWpm/r/3z6XhknaGbDWHh+5nhvqhU9MrkXX6fVP5v70O1ki60npjebZ4nyTpQlAUq",
+	"FdQNaw+musND1dUEhnyah1vndh1IH/SCr7HKfFN5MeeDWDIuf07IHcQB1uYCA7AoiuK/AAAA//8G1YBf",
+	"QSgAAA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

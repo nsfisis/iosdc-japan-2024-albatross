@@ -111,7 +111,7 @@ export interface components {
             duration_seconds: number;
             /** @example 946684800 */
             started_at?: number;
-            problem?: components["schemas"]["Problem"];
+            problem: components["schemas"]["Problem"];
             players: components["schemas"]["User"][];
             verification_steps: components["schemas"]["VerificationStep"][];
         };
