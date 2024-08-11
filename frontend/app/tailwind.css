@@ -1,3 +1,9 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer components {
+  .bg-iosdc-japan {
+    @apply bg-gradient-to-r from-orange-400 via-pink-500 to-purple-400;
+  }
+}

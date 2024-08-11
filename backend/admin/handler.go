@@ -229,16 +229,6 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 		}
 	}
 
-	{
-		// TODO:
-		if state != row.State && state == "starting" {
-			err := h.hubs.StartGame(int(gameID))
-			if err != nil {
-				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
-			}
-		}
-	}
-
 	err = h.q.UpdateGame(c.Request().Context(), db.UpdateGameParams{
 		GameID:          int32(gameID),
 		GameType:        gameType,
@@ -250,6 +240,16 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 	})
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+
+	{
+		// TODO:
+		if state != row.State && state == "starting" {
+			err := h.hubs.StartGame(int(gameID))
+			if err != nil {
+				return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+			}
+		}
 	}
 
 	return c.Redirect(http.StatusSeeOther, c.Request().URL.Path)

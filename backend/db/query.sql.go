@@ -174,6 +174,19 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow
 	return i, err
 }
 
+const getSubmissionCodeSizeByID = `-- name: GetSubmissionCodeSizeByID :one
+SELECT code_size FROM submissions
+WHERE submission_id = $1
+LIMIT 1
+`
+
+func (q *Queries) GetSubmissionCodeSizeByID(ctx context.Context, submissionID int32) (int32, error) {
+	row := q.db.QueryRow(ctx, getSubmissionCodeSizeByID, submissionID)
+	var code_size int32
+	err := row.Scan(&code_size)
+	return code_size, err
+}
+
 const getUserAuthByUsername = `-- name: GetUserAuthByUsername :one
 SELECT users.user_id, username, display_name, icon_path, is_admin, created_at, user_auth_id, user_auths.user_id, auth_type, password_hash FROM users
 JOIN user_auths ON users.user_id = user_auths.user_id

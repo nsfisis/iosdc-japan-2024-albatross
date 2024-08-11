@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"regexp"
 	"strings"
 	"time"
 
@@ -86,7 +87,7 @@ func (hub *gameHub) run() {
 				// TODO: assert game state is gaming
 				log.Printf("submit: %v", message.message)
 				code := msg.Data.Code
-				codeSize := len(code) // TODO: exclude whitespaces.
+				codeSize := calcCodeSize(code)
 				codeHash := calcHash(code)
 				if err := hub.taskQueue.EnqueueTaskCreateSubmissionRecord(
 					hub.game.gameID,
@@ -101,8 +102,7 @@ func (hub *gameHub) run() {
 				hub.broadcastToWatchers(&watcherMessageS2CSubmit{
 					Type: watcherMessageTypeS2CSubmit,
 					Data: watcherMessageS2CSubmitPayload{
-						PlayerID:         message.client.playerID,
-						PreliminaryScore: codeSize,
+						PlayerID: message.client.playerID,
 					},
 				})
 			default:
@@ -138,6 +138,55 @@ func (hub *gameHub) run() {
 	}
 }
 
+func (hub *gameHub) sendExecResultMessage(playerID int, testcaseID nullable.Nullable[int], status string, stdout string, stderr string) {
+	hub.sendToPlayer(playerID, &playerMessageS2CExecResult{
+		Type: playerMessageTypeS2CExecResult,
+		Data: playerMessageS2CExecResultPayload{
+			TestcaseID: testcaseID,
+			Status:     api.GamePlayerMessageS2CExecResultPayloadStatus(status),
+			Stdout:     stdout,
+			Stderr:     stderr,
+		},
+	})
+	hub.broadcastToWatchers(&watcherMessageS2CExecResult{
+		Type: watcherMessageTypeS2CExecResult,
+		Data: watcherMessageS2CExecResultPayload{
+			PlayerID:   playerID,
+			TestcaseID: testcaseID,
+			Status:     api.GameWatcherMessageS2CExecResultPayloadStatus(status),
+			Stdout:     stdout,
+			Stderr:     stderr,
+		},
+	})
+}
+
+func (hub *gameHub) sendSubmitResult(playerID int, status string, score nullable.Nullable[int]) {
+	hub.sendToPlayer(playerID, &playerMessageS2CSubmitResult{
+		Type: playerMessageTypeS2CSubmitResult,
+		Data: playerMessageS2CSubmitResultPayload{
+			Status: api.GamePlayerMessageS2CSubmitResultPayloadStatus(status),
+			Score:  score,
+		},
+	})
+	hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
+		Type: watcherMessageTypeS2CSubmitResult,
+		Data: watcherMessageS2CSubmitResultPayload{
+			PlayerID: playerID,
+			Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(status),
+			Score:    score,
+		},
+	})
+}
+
+func (hub *gameHub) sendToPlayer(playerID int, msg playerMessageS2C) {
+	for player := range hub.players {
+		if player.playerID == playerID {
+			player.s2cMessages <- msg
+			return
+		}
+	}
+}
+
 func (hub *gameHub) broadcastToWatchers(msg watcherMessageS2C) {
 	for watcher := range hub.watchers {
 		watcher.s2cMessages <- msg
@@ -160,100 +209,52 @@ func (hub *gameHub) processTaskResults() {
 		case *taskqueue.TaskResultCreateSubmissionRecord:
 			err := hub.processTaskResultCreateSubmissionRecord(taskResult)
 			if err != nil {
-				for player := range hub.players {
-					if player.playerID != taskResult.TaskPayload.UserID() {
-						continue
-					}
-					player.s2cMessages <- &playerMessageS2CExecResult{
-						Type: playerMessageTypeS2CExecResult,
-						Data: playerMessageS2CExecResultPayload{
-							Score:  nil,
-							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
-						},
-					}
-				}
-				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
-					Type: watcherMessageTypeS2CSubmitResult,
-					Data: watcherMessageS2CSubmitResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(err.Status),
-					},
-				})
+				hub.sendSubmitResult(
+					taskResult.TaskPayload.UserID(),
+					err.Status,
+					nullable.NewNullNullable[int](),
+				)
 			}
 		case *taskqueue.TaskResultCompileSwiftToWasm:
 			err := hub.processTaskResultCompileSwiftToWasm(taskResult)
 			if err != nil {
-				for player := range hub.players {
-					if player.playerID != taskResult.TaskPayload.UserID() {
-						continue
-					}
-					player.s2cMessages <- &playerMessageS2CExecResult{
-						Type: playerMessageTypeS2CExecResult,
-						Data: playerMessageS2CExecResultPayload{
-							Score:  nil,
-							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
-						},
-					}
-				}
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CExecResultPayloadStatus(err.Status),
-						Stdout:   err.Stdout,
-						Stderr:   err.Stderr,
-					},
-				})
-				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
-					Type: watcherMessageTypeS2CSubmitResult,
-					Data: watcherMessageS2CSubmitResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(err.Status),
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullNullable[int](),
+					err.Status,
+					err.Stdout,
+					err.Stderr,
+				)
+				hub.sendSubmitResult(
+					taskResult.TaskPayload.UserID(),
+					err.Status,
+					nullable.NewNullNullable[int](),
+				)
 			}
 		case *taskqueue.TaskResultCompileWasmToNativeExecutable:
 			err := hub.processTaskResultCompileWasmToNativeExecutable(taskResult)
 			if err != nil {
-				for player := range hub.players {
-					if player.playerID != taskResult.TaskPayload.UserID() {
-						continue
-					}
-					player.s2cMessages <- &playerMessageS2CExecResult{
-						Type: playerMessageTypeS2CExecResult,
-						Data: playerMessageS2CExecResultPayload{
-							Score:  nil,
-							Status: api.GamePlayerMessageS2CExecResultPayloadStatus(err.Status),
-						},
-					}
-				}
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CExecResultPayloadStatus(err.Status),
-						Stdout:   err.Stdout,
-						Stderr:   err.Stderr,
-					},
-				})
-				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
-					Type: watcherMessageTypeS2CSubmitResult,
-					Data: watcherMessageS2CSubmitResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(err.Status),
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullNullable[int](),
+					err.Status,
+					err.Stdout,
+					err.Stderr,
+				)
+				hub.sendSubmitResult(
+					taskResult.TaskPayload.UserID(),
+					err.Status,
+					nullable.NewNullNullable[int](),
+				)
 			} else {
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CExecResultPayloadStatus("success"),
-						// TODO: inherit the command stdout/stderr.
-						Stdout: "Successfully compiled",
-						Stderr: "",
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullNullable[int](),
+					"success",
+					// TODO: inherit the command stdout/stderr.
+					"Successfully compiled",
+					"",
+				)
 			}
 		case *taskqueue.TaskResultRunTestcase:
 			// FIXME: error handling
@@ -269,82 +270,52 @@ func (hub *gameHub) processTaskResults() {
 				Stderr:       "",
 			})
 			if err != nil {
-				for player := range hub.players {
-					if player.playerID != taskResult.TaskPayload.UserID() {
-						continue
-					}
-					player.s2cMessages <- &playerMessageS2CExecResult{
-						Type: playerMessageTypeS2CExecResult,
-						Data: playerMessageS2CExecResultPayload{
-							Score:  nil,
-							Status: api.GamePlayerMessageS2CExecResultPayloadStatus("internal_error"),
-						},
-					}
-				}
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID:   taskResult.TaskPayload.UserID(),
-						TestcaseID: nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
-						Status:     api.GameWatcherMessageS2CExecResultPayloadStatus("internal_error"),
-						// TODO: inherit the command stdout/stderr?
-						Stdout: "",
-						Stderr: "internal error",
-					},
-				})
-				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
-					Type: watcherMessageTypeS2CSubmitResult,
-					Data: watcherMessageS2CSubmitResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus("internal_error"),
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
+					"internal_error",
+					// TODO: inherit the command stdout/stderr?
+					"",
+					"internal error",
+				)
+				hub.sendSubmitResult(
+					taskResult.TaskPayload.UserID(),
+					"internal_error",
+					nullable.NewNullNullable[int](),
+				)
 				continue
 			}
-			for player := range hub.players {
-				if player.playerID != taskResult.TaskPayload.UserID() {
-					continue
-				}
-				player.s2cMessages <- &playerMessageS2CExecResult{
-					Type: playerMessageTypeS2CExecResult,
-					Data: playerMessageS2CExecResultPayload{
-						Score:  nil,
-						Status: api.GamePlayerMessageS2CExecResultPayloadStatus(aggregatedStatus),
-					},
-				}
-			}
 			if err1 != nil {
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID:   taskResult.TaskPayload.UserID(),
-						TestcaseID: nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
-						Status:     api.GameWatcherMessageS2CExecResultPayloadStatus(err1.Status),
-						Stdout:     err1.Stdout,
-						Stderr:     err1.Stderr,
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
+					aggregatedStatus,
+					err1.Stdout,
+					err1.Stderr,
+				)
 			} else {
-				hub.broadcastToWatchers(&watcherMessageS2CExecResult{
-					Type: watcherMessageTypeS2CExecResult,
-					Data: watcherMessageS2CExecResultPayload{
-						PlayerID:   taskResult.TaskPayload.UserID(),
-						TestcaseID: nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
-						Status:     api.GameWatcherMessageS2CExecResultPayloadStatus("success"),
-						// TODO: inherit the command stdout/stderr?
-						Stdout: "Testcase passed",
-						Stderr: "",
-					},
-				})
+				hub.sendExecResultMessage(
+					taskResult.TaskPayload.UserID(),
+					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
+					"success",
+					// TODO: inherit the command stdout/stderr?
+					"Testcase passed",
+					"",
+				)
 			}
 			if aggregatedStatus != "running" {
-				hub.broadcastToWatchers(&watcherMessageS2CSubmitResult{
-					Type: watcherMessageTypeS2CSubmitResult,
-					Data: watcherMessageS2CSubmitResultPayload{
-						PlayerID: taskResult.TaskPayload.UserID(),
-						Status:   api.GameWatcherMessageS2CSubmitResultPayloadStatus(aggregatedStatus),
-					},
-				})
+				var score nullable.Nullable[int]
+				if aggregatedStatus == "success" {
+					codeSize, err := hub.q.GetSubmissionCodeSizeByID(hub.ctx, int32(taskResult.TaskPayload.SubmissionID))
+					if err == nil {
+						score = nullable.NewNullableWithValue(int(codeSize))
+					}
+				}
+				hub.sendSubmitResult(
+					taskResult.TaskPayload.UserID(),
+					aggregatedStatus,
+					score,
+				)
 			}
 		default:
 			panic("unexpected task result type")
@@ -538,14 +509,14 @@ func (hub *gameHub) startGame() error {
 		player.s2cMessages <- &playerMessageS2CStart{
 			Type: playerMessageTypeS2CStart,
 			Data: playerMessageS2CStartPayload{
-				StartAt: int(startAt.Unix()),
+				StartAt: startAt.Unix(),
 			},
 		}
 	}
 	hub.broadcastToWatchers(&watcherMessageS2CStart{
 		Type: watcherMessageTypeS2CStart,
 		Data: watcherMessageS2CStartPayload{
-			StartAt: int(startAt.Unix()),
+			StartAt: startAt.Unix(),
 		},
 	})
 	err := hub.q.UpdateGameStartedAt(hub.ctx, db.UpdateGameStartedAtParams{
@@ -692,4 +663,9 @@ func isTestcaseResultCorrect(expectedStdout, actualStdout string) bool {
 
 func calcHash(code string) string {
 	return fmt.Sprintf("%x", md5.Sum([]byte(code)))
+}
+
+func calcCodeSize(code string) int {
+	re := regexp.MustCompile(`\s+`)
+	return len(re.ReplaceAllString(code, ""))
 }

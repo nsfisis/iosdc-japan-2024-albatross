@@ -1,83 +1,29 @@
+import { PlayerInfo } from "../../models/PlayerInfo";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
+import SubmitStatusLabel from "../SubmitStatusLabel";
 
 type Props = {
-	problem: string;
+	gameDurationSeconds: number;
+	leftTimeSeconds: number;
 	playerInfoA: PlayerInfo;
 	playerInfoB: PlayerInfo;
-	leftTimeSeconds: number;
+	problem: string;
 };
-
-export type PlayerInfo = {
-	displayName: string | null;
-	iconPath: string | null;
-	score: number | null;
-	code: string | null;
-	submissionResult?: SubmissionResult;
-};
-
-type SubmissionResult = {
-	status:
-		| "running"
-		| "success"
-		| "wrong_answer"
-		| "timeout"
-		| "compile_error"
-		| "runtime_error"
-		| "internal_error";
-	preliminaryScore: number;
-	verificationResults: VerificationResult[];
-};
-
-type VerificationResult = {
-	testcase_id: number | null;
-	status:
-		| "running"
-		| "success"
-		| "wrong_answer"
-		| "timeout"
-		| "compile_error"
-		| "runtime_error"
-		| "internal_error"
-		| "canceled";
-	label: string;
-	stdout: string;
-	stderr: string;
-};
-
-function submissionResultStatusToLabel(
-	status: SubmissionResult["status"] | null,
-) {
-	switch (status) {
-		case null:
-			return "-";
-		case "running":
-			return "Running...";
-		case "success":
-			return "Accepted";
-		case "wrong_answer":
-			return "Wrong Answer";
-		case "timeout":
-			return "Time Limit Exceeded";
-		case "compile_error":
-			return "Compile Error";
-		case "runtime_error":
-			return "Runtime Error";
-		case "internal_error":
-			return "Internal Error";
-	}
-}
 
 export default function GolfWatchAppGaming({
-	problem,
+	gameDurationSeconds,
+	leftTimeSeconds,
 	playerInfoA,
 	playerInfoB,
-	leftTimeSeconds,
+	problem,
 }: Props) {
 	const leftTime = (() => {
-		const m = Math.floor(leftTimeSeconds / 60);
-		const s = leftTimeSeconds % 60;
+		const k = gameDurationSeconds + leftTimeSeconds;
+		const m = Math.floor(k / 60);
+		const s = k % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 	})();
+
 	const scoreRatio = (() => {
 		const scoreA = playerInfoA.score ?? 0;
 		const scoreB = playerInfoB.score ?? 0;
@@ -118,29 +64,24 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submissionResultStatusToLabel(
-							playerInfoA.submissionResult?.status ?? null,
-						)}{" "}
-						({playerInfoA.submissionResult?.preliminaryScore})
+						<SubmitStatusLabel status={playerInfoA.submitResult.status} />
 					</div>
 					<div>
 						<ol>
-							{playerInfoA.submissionResult?.verificationResults.map(
-								(result) => (
-									<li key={result.testcase_id ?? -1}>
+							{playerInfoA.submitResult?.execResults.map((result) => (
+								<li key={result.testcase_id ?? -1}>
+									<div>
 										<div>
-											<div>
-												<ExecStatusIndicatorIcon status={result.status} />{" "}
-												{result.label}
-											</div>
-											<div>
-												{result.stdout}
-												{result.stderr}
-											</div>
+											<ExecStatusIndicatorIcon status={result.status} />{" "}
+											{result.label}
 										</div>
-									</li>
-								),
-							)}
+										<div>
+											{result.stdout}
+											{result.stderr}
+										</div>
+									</div>
+								</li>
+							))}
 						</ol>
 					</div>
 				</div>
@@ -151,29 +92,24 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div>
 					<div>
-						{submissionResultStatusToLabel(
-							playerInfoB.submissionResult?.status ?? null,
-						)}{" "}
-						({playerInfoB.submissionResult?.preliminaryScore ?? "-"})
+						<SubmitStatusLabel status={playerInfoB.submitResult.status} />
 					</div>
 					<div>
 						<ol>
-							{playerInfoB.submissionResult?.verificationResults.map(
-								(result, idx) => (
-									<li key={idx}>
+							{playerInfoB.submitResult?.execResults.map((result, idx) => (
+								<li key={idx}>
+									<div>
 										<div>
-											<div>
-												<ExecStatusIndicatorIcon status={result.status} />{" "}
-												{result.label}
-											</div>
-											<div>
-												{result.stdout}
-												{result.stderr}
-											</div>
+											<ExecStatusIndicatorIcon status={result.status} />{" "}
+											{result.label}
 										</div>
-									</li>
-								),
-							)}
+										<div>
+											{result.stdout}
+											{result.stderr}
+										</div>
+									</div>
+								</li>
+							))}
 						</ol>
 					</div>
 				</div>

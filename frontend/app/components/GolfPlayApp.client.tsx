@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
+import type { PlayerInfo } from "../models/PlayerInfo";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
 import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
@@ -12,14 +13,17 @@ type GamePlayerMessageS2C = components["schemas"]["GamePlayerMessageS2C"];
 type GamePlayerMessageC2S = components["schemas"]["GamePlayerMessageC2S"];
 
 type Game = components["schemas"]["Game"];
+type User = components["schemas"]["User"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
 export default function GolfPlayApp({
 	game,
+	player,
 	sockToken,
 }: {
 	game: Game;
+	player: User;
 	sockToken: string;
 }) {
 	const socketUrl =
@@ -39,16 +43,17 @@ export default function GolfPlayApp({
 	const [leftTimeSeconds, setLeftTimeSeconds] = useState<number | null>(null);
 
 	useEffect(() => {
-		if (gameState === "starting" && startedAt !== null) {
+		if (
+			(gameState === "starting" || gameState === "gaming") &&
+			startedAt !== null
+		) {
 			const timer1 = setInterval(() => {
 				setLeftTimeSeconds((prev) => {
 					if (prev === null) {
 						return null;
 					}
 					if (prev <= 1) {
-						clearInterval(timer1);
 						setGameState("gaming");
-						return 0;
 					}
 					return prev - 1;
 				});
@@ -70,9 +75,21 @@ export default function GolfPlayApp({
 		}
 	}, [gameState, startedAt, game.duration_seconds]);
 
-	const [currentScore, setCurrentScore] = useState<number | null>(null);
-
-	const [lastExecStatus, setLastExecStatus] = useState<string | null>(null);
+	const [playerInfo, setPlayerInfo] = useState<Omit<PlayerInfo, "code">>({
+		displayName: player.display_name,
+		iconPath: player.icon_path ?? null,
+		score: null,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
+	});
 
 	const onCodeChange = useDebouncedCallback((code: string) => {
 		console.log("player:c2s:code");
@@ -83,11 +100,26 @@ export default function GolfPlayApp({
 	}, 1000);
 
 	const onCodeSubmit = useDebouncedCallback((code: string) => {
+		if (code === "") {
+			return;
+		}
 		console.log("player:c2s:submit");
 		sendJsonMessage({
 			type: "player:c2s:submit",
 			data: { code },
 		});
+		setPlayerInfo((prev) => ({
+			...prev,
+			submitResult: {
+				status: "running",
+				execResults: prev.submitResult.execResults.map((r) => ({
+					...r,
+					status: "running",
+					stdout: "",
+					stderr: "",
+				})),
+			},
+		}));
 	}, 1000);
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -117,14 +149,46 @@ export default function GolfPlayApp({
 						setGameState("starting");
 					}
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
+					const { testcase_id, status, stdout, stderr } = lastJsonMessage.data;
+					setPlayerInfo((prev) => {
+						const ret = { ...prev };
+						ret.submitResult = {
+							...prev.submitResult,
+							execResults: prev.submitResult.execResults.map((r) =>
+								r.testcase_id === testcase_id && r.status === "running"
+									? {
+											...r,
+											status,
+											stdout,
+											stderr,
+										}
+									: r,
+							),
+						};
+						return ret;
+					});
+				} else if (lastJsonMessage.type === "player:s2c:submitresult") {
 					const { status, score } = lastJsonMessage.data;
-					if (
-						score !== null &&
-						(currentScore === null || score < currentScore)
-					) {
-						setCurrentScore(score);
-					}
-					setLastExecStatus(status);
+					setPlayerInfo((prev) => {
+						const ret = { ...prev };
+						ret.submitResult = {
+							...prev.submitResult,
+							status,
+						};
+						if (status === "success") {
+							if (score) {
+								if (ret.score === null || score < ret.score) {
+									ret.score = score;
+								}
+							}
+						} else {
+							ret.submitResult.execResults = prev.submitResult.execResults.map(
+								(r) =>
+									r.status === "running" ? { ...r, status: "canceled" } : r,
+							);
+						}
+						return ret;
+					});
 				}
 			} else {
 				if (game.started_at) {
@@ -133,7 +197,7 @@ export default function GolfPlayApp({
 						// The game has already started.
 						if (gameState !== "gaming" && gameState !== "finished") {
 							setStartedAt(game.started_at);
-							setLeftTimeSeconds(0);
+							setLeftTimeSeconds(game.started_at - nowSec);
 							setGameState("gaming");
 						}
 					} else {
@@ -159,7 +223,6 @@ export default function GolfPlayApp({
 		lastJsonMessage,
 		readyState,
 		gameState,
-		currentScore,
 	]);
 
 	if (gameState === "connecting") {
@@ -171,12 +234,14 @@ export default function GolfPlayApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfPlayAppGaming
+				gameDisplayName={game.display_name}
+				gameDurationSeconds={game.duration_seconds}
+				leftTimeSeconds={leftTimeSeconds!}
+				playerInfo={playerInfo}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
 				onCodeChange={onCodeChange}
 				onCodeSubmit={onCodeSubmit}
-				currentScore={currentScore}
-				lastExecStatus={lastExecStatus}
 			/>
 		);
 	} else if (gameState === "finished") {

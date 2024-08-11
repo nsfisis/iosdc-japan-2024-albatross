@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
+import type { PlayerInfo } from "../models/PlayerInfo";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
 import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
-import GolfWatchAppGaming, {
-	PlayerInfo,
-} from "./GolfWatchApps/GolfWatchAppGaming";
+import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
 import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
 import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
 
@@ -40,16 +39,17 @@ export default function GolfWatchApp({
 	const [leftTimeSeconds, setLeftTimeSeconds] = useState<number | null>(null);
 
 	useEffect(() => {
-		if (gameState === "starting" && startedAt !== null) {
+		if (
+			(gameState === "starting" || gameState === "gaming") &&
+			startedAt !== null
+		) {
 			const timer1 = setInterval(() => {
 				setLeftTimeSeconds((prev) => {
 					if (prev === null) {
 						return null;
 					}
 					if (prev <= 1) {
-						clearInterval(timer1);
 						setGameState("gaming");
-						return 0;
 					}
 					return prev - 1;
 				});
@@ -79,14 +79,32 @@ export default function GolfWatchApp({
 		iconPath: playerA?.icon_path ?? null,
 		score: null,
 		code: "",
-		submissionResult: undefined,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
 	});
 	const [playerInfoB, setPlayerInfoB] = useState<PlayerInfo>({
 		displayName: playerB?.display_name ?? null,
 		iconPath: playerB?.icon_path ?? null,
 		score: null,
 		code: "",
-		submissionResult: undefined,
+		submitResult: {
+			status: "waiting_submission",
+			execResults: game.exec_steps.map((r) => ({
+				testcase_id: r.testcase_id,
+				status: "waiting_submission",
+				label: r.label,
+				stdout: "",
+				stderr: "",
+			})),
+		},
 	});
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -121,18 +139,16 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => ({ ...prev, code }));
 				} else if (lastJsonMessage.type === "watcher:s2c:submit") {
-					const { player_id, preliminary_score } = lastJsonMessage.data;
+					const { player_id } = lastJsonMessage.data;
 					const setter =
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => ({
 						...prev,
-						submissionResult: {
+						submitResult: {
 							status: "running",
-							preliminaryScore: preliminary_score,
-							verificationResults: game.verification_steps.map((v) => ({
-								testcase_id: v.testcase_id,
+							execResults: prev.submitResult.execResults.map((r) => ({
+								...r,
 								status: "running",
-								label: v.label,
 								stdout: "",
 								stderr: "",
 							})),
@@ -145,50 +161,42 @@ export default function GolfWatchApp({
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submissionResult === undefined) {
-							return ret;
-						}
-						ret.submissionResult = {
-							...ret.submissionResult,
-							verificationResults: ret.submissionResult.verificationResults.map(
-								(v) =>
-									v.testcase_id === testcase_id && v.status === "running"
-										? {
-												...v,
-												status,
-												stdout,
-												stderr,
-											}
-										: v,
+						ret.submitResult = {
+							...prev.submitResult,
+							execResults: prev.submitResult.execResults.map((r) =>
+								r.testcase_id === testcase_id && r.status === "running"
+									? {
+											...r,
+											status,
+											stdout,
+											stderr,
+										}
+									: r,
 							),
 						};
 						return ret;
 					});
 				} else if (lastJsonMessage.type === "watcher:s2c:submitresult") {
-					const { player_id, status } = lastJsonMessage.data;
+					const { player_id, status, score } = lastJsonMessage.data;
 					const setter =
 						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
 					setter((prev) => {
 						const ret = { ...prev };
-						if (ret.submissionResult === undefined) {
-							return ret;
-						}
-						ret.submissionResult = {
-							...ret.submissionResult,
+						ret.submitResult = {
+							...prev.submitResult,
 							status,
 						};
 						if (status === "success") {
-							if (
-								ret.score === null ||
-								ret.submissionResult.preliminaryScore < ret.score
-							) {
-								ret.score = ret.submissionResult.preliminaryScore;
+							if (score) {
+								if (ret.score === null || score < ret.score) {
+									ret.score = score;
+								}
 							}
 						} else {
-							ret.submissionResult.verificationResults =
-								ret.submissionResult.verificationResults.map((v) =>
-									v.status === "running" ? { ...v, status: "canceled" } : v,
-								);
+							ret.submitResult.execResults = prev.submitResult.execResults.map(
+								(r) =>
+									r.status === "running" ? { ...r, status: "canceled" } : r,
+							);
 						}
 						return ret;
 					});
@@ -200,7 +208,7 @@ export default function GolfWatchApp({
 						// The game has already started.
 						if (gameState !== "gaming" && gameState !== "finished") {
 							setStartedAt(game.started_at);
-							setLeftTimeSeconds(0);
+							setLeftTimeSeconds(game.started_at - nowSec);
 							setGameState("gaming");
 						}
 					} else {
@@ -221,7 +229,6 @@ export default function GolfWatchApp({
 			}
 		}
 	}, [
-		game.verification_steps,
 		game.started_at,
 		lastJsonMessage,
 		readyState,
@@ -239,10 +246,11 @@ export default function GolfWatchApp({
 	} else if (gameState === "gaming") {
 		return (
 			<GolfWatchAppGaming
-				problem={game.problem!.description}
+				gameDurationSeconds={game.duration_seconds}
+				leftTimeSeconds={leftTimeSeconds!}
 				playerInfoA={playerInfoA}
 				playerInfoB={playerInfoB}
-				leftTimeSeconds={leftTimeSeconds!}
+				problem={game.problem!.description}
 			/>
 		);
 	} else if (gameState === "finished") {

@@ -22,7 +22,7 @@ export default function Index() {
 				className="w-24 h-24"
 			/>
 			<div className="text-center">
-				<div className="font-bold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-pink-500 to-purple-400 flex flex-col gap-y-2">
+				<div className="font-bold text-transparent bg-clip-text bg-iosdc-japan flex flex-col gap-y-2">
 					<div className="text-3xl">iOSDC Japan 2024</div>
 					<div className="text-6xl">Swift Code Battle</div>
 				</div>

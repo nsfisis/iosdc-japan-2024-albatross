@@ -40,11 +40,21 @@ const (
 // Defines values for GamePlayerMessageS2CExecResultPayloadStatus.
 const (
 	GamePlayerMessageS2CExecResultPayloadStatusCompileError  GamePlayerMessageS2CExecResultPayloadStatus = "compile_error"
-	GamePlayerMessageS2CExecResultPayloadStatusFailure       GamePlayerMessageS2CExecResultPayloadStatus = "failure"
 	GamePlayerMessageS2CExecResultPayloadStatusInternalError GamePlayerMessageS2CExecResultPayloadStatus = "internal_error"
+	GamePlayerMessageS2CExecResultPayloadStatusRuntimeError  GamePlayerMessageS2CExecResultPayloadStatus = "runtime_error"
 	GamePlayerMessageS2CExecResultPayloadStatusSuccess       GamePlayerMessageS2CExecResultPayloadStatus = "success"
 	GamePlayerMessageS2CExecResultPayloadStatusTimeout       GamePlayerMessageS2CExecResultPayloadStatus = "timeout"
 	GamePlayerMessageS2CExecResultPayloadStatusWrongAnswer   GamePlayerMessageS2CExecResultPayloadStatus = "wrong_answer"
+)
+
+// Defines values for GamePlayerMessageS2CSubmitResultPayloadStatus.
+const (
+	GamePlayerMessageS2CSubmitResultPayloadStatusCompileError  GamePlayerMessageS2CSubmitResultPayloadStatus = "compile_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusInternalError GamePlayerMessageS2CSubmitResultPayloadStatus = "internal_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusRuntimeError  GamePlayerMessageS2CSubmitResultPayloadStatus = "runtime_error"
+	GamePlayerMessageS2CSubmitResultPayloadStatusSuccess       GamePlayerMessageS2CSubmitResultPayloadStatus = "success"
+	GamePlayerMessageS2CSubmitResultPayloadStatusTimeout       GamePlayerMessageS2CSubmitResultPayloadStatus = "timeout"
+	GamePlayerMessageS2CSubmitResultPayloadStatusWrongAnswer   GamePlayerMessageS2CSubmitResultPayloadStatus = "wrong_answer"
 )
 
 // Defines values for GameWatcherMessageS2CExecResultPayloadStatus.
@@ -59,12 +69,12 @@ const (
 
 // Defines values for GameWatcherMessageS2CSubmitResultPayloadStatus.
 const (
-	CompileError  GameWatcherMessageS2CSubmitResultPayloadStatus = "compile_error"
-	InternalError GameWatcherMessageS2CSubmitResultPayloadStatus = "internal_error"
-	RuntimeError  GameWatcherMessageS2CSubmitResultPayloadStatus = "runtime_error"
-	Success       GameWatcherMessageS2CSubmitResultPayloadStatus = "success"
-	Timeout       GameWatcherMessageS2CSubmitResultPayloadStatus = "timeout"
-	WrongAnswer   GameWatcherMessageS2CSubmitResultPayloadStatus = "wrong_answer"
+	GameWatcherMessageS2CSubmitResultPayloadStatusCompileError  GameWatcherMessageS2CSubmitResultPayloadStatus = "compile_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusInternalError GameWatcherMessageS2CSubmitResultPayloadStatus = "internal_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusRuntimeError  GameWatcherMessageS2CSubmitResultPayloadStatus = "runtime_error"
+	GameWatcherMessageS2CSubmitResultPayloadStatusSuccess       GameWatcherMessageS2CSubmitResultPayloadStatus = "success"
+	GameWatcherMessageS2CSubmitResultPayloadStatusTimeout       GameWatcherMessageS2CSubmitResultPayloadStatus = "timeout"
+	GameWatcherMessageS2CSubmitResultPayloadStatusWrongAnswer   GameWatcherMessageS2CSubmitResultPayloadStatus = "wrong_answer"
 )
 
 // Error defines model for Error.
@@ -72,17 +82,23 @@ type Error struct {
 	Message string `json:"message"`
 }
 
+// ExecStep defines model for ExecStep.
+type ExecStep struct {
+	Label      string                 `json:"label"`
+	TestcaseID nullable.Nullable[int] `json:"testcase_id"`
+}
+
 // Game defines model for Game.
 type Game struct {
-	DisplayName       string             `json:"display_name"`
-	DurationSeconds   int                `json:"duration_seconds"`
-	GameID            int                `json:"game_id"`
-	GameType          GameGameType       `json:"game_type"`
-	Players           []User             `json:"players"`
-	Problem           Problem            `json:"problem"`
-	StartedAt         *int               `json:"started_at,omitempty"`
-	State             GameState          `json:"state"`
-	VerificationSteps []VerificationStep `json:"verification_steps"`
+	DisplayName     string       `json:"display_name"`
+	DurationSeconds int          `json:"duration_seconds"`
+	ExecSteps       []ExecStep   `json:"exec_steps"`
+	GameID          int          `json:"game_id"`
+	GameType        GameGameType `json:"game_type"`
+	Players         []User       `json:"players"`
+	Problem         Problem      `json:"problem"`
+	StartedAt       *int64       `json:"started_at,omitempty"`
+	State           GameState    `json:"state"`
 }
 
 // GameGameType defines model for Game.GameType.
@@ -136,8 +152,10 @@ type GamePlayerMessageS2CExecResult struct {
 
 // GamePlayerMessageS2CExecResultPayload defines model for GamePlayerMessageS2CExecResultPayload.
 type GamePlayerMessageS2CExecResultPayload struct {
-	Score  nullable.Nullable[int]                      `json:"score"`
-	Status GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
+	Status     GamePlayerMessageS2CExecResultPayloadStatus `json:"status"`
+	Stderr     string                                      `json:"stderr"`
+	Stdout     string                                      `json:"stdout"`
+	TestcaseID nullable.Nullable[int]                      `json:"testcase_id"`
 }
 
 // GamePlayerMessageS2CExecResultPayloadStatus defines model for GamePlayerMessageS2CExecResultPayload.Status.
@@ -151,8 +169,23 @@ type GamePlayerMessageS2CStart struct {
 
 // GamePlayerMessageS2CStartPayload defines model for GamePlayerMessageS2CStartPayload.
 type GamePlayerMessageS2CStartPayload struct {
-	StartAt int `json:"start_at"`
+	StartAt int64 `json:"start_at"`
 }
+
+// GamePlayerMessageS2CSubmitResult defines model for GamePlayerMessageS2CSubmitResult.
+type GamePlayerMessageS2CSubmitResult struct {
+	Data GamePlayerMessageS2CSubmitResultPayload `json:"data"`
+	Type string                                  `json:"type"`
+}
+
+// GamePlayerMessageS2CSubmitResultPayload defines model for GamePlayerMessageS2CSubmitResultPayload.
+type GamePlayerMessageS2CSubmitResultPayload struct {
+	Score  nullable.Nullable[int]                        `json:"score"`
+	Status GamePlayerMessageS2CSubmitResultPayloadStatus `json:"status"`
+}
+
+// GamePlayerMessageS2CSubmitResultPayloadStatus defines model for GamePlayerMessageS2CSubmitResultPayload.Status.
+type GamePlayerMessageS2CSubmitResultPayloadStatus string
 
 // GameWatcherMessage defines model for GameWatcherMessage.
 type GameWatcherMessage struct {
@@ -202,7 +235,7 @@ type GameWatcherMessageS2CStart struct {
 
 // GameWatcherMessageS2CStartPayload defines model for GameWatcherMessageS2CStartPayload.
 type GameWatcherMessageS2CStartPayload struct {
-	StartAt int `json:"start_at"`
+	StartAt int64 `json:"start_at"`
 }
 
 // GameWatcherMessageS2CSubmit defines model for GameWatcherMessageS2CSubmit.
@@ -213,8 +246,7 @@ type GameWatcherMessageS2CSubmit struct {
 
 // GameWatcherMessageS2CSubmitPayload defines model for GameWatcherMessageS2CSubmitPayload.
 type GameWatcherMessageS2CSubmitPayload struct {
-	PlayerID         int `json:"player_id"`
-	PreliminaryScore int `json:"preliminary_score"`
+	PlayerID int `json:"player_id"`
 }
 
 // GameWatcherMessageS2CSubmitResult defines model for GameWatcherMessageS2CSubmitResult.
@@ -226,6 +258,7 @@ type GameWatcherMessageS2CSubmitResult struct {
 // GameWatcherMessageS2CSubmitResultPayload defines model for GameWatcherMessageS2CSubmitResultPayload.
 type GameWatcherMessageS2CSubmitResultPayload struct {
 	PlayerID int                                            `json:"player_id"`
+	Score    nullable.Nullable[int]                         `json:"score"`
 	Status   GameWatcherMessageS2CSubmitResultPayloadStatus `json:"status"`
 }
 
@@ -246,12 +279,6 @@ type User struct {
 	IsAdmin     bool    `json:"is_admin"`
 	UserID      int     `json:"user_id"`
 	Username    string  `json:"username"`
-}
-
-// VerificationStep defines model for VerificationStep.
-type VerificationStep struct {
-	Label      string                 `json:"label"`
-	TestcaseID nullable.Nullable[int] `json:"testcase_id"`
 }
 
 // HeaderAuthorization defines model for header_authorization.
@@ -463,6 +490,32 @@ func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CExecResult(v GamePlayerMe
 
 // MergeGamePlayerMessageS2CExecResult performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CExecResult
 func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CExecResult(v GamePlayerMessageS2CExecResult) error {
+	b, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	merged, err := runtime.JSONMerge(t.union, b)
+	t.union = merged
+	return err
+}
+
+// AsGamePlayerMessageS2CSubmitResult returns the union data inside the GamePlayerMessageS2C as a GamePlayerMessageS2CSubmitResult
+func (t GamePlayerMessageS2C) AsGamePlayerMessageS2CSubmitResult() (GamePlayerMessageS2CSubmitResult, error) {
+	var body GamePlayerMessageS2CSubmitResult
+	err := json.Unmarshal(t.union, &body)
+	return body, err
+}
+
+// FromGamePlayerMessageS2CSubmitResult overwrites any union data inside the GamePlayerMessageS2C as the provided GamePlayerMessageS2CSubmitResult
+func (t *GamePlayerMessageS2C) FromGamePlayerMessageS2CSubmitResult(v GamePlayerMessageS2CSubmitResult) error {
+	b, err := json.Marshal(v)
+	t.union = b
+	return err
+}
+
+// MergeGamePlayerMessageS2CSubmitResult performs a merge with any union data inside the GamePlayerMessageS2C, using the provided GamePlayerMessageS2CSubmitResult
+func (t *GamePlayerMessageS2C) MergeGamePlayerMessageS2CSubmitResult(v GamePlayerMessageS2CSubmitResult) error {
 	b, err := json.Marshal(v)
 	if err != nil {
 		return err
@@ -1108,33 +1161,34 @@ func (sh *strictHandler) GetToken(ctx echo.Context, params GetTokenParams) error
 // Base64 encoded, gzipped, json marshaled Swagger object
 var swaggerSpec = []string{
 
-	"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",
+	"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",
+	"AA==",
 }
 
 // GetSwagger returns the content of the embedded swagger specification file

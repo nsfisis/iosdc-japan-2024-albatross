@@ -67,10 +67,13 @@ func execCommandWithTimeout(
 	}
 }
 
-func convertCommandErrorToResultType(err error) string {
+func convertCommandErrorToResultType(err error, isCompile bool) string {
 	if err != nil {
 		if err == context.DeadlineExceeded {
 			return resultTimeout
+		}
+		if isCompile {
+			return resultCompileError
 		}
 		return resultRuntimeError
 	}
@@ -109,7 +112,7 @@ func execSwiftCompile(
 	)
 
 	return swiftCompileResponseData{
-		Status: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err, true),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
@@ -140,7 +143,7 @@ func execWasmCompile(
 	)
 
 	return wasmCompileResponseData{
-		Status: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err, true),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
@@ -170,7 +173,7 @@ func execTestRun(
 	)
 
 	return testRunResponseData{
-		Status: convertCommandErrorToResultType(err),
+		Status: convertCommandErrorToResultType(err, false),
 		Stdout: stdout,
 		Stderr: stderr,
 	}
