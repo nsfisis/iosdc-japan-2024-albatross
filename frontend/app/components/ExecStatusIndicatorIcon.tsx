@@ -5,9 +5,10 @@ import {
 	faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { VerificationResultStatus } from "../models/VerificationResult";
 
 type Props = {
-	status: string;
+	status: VerificationResultStatus;
 };
 
 export default function ExecStatusIndicatorIcon({ status }: Props) {

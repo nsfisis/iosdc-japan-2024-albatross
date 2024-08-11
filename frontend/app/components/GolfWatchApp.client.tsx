@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
+import type { PlayerInfo } from "../models/PlayerInfo";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
 import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
-import GolfWatchAppGaming, {
-	PlayerInfo,
-} from "./GolfWatchApps/GolfWatchAppGaming";
+import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
 import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
 import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
 

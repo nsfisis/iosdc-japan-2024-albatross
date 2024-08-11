@@ -1,3 +1,5 @@
+import { PlayerInfo } from "../../models/PlayerInfo";
+import { submissionResultStatusToLabel } from "../../models/SubmissionResult";
 import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
 
 type Props = {
@@ -6,65 +8,6 @@ type Props = {
 	playerInfoB: PlayerInfo;
 	leftTimeSeconds: number;
 };
-
-export type PlayerInfo = {
-	displayName: string | null;
-	iconPath: string | null;
-	score: number | null;
-	code: string | null;
-	submissionResult?: SubmissionResult;
-};
-
-type SubmissionResult = {
-	status:
-		| "running"
-		| "success"
-		| "wrong_answer"
-		| "timeout"
-		| "compile_error"
-		| "runtime_error"
-		| "internal_error";
-	verificationResults: VerificationResult[];
-};
-
-type VerificationResult = {
-	testcase_id: number | null;
-	status:
-		| "running"
-		| "success"
-		| "wrong_answer"
-		| "timeout"
-		| "compile_error"
-		| "runtime_error"
-		| "internal_error"
-		| "canceled";
-	label: string;
-	stdout: string;
-	stderr: string;
-};
-
-function submissionResultStatusToLabel(
-	status: SubmissionResult["status"] | null,
-) {
-	switch (status) {
-		case null:
-			return "-";
-		case "running":
-			return "Running...";
-		case "success":
-			return "Accepted";
-		case "wrong_answer":
-			return "Wrong Answer";
-		case "timeout":
-			return "Time Limit Exceeded";
-		case "compile_error":
-			return "Compile Error";
-		case "runtime_error":
-			return "Runtime Error";
-		case "internal_error":
-			return "Internal Error";
-	}
-}
 
 export default function GolfWatchAppGaming({
 	problem,
