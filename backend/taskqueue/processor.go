@@ -58,7 +58,7 @@ func (p *processor) doProcessTaskCompileSwiftToWasm(
 		Stderr string `json:"stderr"`
 	}
 	reqData := swiftcRequestData{
-		MaxDuration: 5000,
+		MaxDuration: 10000,
 		Code:        payload.Code,
 		CodeHash:    string(payload.CodeHash()),
 	}
@@ -110,7 +110,7 @@ func (p *processor) doProcessTaskCompileWasmToNativeExecutable(
 		Stderr string `json:"stderr"`
 	}
 	reqData := wasmcRequestData{
-		MaxDuration: 5000,
+		MaxDuration: 10000,
 		CodeHash:    string(payload.CodeHash()),
 	}
 	reqJSON, err := json.Marshal(reqData)
