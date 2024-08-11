@@ -1,7 +1,8 @@
 import React, { useRef } from "react";
 
 type Props = {
-	problem: string;
+	problemTitle: string;
+	problemDescription: string;
 	onCodeChange: (code: string) => void;
 	onCodeSubmit: (code: string) => void;
 	currentScore: number | null;
@@ -9,7 +10,8 @@ type Props = {
 };
 
 export default function GolfPlayAppGaming({
-	problem,
+	problemTitle,
+	problemDescription,
 	onCodeChange,
 	onCodeSubmit,
 	currentScore,
@@ -32,8 +34,8 @@ export default function GolfPlayAppGaming({
 			<div className="mx-auto flex min-h-full flex-grow">
 				<div className="flex w-1/2 flex-col justify-between p-4">
 					<div>
-						<div className="mb-2 text-xl font-bold">TODO</div>
-						<div className="text-gray-700">{problem}</div>
+						<div className="mb-2 text-xl font-bold">{problemTitle}</div>
+						<div className="text-gray-700">{problemDescription}</div>
 					</div>
 					<div className="mb-4 mt-auto">
 						<div className="mb-2">
