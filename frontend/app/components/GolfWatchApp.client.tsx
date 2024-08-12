@@ -43,30 +43,27 @@ export default function GolfWatchApp({
 			(gameState === "starting" || gameState === "gaming") &&
 			startedAt !== null
 		) {
-			const timer1 = setInterval(() => {
+			const timer = setInterval(() => {
 				setLeftTimeSeconds((prev) => {
 					if (prev === null) {
 						return null;
 					}
 					if (prev <= 1) {
-						setGameState("gaming");
+						const nowSec = Math.floor(Date.now() / 1000);
+						const finishedAt = startedAt + game.duration_seconds;
+						if (nowSec >= finishedAt) {
+							clearInterval(timer);
+							setGameState("finished");
+						} else {
+							setGameState("gaming");
+						}
 					}
 					return prev - 1;
 				});
 			}, 1000);
 
-			const timer2 = setInterval(() => {
-				const nowSec = Math.floor(Date.now() / 1000);
-				const finishedAt = startedAt + game.duration_seconds;
-				if (nowSec >= finishedAt) {
-					clearInterval(timer2);
-					setGameState("finished");
-				}
-			}, 1000);
-
 			return () => {
-				clearInterval(timer1);
-				clearInterval(timer2);
+				clearInterval(timer);
 			};
 		}
 	}, [gameState, startedAt, game.duration_seconds]);
