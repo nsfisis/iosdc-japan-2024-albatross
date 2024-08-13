@@ -35,6 +35,18 @@ export async function action({ request }: ActionFunctionArgs) {
 			{ status: 400 },
 		);
 	}
+	if (username.includes("@")) {
+		return json(
+			{
+				message: "ユーザー名が誤っています",
+				errors: {
+					username: "メールアドレスではなくユーザー名を入力してください",
+					password: undefined,
+				},
+			},
+			{ status: 400 },
+		);
+	}
 
 	try {
 		await login(request);

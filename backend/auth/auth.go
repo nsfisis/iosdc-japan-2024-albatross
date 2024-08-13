@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -17,6 +18,7 @@ var (
 	ErrInvalidRegistrationToken = errors.New("invalid registration token")
 	ErrNoRegistrationToken      = errors.New("no registration token")
 	ErrForteeLoginTimeout       = errors.New("fortee login timeout")
+	ErrForteeEmailUsed          = errors.New("fortee email used")
 )
 
 const (
@@ -103,6 +105,11 @@ func verifyRegistrationToken(ctx context.Context, queries *db.Queries, registrat
 }
 
 func verifyForteeAccount(ctx context.Context, username string, password string) error {
+	// fortee API allows login with email address, but this system disallows it.
+	if strings.Contains(username, "@") {
+		return ErrForteeEmailUsed
+	}
+
 	ctx, cancel := context.WithTimeout(ctx, forteeAPITimeout)
 	defer cancel()
 
