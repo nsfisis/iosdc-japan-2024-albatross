@@ -4,6 +4,8 @@ services:
       context: ./backend
     ports:
       - '127.0.0.1:8002:80'
+    volumes:
+      - files-data:/data/files:rw
     depends_on:
       db:
         condition: service_healthy
@@ -67,3 +69,4 @@ services:
 
 volumes:
   db-data:
+  files-data:

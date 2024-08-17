@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	apiEndpoint = "https://fortee.jp"
+	Endpoint = "https://fortee.jp"
 )
 
 var (
@@ -16,7 +16,7 @@ var (
 )
 
 func Login(ctx context.Context, username string, password string) (string, error) {
-	client, err := NewClientWithResponses(apiEndpoint, WithRequestEditorFn(addAcceptHeader))
+	client, err := NewClientWithResponses(Endpoint, WithRequestEditorFn(addAcceptHeader))
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +41,7 @@ func Login(ctx context.Context, username string, password string) (string, error
 }
 
 func GetUserAvatarURL(ctx context.Context, username string) (string, error) {
-	client, err := NewClientWithResponses(apiEndpoint, WithRequestEditorFn(addAcceptHeader))
+	client, err := NewClientWithResponses(Endpoint, WithRequestEditorFn(addAcceptHeader))
 	if err != nil {
 		return "", err
 	}

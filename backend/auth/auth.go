@@ -3,11 +3,13 @@ package auth
 import (
 	"context"
 	"errors"
+	"log"
 	"time"
 
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/account"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/fortee"
 )
@@ -98,6 +100,13 @@ func signup(
 	}); err != nil {
 		return 0, err
 	}
+	go func() {
+		err := account.FetchIcon(context.Background(), queries, int(userID))
+		if err != nil {
+			log.Printf("%v", err)
+			// The failure is intentionally ignored. Retry manually if needed.
+		}
+	}()
 	return int(userID), nil
 }
 
