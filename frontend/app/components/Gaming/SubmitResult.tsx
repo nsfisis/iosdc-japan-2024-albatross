@@ -24,9 +24,7 @@ export default function SubmitResult({ result, submitButton }: Props) {
 				{result.execResults.map((r, idx) => (
 					<li key={r.testcase_id ?? -1} className="flex gap-2">
 						<div className="flex flex-col gap-2 p-2">
-							<div className="w-6">
-								<ExecStatusIndicatorIcon status={r.status} />
-							</div>
+							<ExecStatusIndicatorIcon status={r.status} />
 							{idx !== result.execResults.length - 1 && (
 								<div>
 									<FontAwesomeIcon
