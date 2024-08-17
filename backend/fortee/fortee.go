@@ -14,7 +14,7 @@ var (
 	ErrLoginFailed = errors.New("fortee login failed")
 )
 
-func LoginFortee(ctx context.Context, username string, password string) (string, error) {
+func Login(ctx context.Context, username string, password string) (string, error) {
 	client, err := NewClientWithResponses(apiEndpoint, WithRequestEditorFn(addAcceptHeader))
 	if err != nil {
 		return "", err

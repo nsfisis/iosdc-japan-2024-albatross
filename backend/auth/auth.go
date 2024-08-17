@@ -8,8 +8,8 @@ import (
 	"github.com/jackc/pgx/v5"
 	"golang.org/x/crypto/bcrypt"
 
-	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth/fortee"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/fortee"
 )
 
 var (
@@ -119,7 +119,7 @@ func verifyForteeAccount(ctx context.Context, username string, password string) 
 	ctx, cancel := context.WithTimeout(ctx, forteeAPITimeout)
 	defer cancel()
 
-	canonicalizedUsername, err := fortee.LoginFortee(ctx, username, password)
+	canonicalizedUsername, err := fortee.Login(ctx, username, password)
 	if errors.Is(err, context.DeadlineExceeded) {
 		return "", ErrForteeLoginTimeout
 	}
