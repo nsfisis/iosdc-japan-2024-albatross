@@ -251,8 +251,7 @@ func (hub *gameHub) processTaskResults() {
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullNullable[int](),
 					"success",
-					// TODO: inherit the command stdout/stderr.
-					"Successfully compiled",
+					"",
 					"",
 				)
 			}
@@ -298,8 +297,7 @@ func (hub *gameHub) processTaskResults() {
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					"success",
-					// TODO: inherit the command stdout/stderr?
-					"Testcase passed",
+					"",
 					"",
 				)
 			}
