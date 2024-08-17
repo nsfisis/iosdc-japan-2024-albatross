@@ -1,9 +1,8 @@
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { PlayerInfo } from "../../models/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
-import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
-import SubmitStatusLabel from "../SubmitStatusLabel";
+import CodeBlock from "../Gaming/CodeBlock";
+import ScoreBar from "../Gaming/ScoreBar";
+import SubmitResult from "../Gaming/SubmitResult";
 
 type Props = {
 	gameDisplayName: string;
@@ -21,26 +20,14 @@ export default function GolfWatchAppGaming({
 	leftTimeSeconds,
 	playerInfoA,
 	playerInfoB,
+	problemTitle,
+	problemDescription,
 }: Props) {
 	const leftTime = (() => {
 		const k = gameDurationSeconds + leftTimeSeconds;
 		const m = Math.floor(k / 60);
 		const s = k % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
-	})();
-
-	const scoreRatio = (() => {
-		const scoreA = playerInfoA.score;
-		const scoreB = playerInfoB.score;
-		if (scoreA === null && scoreB === null) {
-			return 50;
-		} else if (scoreA === null) {
-			return 0;
-		} else if (scoreB === null) {
-			return 100;
-		} else {
-			return (scoreB / (scoreA + scoreB)) * 100;
-		}
 	})();
 
 	return (
@@ -91,99 +78,27 @@ export default function GolfWatchAppGaming({
 					</div>
 				</div>
 			</div>
-			<div className="w-full bg-purple-400">
-				<div
-					className="h-6 bg-orange-400"
-					style={{ width: `${scoreRatio}%` }}
-				></div>
-			</div>
-			<div className="grow grid grid-cols-10 p-4 gap-4">
-				<div className="col-span-3">
-					<pre className="bg-white resize-none h-full w-full rounded-lg border border-gray-300 p-2">
-						<code>{playerInfoA.code}</code>
-					</pre>
-				</div>
-				<div className="col-span-2 flex flex-col gap-4">
-					<div className="flex">
-						<div className="grow font-bold text-xl text-center">
-							<SubmitStatusLabel status={playerInfoA.submitResult.status} />
-						</div>
+			<ScoreBar
+				scoreA={playerInfoA.score}
+				scoreB={playerInfoB.score}
+				bgA="bg-orange-400"
+				bgB="bg-purple-400"
+			/>
+			<div className="grow grid grid-cols-3 p-4 gap-4">
+				<CodeBlock code={playerInfoA.code ?? ""} />
+				<div className="flex flex-col gap-4 justify-between">
+					<div className="grid grid-cols-2 gap-4">
+						<SubmitResult result={playerInfoA.submitResult} />
+						<SubmitResult result={playerInfoB.submitResult} />
 					</div>
-					<ul className="flex flex-col gap-2">
-						{playerInfoA.submitResult.execResults.map((r, idx) => (
-							<li key={r.testcase_id ?? -1} className="flex gap-2">
-								<div className="flex flex-col gap-2 p-2">
-									<div className="w-6">
-										<ExecStatusIndicatorIcon status={r.status} />
-									</div>
-									{idx !== playerInfoA.submitResult.execResults.length - 1 && (
-										<div>
-											<FontAwesomeIcon
-												icon={faArrowDown}
-												fixedWidth
-												className="text-gray-500"
-											/>
-										</div>
-									)}
-								</div>
-								<div className="grow p-2 overflow-x-scroll">
-									<BorderedContainer>
-										<div className="font-semibold">{r.label}</div>
-										<div>
-											<code>
-												{r.stdout}
-												{r.stderr}
-											</code>
-										</div>
-									</BorderedContainer>
-								</div>
-							</li>
-						))}
-					</ul>
-				</div>
-				<div className="col-span-2 flex flex-col gap-4">
-					<div className="flex">
-						<div className="grow font-bold text-xl text-center">
-							<SubmitStatusLabel status={playerInfoB.submitResult.status} />
+					<div>
+						<div className="mb-2 text-center text-xl font-bold">
+							{problemTitle}
 						</div>
+						<BorderedContainer>{problemDescription}</BorderedContainer>
 					</div>
-					<ul className="flex flex-col gap-2">
-						{playerInfoB.submitResult.execResults.map((r, idx) => (
-							<li key={r.testcase_id ?? -1} className="flex gap-2">
-								<div className="flex flex-col gap-2 p-2">
-									<div className="w-6">
-										<ExecStatusIndicatorIcon status={r.status} />
-									</div>
-									{idx !== playerInfoB.submitResult.execResults.length - 1 && (
-										<div>
-											<FontAwesomeIcon
-												icon={faArrowDown}
-												fixedWidth
-												className="text-gray-500"
-											/>
-										</div>
-									)}
-								</div>
-								<div className="grow p-2 overflow-x-scroll">
-									<BorderedContainer>
-										<div className="font-semibold">{r.label}</div>
-										<div>
-											<code>
-												{r.stdout}
-												{r.stderr}
-											</code>
-										</div>
-									</BorderedContainer>
-								</div>
-							</li>
-						))}
-					</ul>
 				</div>
-				<div className="col-span-3">
-					<pre className="bg-white resize-none h-full w-full rounded-lg border border-gray-300 p-2">
-						<code>{playerInfoB.code}</code>
-					</pre>
-				</div>
+				<CodeBlock code={playerInfoB.code ?? ""} />
 			</div>
 		</div>
 	);

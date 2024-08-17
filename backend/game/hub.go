@@ -138,7 +138,7 @@ func (hub *gameHub) run() {
 	}
 }
 
-func (hub *gameHub) sendExecResultMessage(playerID int, testcaseID nullable.Nullable[int], status string, stdout string, stderr string) {
+func (hub *gameHub) sendExecResult(playerID int, testcaseID nullable.Nullable[int], status string, stdout string, stderr string) {
 	hub.sendToPlayer(playerID, &playerMessageS2CExecResult{
 		Type: playerMessageTypeS2CExecResult,
 		Data: playerMessageS2CExecResultPayload{
@@ -218,7 +218,7 @@ func (hub *gameHub) processTaskResults() {
 		case *taskqueue.TaskResultCompileSwiftToWasm:
 			err := hub.processTaskResultCompileSwiftToWasm(taskResult)
 			if err != nil {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullNullable[int](),
 					err.Status,
@@ -234,7 +234,7 @@ func (hub *gameHub) processTaskResults() {
 		case *taskqueue.TaskResultCompileWasmToNativeExecutable:
 			err := hub.processTaskResultCompileWasmToNativeExecutable(taskResult)
 			if err != nil {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullNullable[int](),
 					err.Status,
@@ -247,12 +247,11 @@ func (hub *gameHub) processTaskResults() {
 					nullable.NewNullNullable[int](),
 				)
 			} else {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullNullable[int](),
 					"success",
-					// TODO: inherit the command stdout/stderr.
-					"Successfully compiled",
+					"",
 					"",
 				)
 			}
@@ -270,13 +269,12 @@ func (hub *gameHub) processTaskResults() {
 				Stderr:       "",
 			})
 			if err != nil {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					"internal_error",
-					// TODO: inherit the command stdout/stderr?
 					"",
-					"internal error",
+					"",
 				)
 				hub.sendSubmitResult(
 					taskResult.TaskPayload.UserID(),
@@ -286,20 +284,19 @@ func (hub *gameHub) processTaskResults() {
 				continue
 			}
 			if err1 != nil {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					aggregatedStatus,
-					err1.Stdout,
-					err1.Stderr,
+					"",
+					"",
 				)
 			} else {
-				hub.sendExecResultMessage(
+				hub.sendExecResult(
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					"success",
-					// TODO: inherit the command stdout/stderr?
-					"Testcase passed",
+					"",
 					"",
 				)
 			}
