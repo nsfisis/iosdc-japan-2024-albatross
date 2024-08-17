@@ -273,9 +273,8 @@ func (hub *gameHub) processTaskResults() {
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					"internal_error",
-					// TODO: inherit the command stdout/stderr?
 					"",
-					"internal error",
+					"",
 				)
 				hub.sendSubmitResult(
 					taskResult.TaskPayload.UserID(),
@@ -289,8 +288,8 @@ func (hub *gameHub) processTaskResults() {
 					taskResult.TaskPayload.UserID(),
 					nullable.NewNullableWithValue(int(taskResult.TaskPayload.TestcaseID)),
 					aggregatedStatus,
-					err1.Stdout,
-					err1.Stderr,
+					"",
+					"",
 				)
 			} else {
 				hub.sendExecResult(
