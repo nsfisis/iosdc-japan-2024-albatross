@@ -1,12 +1,9 @@
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "@remix-run/react";
 import React, { useRef } from "react";
 import SubmitButton from "../../components/SubmitButton";
 import type { PlayerInfo } from "../../models/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
-import ExecStatusIndicatorIcon from "../ExecStatusIndicatorIcon";
-import SubmitStatusLabel from "../SubmitStatusLabel";
+import SubmitResult from "../Gaming/SubmitResult";
 
 type Props = {
 	gameDisplayName: string;
@@ -92,44 +89,15 @@ export default function GolfPlayAppGaming({
 						className="resize-none h-full w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-300"
 					></textarea>
 				</div>
-				<div className="p-4 flex flex-col gap-4">
-					<div className="flex">
-						<SubmitButton onClick={handleSubmitButtonClick}>提出</SubmitButton>
-						<div className="grow font-bold text-xl text-center m-1">
-							<SubmitStatusLabel status={playerInfo.submitResult.status} />
-						</div>
-					</div>
-					<ul className="flex flex-col gap-2">
-						{playerInfo.submitResult.execResults.map((r, idx) => (
-							<li key={r.testcase_id ?? -1} className="flex gap-2">
-								<div className="flex flex-col gap-2 p-2">
-									<div className="w-6">
-										<ExecStatusIndicatorIcon status={r.status} />
-									</div>
-									{idx !== playerInfo.submitResult.execResults.length - 1 && (
-										<div>
-											<FontAwesomeIcon
-												icon={faArrowDown}
-												fixedWidth
-												className="text-gray-500"
-											/>
-										</div>
-									)}
-								</div>
-								<div className="grow p-2 overflow-x-scroll">
-									<BorderedContainer>
-										<div className="font-semibold">{r.label}</div>
-										<div>
-											<code>
-												{r.stdout}
-												{r.stderr}
-											</code>
-										</div>
-									</BorderedContainer>
-								</div>
-							</li>
-						))}
-					</ul>
+				<div className="p-4">
+					<SubmitResult
+						result={playerInfo.submitResult}
+						submitButton={
+							<SubmitButton onClick={handleSubmitButtonClick}>
+								提出
+							</SubmitButton>
+						}
+					/>
 				</div>
 			</div>
 		</div>
