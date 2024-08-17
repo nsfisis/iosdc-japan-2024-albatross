@@ -32,7 +32,7 @@ export default function ExecStatusIndicatorIcon({ status }: Props) {
 				<FontAwesomeIcon
 					icon={faCircleCheck}
 					fixedWidth
-					className="text-green-500"
+					className="text-sky-500"
 				/>
 			);
 		case "canceled":
