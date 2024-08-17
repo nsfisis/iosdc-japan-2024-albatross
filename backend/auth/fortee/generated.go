@@ -221,6 +221,9 @@ type PostLoginResponse struct {
 	HTTPResponse *http.Response
 	JSON200      *struct {
 		LoggedIn bool `json:"loggedIn"`
+		User     *struct {
+			Username string `json:"username"`
+		} `json:"user,omitempty"`
 	}
 }
 
@@ -274,6 +277,9 @@ func ParsePostLoginResponse(rsp *http.Response) (*PostLoginResponse, error) {
 	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
 		var dest struct {
 			LoggedIn bool `json:"loggedIn"`
+			User     *struct {
+				Username string `json:"username"`
+			} `json:"user,omitempty"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

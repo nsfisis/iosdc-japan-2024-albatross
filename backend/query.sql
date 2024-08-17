@@ -3,6 +3,11 @@ SELECT * FROM users
 WHERE users.user_id = $1
 LIMIT 1;
 
+-- name: GetUserIDByUsername :one
+SELECT user_id FROM users
+WHERE users.username = $1
+LIMIT 1;
+
 -- name: CreateUser :one
 INSERT INTO users (username, display_name, is_admin)
 VALUES ($1, $1, false)

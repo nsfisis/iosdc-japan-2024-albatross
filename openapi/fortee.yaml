@@ -34,5 +34,13 @@ paths:
                   loggedIn:
                     type: boolean
                     example: true
+                  user:
+                    type: object
+                    properties:
+                      username:
+                        type: string
+                        example: "john"
+                    required:
+                      - username
                 required:
                   - loggedIn

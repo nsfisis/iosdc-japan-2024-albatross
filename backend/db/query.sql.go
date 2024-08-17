@@ -245,6 +245,19 @@ func (q *Queries) GetUserByID(ctx context.Context, userID int32) (User, error) {
 	return i, err
 }
 
+const getUserIDByUsername = `-- name: GetUserIDByUsername :one
+SELECT user_id FROM users
+WHERE users.username = $1
+LIMIT 1
+`
+
+func (q *Queries) GetUserIDByUsername(ctx context.Context, username string) (int32, error) {
+	row := q.db.QueryRow(ctx, getUserIDByUsername, username)
+	var user_id int32
+	err := row.Scan(&user_id)
+	return user_id, err
+}
+
 const isRegistrationTokenValid = `-- name: IsRegistrationTokenValid :one
 SELECT EXISTS (
     SELECT 1 FROM registration_tokens

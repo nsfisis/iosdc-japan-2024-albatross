@@ -3,8 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5"
@@ -18,7 +16,6 @@ var (
 	ErrInvalidRegistrationToken = errors.New("invalid registration token")
 	ErrNoRegistrationToken      = errors.New("no registration token")
 	ErrForteeLoginTimeout       = errors.New("fortee login timeout")
-	ErrForteeEmailUsed          = errors.New("fortee email used")
 )
 
 const (
@@ -33,17 +30,12 @@ func Login(
 	registrationToken *string,
 ) (int, error) {
 	userAuth, err := queries.GetUserAuthByUsername(ctx, username)
-	if err != nil {
-		if errors.Is(err, pgx.ErrNoRows) {
-			err := signup(ctx, queries, username, password, registrationToken)
-			if err != nil {
-				return 0, err
-			}
-			return Login(ctx, queries, username, password, nil)
-		}
+	if err != nil && !errors.Is(err, pgx.ErrNoRows) {
 		return 0, err
 	}
+
 	if userAuth.AuthType == "password" {
+		// Authenticate with password.
 		passwordHash := userAuth.PasswordHash
 		if passwordHash == nil {
 			panic("inconsistant data")
@@ -53,41 +45,60 @@ func Login(
 			return 0, err
 		}
 		return int(userAuth.UserID), nil
-	} else if userAuth.AuthType == "fortee" {
-		if err := verifyForteeAccount(ctx, username, password); err != nil {
-			return 0, err
-		}
-		return int(userAuth.UserID), nil
 	}
-	panic(fmt.Sprintf("unexpected auth type: %s", userAuth.AuthType))
+
+	// Authenticate with fortee.
+	return verifyForteeAccountOrSignup(ctx, queries, username, password, registrationToken)
+}
+
+func verifyForteeAccountOrSignup(
+	ctx context.Context,
+	queries *db.Queries,
+	username string,
+	password string,
+	registrationToken *string,
+) (int, error) {
+	canonicalizedUsername, err := verifyForteeAccount(ctx, username, password)
+	if err != nil {
+		return 0, err
+	}
+	userID, err := queries.GetUserIDByUsername(ctx, canonicalizedUsername)
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return signup(
+				ctx,
+				queries,
+				canonicalizedUsername,
+				registrationToken,
+			)
+		}
+		return 0, err
+	}
+	return int(userID), nil
 }
 
 func signup(
 	ctx context.Context,
 	queries *db.Queries,
 	username string,
-	password string,
 	registrationToken *string,
-) error {
+) (int, error) {
 	if err := verifyRegistrationToken(ctx, queries, registrationToken); err != nil {
-		return err
-	}
-	if err := verifyForteeAccount(ctx, username, password); err != nil {
-		return err
+		return 0, err
 	}
 
 	// TODO: transaction
 	userID, err := queries.CreateUser(ctx, username)
 	if err != nil {
-		return err
+		return 0, err
 	}
 	if err := queries.CreateUserAuth(ctx, db.CreateUserAuthParams{
 		UserID:   userID,
 		AuthType: "fortee",
 	}); err != nil {
-		return err
+		return 0, err
 	}
-	return nil
+	return int(userID), nil
 }
 
 func verifyRegistrationToken(ctx context.Context, queries *db.Queries, registrationToken *string) error {
@@ -104,18 +115,13 @@ func verifyRegistrationToken(ctx context.Context, queries *db.Queries, registrat
 	return nil
 }
 
-func verifyForteeAccount(ctx context.Context, username string, password string) error {
-	// fortee API allows login with email address, but this system disallows it.
-	if strings.Contains(username, "@") {
-		return ErrForteeEmailUsed
-	}
-
+func verifyForteeAccount(ctx context.Context, username string, password string) (string, error) {
 	ctx, cancel := context.WithTimeout(ctx, forteeAPITimeout)
 	defer cancel()
 
-	err := fortee.LoginFortee(ctx, username, password)
+	canonicalizedUsername, err := fortee.LoginFortee(ctx, username, password)
 	if errors.Is(err, context.DeadlineExceeded) {
-		return ErrForteeLoginTimeout
+		return "", ErrForteeLoginTimeout
 	}
-	return err
+	return canonicalizedUsername, err
 }
