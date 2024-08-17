@@ -11,6 +11,13 @@
       <a href="/iosdc-japan/2024/code-battle/admin/games/{{ .GameID }}">
         {{ .DisplayName }} (id={{ .GameID }} type={{ .GameType }} state={{ .State }})
       </a>
+      <ul>
+        {{ if and (ne .State "closed") (ne .State "finished") }}
+          <li>
+            <a href="/iosdc-japan/2024/code-battle/golf/{{ .GameID }}/watch">Watch</a>
+          </li>
+        {{ end }}
+      </ul>
     </li>
   {{ end }}
 </ul>
