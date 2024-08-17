@@ -101,6 +101,9 @@ type ClientInterface interface {
 	PostLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error)
 
 	PostLoginWithFormdataBody(ctx context.Context, body PostLoginFormdataRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error)
+
+	// GetUser request
+	GetUser(ctx context.Context, username string, reqEditors ...RequestEditorFn) (*http.Response, error)
 }
 
 func (c *Client) PostLoginWithBody(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*http.Response, error) {
@@ -117,6 +120,18 @@ func (c *Client) PostLoginWithBody(ctx context.Context, contentType string, body
 
 func (c *Client) PostLoginWithFormdataBody(ctx context.Context, body PostLoginFormdataRequestBody, reqEditors ...RequestEditorFn) (*http.Response, error) {
 	req, err := NewPostLoginRequestWithFormdataBody(c.Server, body)
+	if err != nil {
+		return nil, err
+	}
+	req = req.WithContext(ctx)
+	if err := c.applyEditors(ctx, req, reqEditors); err != nil {
+		return nil, err
+	}
+	return c.Client.Do(req)
+}
+
+func (c *Client) GetUser(ctx context.Context, username string, reqEditors ...RequestEditorFn) (*http.Response, error) {
+	req, err := NewGetUserRequest(c.Server, username)
 	if err != nil {
 		return nil, err
 	}
@@ -163,6 +178,40 @@ func NewPostLoginRequestWithBody(server string, contentType string, body io.Read
 	}
 
 	req.Header.Add("Content-Type", contentType)
+
+	return req, nil
+}
+
+// NewGetUserRequest generates requests for GetUser
+func NewGetUserRequest(server string, username string) (*http.Request, error) {
+	var err error
+
+	var pathParam0 string
+
+	pathParam0, err = runtime.StyleParamWithLocation("simple", false, "username", runtime.ParamLocationPath, username)
+	if err != nil {
+		return nil, err
+	}
+
+	serverURL, err := url.Parse(server)
+	if err != nil {
+		return nil, err
+	}
+
+	operationPath := fmt.Sprintf("/api/user/view/%s", pathParam0)
+	if operationPath[0] == '/' {
+		operationPath = "." + operationPath
+	}
+
+	queryURL, err := serverURL.Parse(operationPath)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("GET", queryURL.String(), nil)
+	if err != nil {
+		return nil, err
+	}
 
 	return req, nil
 }
@@ -214,6 +263,9 @@ type ClientWithResponsesInterface interface {
 	PostLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostLoginResponse, error)
 
 	PostLoginWithFormdataBodyWithResponse(ctx context.Context, body PostLoginFormdataRequestBody, reqEditors ...RequestEditorFn) (*PostLoginResponse, error)
+
+	// GetUserWithResponse request
+	GetUserWithResponse(ctx context.Context, username string, reqEditors ...RequestEditorFn) (*GetUserResponse, error)
 }
 
 type PostLoginResponse struct {
@@ -243,6 +295,32 @@ func (r PostLoginResponse) StatusCode() int {
 	return 0
 }
 
+type GetUserResponse struct {
+	Body         []byte
+	HTTPResponse *http.Response
+	JSON200      *struct {
+		AvatarURL string `json:"avatar_url"`
+		Username  string `json:"username"`
+		UUID      string `json:"uuid"`
+	}
+}
+
+// Status returns HTTPResponse.Status
+func (r GetUserResponse) Status() string {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.Status
+	}
+	return http.StatusText(0)
+}
+
+// StatusCode returns HTTPResponse.StatusCode
+func (r GetUserResponse) StatusCode() int {
+	if r.HTTPResponse != nil {
+		return r.HTTPResponse.StatusCode
+	}
+	return 0
+}
+
 // PostLoginWithBodyWithResponse request with arbitrary body returning *PostLoginResponse
 func (c *ClientWithResponses) PostLoginWithBodyWithResponse(ctx context.Context, contentType string, body io.Reader, reqEditors ...RequestEditorFn) (*PostLoginResponse, error) {
 	rsp, err := c.PostLoginWithBody(ctx, contentType, body, reqEditors...)
@@ -258,6 +336,15 @@ func (c *ClientWithResponses) PostLoginWithFormdataBodyWithResponse(ctx context.
 		return nil, err
 	}
 	return ParsePostLoginResponse(rsp)
+}
+
+// GetUserWithResponse request returning *GetUserResponse
+func (c *ClientWithResponses) GetUserWithResponse(ctx context.Context, username string, reqEditors ...RequestEditorFn) (*GetUserResponse, error) {
+	rsp, err := c.GetUser(ctx, username, reqEditors...)
+	if err != nil {
+		return nil, err
+	}
+	return ParseGetUserResponse(rsp)
 }
 
 // ParsePostLoginResponse parses an HTTP response from a PostLoginWithResponse call
@@ -280,6 +367,36 @@ func ParsePostLoginResponse(rsp *http.Response) (*PostLoginResponse, error) {
 			User     *struct {
 				Username string `json:"username"`
 			} `json:"user,omitempty"`
+		}
+		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
+			return nil, err
+		}
+		response.JSON200 = &dest
+
+	}
+
+	return response, nil
+}
+
+// ParseGetUserResponse parses an HTTP response from a GetUserWithResponse call
+func ParseGetUserResponse(rsp *http.Response) (*GetUserResponse, error) {
+	bodyBytes, err := io.ReadAll(rsp.Body)
+	defer func() { _ = rsp.Body.Close() }()
+	if err != nil {
+		return nil, err
+	}
+
+	response := &GetUserResponse{
+		Body:         bodyBytes,
+		HTTPResponse: rsp,
+	}
+
+	switch {
+	case strings.Contains(rsp.Header.Get("Content-Type"), "json") && rsp.StatusCode == 200:
+		var dest struct {
+			AvatarURL string `json:"avatar_url"`
+			Username  string `json:"username"`
+			UUID      string `json:"uuid"`
 		}
 		if err := json.Unmarshal(bodyBytes, &dest); err != nil {
 			return nil, err

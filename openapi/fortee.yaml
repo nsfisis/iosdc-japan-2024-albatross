@@ -44,3 +44,36 @@ paths:
                       - username
                 required:
                   - loggedIn
+  /api/user/view/{username}:
+    get:
+      operationId: getUser
+      summary: Get a user
+      parameters:
+        - in: path
+          name: username
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  uuid:
+                    type: string
+                    example: "11111111-1111-1111-1111-111111111111"
+                  username:
+                    type: string
+                    example: "john"
+                  avatar_url:
+                    type: string
+                    example: "/files/_user/11111111-1111-1111-1111-111111111111.jpg"
+                required:
+                  - uuid
+                  - username
+                  - avatar_url
+        '404':
+          description: User not found
