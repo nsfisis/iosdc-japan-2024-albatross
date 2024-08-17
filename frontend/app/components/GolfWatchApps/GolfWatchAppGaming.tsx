@@ -47,9 +47,22 @@ export default function GolfWatchAppGaming({
 		<div className="min-h-screen bg-gray-100 flex flex-col">
 			<div className="text-white bg-iosdc-japan grid grid-cols-3 px-4 py-2">
 				<div className="font-bold flex justify-between my-auto">
-					<div>
-						<div className="text-gray-100">Player 1</div>
-						<div className="text-2xl">{playerInfoA.displayName}</div>
+					<div className="flex gap-4">
+						{playerInfoA.iconPath && (
+							<img
+								src={
+									process.env.NODE_ENV === "development"
+										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfoA.iconPath}`
+										: `/iosdc-japan/2024/code-battle${playerInfoA.iconPath}`
+								}
+								alt={`${playerInfoA.displayName} のアイコン`}
+								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							/>
+						)}
+						<div>
+							<div className="text-gray-100">Player 1</div>
+							<div className="text-2xl">{playerInfoA.displayName}</div>
+						</div>
 					</div>
 					<div className="text-6xl">{playerInfoA.score}</div>
 				</div>
@@ -59,9 +72,22 @@ export default function GolfWatchAppGaming({
 				</div>
 				<div className="font-bold flex justify-between my-auto">
 					<div className="text-6xl">{playerInfoB.score}</div>
-					<div>
-						<div className="text-gray-100">Player 2</div>
-						<div className="text-2xl">{playerInfoB.displayName}</div>
+					<div className="flex gap-4 text-end">
+						<div>
+							<div className="text-gray-100">Player 2</div>
+							<div className="text-2xl">{playerInfoB.displayName}</div>
+						</div>
+						{playerInfoB.iconPath && (
+							<img
+								src={
+									process.env.NODE_ENV === "development"
+										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfoB.iconPath}`
+										: `/iosdc-japan/2024/code-battle${playerInfoB.iconPath}`
+								}
+								alt={`${playerInfoB.displayName} のアイコン`}
+								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							/>
+						)}
 					</div>
 				</div>
 			</div>
