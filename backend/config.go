@@ -11,6 +11,7 @@ type Config struct {
 	dbUser     string
 	dbPassword string
 	dbName     string
+	isLocal    bool
 }
 
 func NewConfigFromEnv() (*Config, error) {
@@ -34,11 +35,14 @@ func NewConfigFromEnv() (*Config, error) {
 	if !exists {
 		return nil, fmt.Errorf("ALBATROSS_DB_NAME not set")
 	}
+	isLocalStr, exists := os.LookupEnv("ALBATROSS_IS_LOCAL")
+	isLocal := exists && isLocalStr == "1"
 	return &Config{
 		dbHost:     dbHost,
 		dbPort:     dbPort,
 		dbUser:     dbUser,
 		dbPassword: dbPassword,
 		dbName:     dbName,
+		isLocal:    isLocal,
 	}, nil
 }

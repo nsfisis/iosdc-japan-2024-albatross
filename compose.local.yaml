@@ -17,6 +17,7 @@ services:
       ALBATROSS_DB_USER: postgres
       ALBATROSS_DB_PASSWORD: eepei5reesoo0ov2ceelahd4Emi0au8ahJa6oochohheiquahweihoovahsee1oo
       ALBATROSS_DB_NAME: albatross
+      ALBATROSS_IS_LOCAL: 1
     env_file: [.env]
     restart: always
 

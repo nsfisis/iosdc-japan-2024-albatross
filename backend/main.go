@@ -87,23 +87,25 @@ func main() {
 	adminGroup := e.Group("/iosdc-japan/2024/code-battle/admin")
 	adminHandler.RegisterHandlers(adminGroup)
 
-	// For local dev: This is never used in production because the reverse
-	// proxy directly handles /files.
-	filesGroup := e.Group("/iosdc-japan/2024/code-battle/files")
-	filesGroup.Use(middleware.StaticWithConfig(middleware.StaticConfig{
-		Root:       "/",
-		Filesystem: http.Dir("/data/files"),
-		IgnoreBase: true,
-	}))
+	if config.isLocal {
+		// For local dev: This is never used in production because the reverse
+		// proxy directly handles /files.
+		filesGroup := e.Group("/iosdc-japan/2024/code-battle/files")
+		filesGroup.Use(middleware.StaticWithConfig(middleware.StaticConfig{
+			Root:       "/",
+			Filesystem: http.Dir("/data/files"),
+			IgnoreBase: true,
+		}))
 
-	// For local dev: This is never used in production because the reverse
-	// proxy sends these paths to the app server.
-	e.GET("/iosdc-japan/2024/code-battle/*", func(c echo.Context) error {
-		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173"+c.Request().URL.Path)
-	})
-	e.POST("/iosdc-japan/2024/code-battle/*", func(c echo.Context) error {
-		return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173"+c.Request().URL.Path)
-	})
+		// For local dev: This is never used in production because the reverse
+		// proxy sends these paths to the app server.
+		e.GET("/iosdc-japan/2024/code-battle/*", func(c echo.Context) error {
+			return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173"+c.Request().URL.Path)
+		})
+		e.POST("/iosdc-japan/2024/code-battle/*", func(c echo.Context) error {
+			return c.Redirect(http.StatusPermanentRedirect, "http://localhost:5173"+c.Request().URL.Path)
+		})
+	}
 
 	go gameHubs.Run()
 
