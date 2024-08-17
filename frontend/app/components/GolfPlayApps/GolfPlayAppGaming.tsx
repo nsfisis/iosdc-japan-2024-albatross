@@ -55,12 +55,26 @@ export default function GolfPlayAppGaming({
 					<div className="text-gray-100">{gameDisplayName}</div>
 					<div className="text-2xl">{leftTime}</div>
 				</div>
-				<div className="font-bold text-end">
-					<Link to={"/dashboard"} className="text-gray-100">
-						{playerInfo.displayName}
-					</Link>
-					<div className="text-2xl">{playerInfo.score}</div>
-				</div>
+				<Link to={"/dashboard"}>
+					<div className="flex gap-4 my-auto font-bold">
+						<div className="text-6xl">{playerInfo.score}</div>
+						<div className="text-end">
+							<div className="text-gray-100">Player 1</div>
+							<div className="text-2xl">{playerInfo.displayName}</div>
+						</div>
+						{playerInfo.iconPath && (
+							<img
+								src={
+									process.env.NODE_ENV === "development"
+										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfo.iconPath}`
+										: `/iosdc-japan/2024/code-battle${playerInfo.iconPath}`
+								}
+								alt={`${playerInfo.displayName} のアイコン`}
+								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							/>
+						)}
+					</div>
+				</Link>
 			</div>
 			<div className="grow grid grid-cols-3 divide-x divide-gray-300">
 				<div className="p-4">

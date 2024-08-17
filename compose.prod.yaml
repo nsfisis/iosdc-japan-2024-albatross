@@ -5,6 +5,7 @@ services:
       - '127.0.0.1:8002:80'
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - files-data:/var/www/files:ro
     depends_on:
       - api-server
       - app-server
@@ -15,6 +16,8 @@ services:
       context: ./backend
     expose:
       - 80
+    volumes:
+      - files-data:/data/files:rw
     depends_on:
       db:
         condition: service_healthy
@@ -77,3 +80,4 @@ services:
 
 volumes:
   db-data:
+  files-data:

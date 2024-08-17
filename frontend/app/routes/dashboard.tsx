@@ -31,6 +31,17 @@ export default function Dashboard() {
 
 	return (
 		<div className="p-6 bg-gray-100 min-h-screen flex flex-col items-center">
+			{user.icon_path && (
+				<img
+					src={
+						process.env.NODE_ENV === "development"
+							? `http://localhost:8002/iosdc-japan/2024/code-battle${user.icon_path}`
+							: `/iosdc-japan/2024/code-battle${user.icon_path}`
+					}
+					alt={`${user.display_name} のアイコン`}
+					className="w-24 h-24 rounded-full mb-4"
+				/>
+			)}
 			<h1 className="text-2xl font-bold mb-4">
 				<span className="text-gray-800">{user.display_name}</span>
 				<span className="text-gray-500 ml-2">@{user.username}</span>

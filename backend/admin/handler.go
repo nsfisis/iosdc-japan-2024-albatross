@@ -1,7 +1,9 @@
 package admin
 
 import (
+	"context"
 	"errors"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
@@ -10,6 +12,7 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 	"github.com/labstack/echo/v4"
 
+	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/account"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/auth"
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
@@ -58,6 +61,7 @@ func (h *Handler) RegisterHandlers(g *echo.Group) {
 	g.GET("/dashboard", h.getDashboard)
 	g.GET("/users", h.getUsers)
 	g.GET("/users/:userID", h.getUserEdit)
+	g.POST("/users/:userID/fetch-icon", h.postUserFetchIcon)
 	g.GET("/games", h.getGames)
 	g.GET("/games/:gameID", h.getGameEdit)
 	g.POST("/games/:gameID", h.postGameEdit)
@@ -114,6 +118,28 @@ func (h *Handler) getUserEdit(c echo.Context) error {
 			"IsAdmin":     row.IsAdmin,
 		},
 	})
+}
+
+func (h *Handler) postUserFetchIcon(c echo.Context) error {
+	userID, err := strconv.Atoi(c.Param("userID"))
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, "Invalid user id")
+	}
+	row, err := h.q.GetUserByID(c.Request().Context(), int32(userID))
+	if err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return echo.NewHTTPError(http.StatusNotFound)
+		}
+		return echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	go func() {
+		err := account.FetchIcon(context.Background(), h.q, int(row.UserID))
+		if err != nil {
+			log.Printf("%v", err)
+			// The failure is intentionally ignored. Retry manually if needed.
+		}
+	}()
+	return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/admin/users")
 }
 
 func (h *Handler) getGames(c echo.Context) error {

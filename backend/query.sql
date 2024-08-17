@@ -13,6 +13,11 @@ INSERT INTO users (username, display_name, is_admin)
 VALUES ($1, $1, false)
 RETURNING user_id;
 
+-- name: UpdateUserIconPath :exec
+UPDATE users
+SET icon_path = $2
+WHERE user_id = $1;
+
 -- name: ListUsers :many
 SELECT * FROM users
 ORDER BY users.user_id;

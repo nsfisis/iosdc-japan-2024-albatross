@@ -2,7 +2,7 @@ package: fortee
 generate:
   models: true
   client: true
-output: ../auth/fortee/generated.go
+output: ../fortee/generated.go
 output-options:
   skip-prune: true
   nullable-type: true

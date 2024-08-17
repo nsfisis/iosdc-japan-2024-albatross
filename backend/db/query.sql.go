@@ -584,3 +584,19 @@ func (q *Queries) UpdateGameState(ctx context.Context, arg UpdateGameStateParams
 	_, err := q.db.Exec(ctx, updateGameState, arg.GameID, arg.State)
 	return err
 }
+
+const updateUserIconPath = `-- name: UpdateUserIconPath :exec
+UPDATE users
+SET icon_path = $2
+WHERE user_id = $1
+`
+
+type UpdateUserIconPathParams struct {
+	UserID   int32
+	IconPath *string
+}
+
+func (q *Queries) UpdateUserIconPath(ctx context.Context, arg UpdateUserIconPathParams) error {
+	_, err := q.db.Exec(ctx, updateUserIconPath, arg.UserID, arg.IconPath)
+	return err
+}
