@@ -1,4 +1,5 @@
 import { PlayerInfo } from "../../models/PlayerInfo";
+import BorderedContainer from "../BorderedContainer";
 import CodeBlock from "../Gaming/CodeBlock";
 import ScoreBar from "../Gaming/ScoreBar";
 import SubmitResult from "../Gaming/SubmitResult";
@@ -19,6 +20,8 @@ export default function GolfWatchAppGaming({
 	leftTimeSeconds,
 	playerInfoA,
 	playerInfoB,
+	problemTitle,
+	problemDescription,
 }: Props) {
 	const leftTime = (() => {
 		const k = gameDurationSeconds + leftTimeSeconds;
@@ -81,19 +84,21 @@ export default function GolfWatchAppGaming({
 				bgA="bg-orange-400"
 				bgB="bg-purple-400"
 			/>
-			<div className="grow grid grid-cols-10 p-4 gap-4">
-				<div className="col-span-3">
-					<CodeBlock code={playerInfoA.code ?? ""} />
+			<div className="grow grid grid-cols-3 p-4 gap-4">
+				<CodeBlock code={playerInfoA.code ?? ""} />
+				<div className="flex flex-col gap-4 justify-between">
+					<div className="grid grid-cols-2 gap-4">
+						<SubmitResult result={playerInfoA.submitResult} />
+						<SubmitResult result={playerInfoB.submitResult} />
+					</div>
+					<div>
+						<div className="mb-2 text-center text-xl font-bold">
+							{problemTitle}
+						</div>
+						<BorderedContainer>{problemDescription}</BorderedContainer>
+					</div>
 				</div>
-				<div className="col-span-2">
-					<SubmitResult result={playerInfoA.submitResult} />
-				</div>
-				<div className="col-span-2">
-					<SubmitResult result={playerInfoB.submitResult} />
-				</div>
-				<div className="col-span-3">
-					<CodeBlock code={playerInfoB.code ?? ""} />
-				</div>
+				<CodeBlock code={playerInfoB.code ?? ""} />
 			</div>
 		</div>
 	);
