@@ -1,5 +1,4 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { apiGetGames } from "../.server/api/client";
 import { ensureUserLoggedIn } from "../.server/auth";
@@ -12,13 +11,6 @@ export const meta: MetaFunction = () => [
 
 export async function loader({ request }: LoaderFunctionArgs) {
 	const { user, token } = await ensureUserLoggedIn(request);
-	if (user.is_admin) {
-		return redirect(
-			process.env.NODE_ENV === "development"
-				? "http://localhost:8002/iosdc-japan/2024/code-battle/admin/dashboard"
-				: "https://t.nil.ninja/iosdc-japan/2024/code-battle/admin/dashboard",
-		);
-	}
 	const { games } = await apiGetGames(token);
 	return {
 		user,
@@ -95,6 +87,18 @@ export default function Dashboard() {
 					</button>
 				</Form>
 			</div>
+			{user.is_admin && (
+				<a
+					href={
+						process.env.NODE_ENV === "development"
+							? "http://localhost:8002/iosdc-japan/2024/code-battle/admin/dashboard"
+							: "/iosdc-japan/2024/code-battle/admin/dashboard"
+					}
+					className="mt-4 text-lg text-white bg-pink-600 px-4 py-2 rounded transition duration-300 hover:bg-pink-500 focus:ring focus:ring-pink-400 focus:outline-none"
+				>
+					Admin Dashboard
+				</a>
+			)}
 		</div>
 	);
 }
