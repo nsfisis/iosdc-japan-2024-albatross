@@ -89,7 +89,7 @@ export default function GolfWatchAppGaming({
 			/>
 			<div className="grow grid grid-cols-3 p-4 gap-4">
 				<CodeBlock code={playerInfoA.code ?? ""} language="swift" />
-				<div className="flex flex-col gap-4 justify-between">
+				<div className="flex flex-col gap-4">
 					<div className="grid grid-cols-2 gap-4">
 						<SubmitResult result={playerInfoA.submitResult} />
 						<SubmitResult result={playerInfoB.submitResult} />
