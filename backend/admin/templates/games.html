@@ -1,20 +1,20 @@
 {{ template "base.html" . }}
 
 {{ define "breadcrumb" }}
-<a href="/iosdc-japan/2024/code-battle/admin/dashboard">Dashboard</a>
+<a href="{{ .BasePath }}/admin/dashboard">Dashboard</a>
 {{ end }}
 
 {{ define "content" }}
 <ul>
   {{ range .Games }}
     <li>
-      <a href="/iosdc-japan/2024/code-battle/admin/games/{{ .GameID }}">
+      <a href="{{ $.BasePath }}/admin/games/{{ .GameID }}">
         {{ .DisplayName }} (id={{ .GameID }} type={{ .GameType }} state={{ .State }})
       </a>
       <ul>
         {{ if and (ne .State "closed") (ne .State "finished") }}
           <li>
-            <a href="/iosdc-japan/2024/code-battle/golf/{{ .GameID }}/watch">Watch</a>
+            <a href="{{ $.BasePath }}/golf/{{ .GameID }}/watch">Watch</a>
           </li>
         {{ end }}
       </ul>

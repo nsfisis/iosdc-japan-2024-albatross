@@ -2,12 +2,12 @@
 
 {{ define "content" }}
 <p>
-  <a href="/iosdc-japan/2024/code-battle/admin/users">Users</a>
+  <a href="{{ .BasePath }}/admin/users">Users</a>
 </p>
 <p>
-  <a href="/iosdc-japan/2024/code-battle/admin/games">Games</a>
+  <a href="{{ .BasePath }}/admin/games">Games</a>
 </p>
-<form method="post" action="/iosdc-japan/2024/code-battle/logout">
+<form method="post" action="{{ .BasePath }}/logout">
   <button type="submit">Logout</button>
 </form>
 {{ end }}

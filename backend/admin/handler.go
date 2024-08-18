@@ -17,6 +17,10 @@ import (
 	"github.com/nsfisis/iosdc-japan-2024-albatross/backend/db"
 )
 
+const (
+	basePath = "/iosdc-japan/2024/code-battle"
+)
+
 var jst = time.FixedZone("Asia/Tokyo", 9*60*60)
 
 type Handler struct {
@@ -40,11 +44,11 @@ func newAdminMiddleware() echo.MiddlewareFunc {
 		return func(c echo.Context) error {
 			jwt, err := c.Cookie("albatross_token")
 			if err != nil {
-				return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/login")
+				return c.Redirect(http.StatusSeeOther, basePath+"/login")
 			}
 			claims, err := auth.ParseJWT(jwt.Value)
 			if err != nil {
-				return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/login")
+				return c.Redirect(http.StatusSeeOther, basePath+"/login")
 			}
 			if !claims.IsAdmin {
 				return echo.NewHTTPError(http.StatusForbidden)
@@ -69,7 +73,8 @@ func (h *Handler) RegisterHandlers(g *echo.Group) {
 
 func (h *Handler) getDashboard(c echo.Context) error {
 	return c.Render(http.StatusOK, "dashboard", echo.Map{
-		"Title": "Dashboard",
+		"BasePath": basePath,
+		"Title":    "Dashboard",
 	})
 }
 
@@ -90,8 +95,9 @@ func (h *Handler) getUsers(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "users", echo.Map{
-		"Title": "Users",
-		"Users": users,
+		"BasePath": basePath,
+		"Title":    "Users",
+		"Users":    users,
 	})
 }
 
@@ -109,7 +115,8 @@ func (h *Handler) getUserEdit(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "user_edit", echo.Map{
-		"Title": "User Edit",
+		"BasePath": basePath,
+		"Title":    "User Edit",
 		"User": echo.Map{
 			"UserID":      row.UserID,
 			"Username":    row.Username,
@@ -139,7 +146,7 @@ func (h *Handler) postUserFetchIcon(c echo.Context) error {
 			// The failure is intentionally ignored. Retry manually if needed.
 		}
 	}()
-	return c.Redirect(http.StatusSeeOther, "/iosdc-japan/2024/code-battle/admin/users")
+	return c.Redirect(http.StatusSeeOther, basePath+"/admin/users")
 }
 
 func (h *Handler) getGames(c echo.Context) error {
@@ -165,8 +172,9 @@ func (h *Handler) getGames(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "games", echo.Map{
-		"Title": "Games",
-		"Games": games,
+		"BasePath": basePath,
+		"Title":    "Games",
+		"Games":    games,
 	})
 }
 
@@ -189,7 +197,8 @@ func (h *Handler) getGameEdit(c echo.Context) error {
 	}
 
 	return c.Render(http.StatusOK, "game_edit", echo.Map{
-		"Title": "Game Edit",
+		"BasePath": basePath,
+		"Title":    "Game Edit",
 		"Game": echo.Map{
 			"GameID":          row.GameID,
 			"GameType":        row.GameType,
@@ -278,5 +287,5 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 		}
 	}
 
-	return c.Redirect(http.StatusSeeOther, c.Request().URL.Path)
+	return c.Redirect(http.StatusSeeOther, basePath+"/admin/games")
 }

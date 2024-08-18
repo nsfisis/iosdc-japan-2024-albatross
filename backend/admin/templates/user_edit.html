@@ -1,7 +1,7 @@
 {{ template "base.html" . }}
 
 {{ define "breadcrumb" }}
-<a href="/iosdc-japan/2024/code-battle/admin/dashboard">Dashboard</a> | <a href="/iosdc-japan/2024/code-battle/admin/users">Users</a>
+<a href="{{ .BasePath }}/admin/dashboard">Dashboard</a> | <a href="{{ .BasePath }}/admin/users">Users</a>
 {{ end }}
 
 {{ define "content" }}

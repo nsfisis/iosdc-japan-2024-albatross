@@ -1,17 +1,17 @@
 {{ template "base.html" . }}
 
 {{ define "breadcrumb" }}
-<a href="/iosdc-japan/2024/code-battle/admin/dashboard">Dashboard</a>
+<a href="{{ .BasePath }}/admin/dashboard">Dashboard</a>
 {{ end }}
 
 {{ define "content" }}
 <ul>
   {{ range .Users }}
     <li>
-      <a href="/iosdc-japan/2024/code-battle/admin/users/{{ .UserID }}">
+      <a href="{{ $.BasePath }}/admin/users/{{ .UserID }}">
         {{ .DisplayName }} (id={{ .UserID }} username={{ .Username }}){{ if .IsAdmin }} <em>admin</em>{{ end }}
       </a>
-      <form method="post" action="/iosdc-japan/2024/code-battle/admin/users/{{ .UserID }}/fetch-icon">
+      <form method="post" action="{{ $.BasePath }}/admin/users/{{ .UserID }}/fetch-icon">
         <button type="submit">Fetch Icon</button>
       </form>
     </li>
