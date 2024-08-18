@@ -1,5 +1,3 @@
-import { faArrowDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React from "react";
 import type { SubmitResult } from "../../models/SubmitResult";
 import BorderedContainer from "../BorderedContainer";
@@ -20,32 +18,27 @@ export default function SubmitResult({ result, submitButton }: Props) {
 					<SubmitStatusLabel status={result.status} />
 				</div>
 			</div>
-			<ul className="flex flex-col gap-2">
-				{result.execResults.map((r, idx) => (
-					<li key={r.testcase_id ?? -1} className="flex gap-2">
-						<div className="flex flex-col gap-2 p-2">
-							<ExecStatusIndicatorIcon status={r.status} />
-							{idx !== result.execResults.length - 1 && (
-								<div>
-									<FontAwesomeIcon
-										icon={faArrowDown}
-										fixedWidth
-										className="text-gray-500"
-									/>
+			<ul className="flex flex-col gap-4">
+				{result.execResults.map((r) => (
+					<li key={r.testcase_id ?? -1}>
+						<BorderedContainer>
+							<div className="flex flex-col gap-2">
+								<div className="flex gap-2">
+									<div className="my-auto">
+										<ExecStatusIndicatorIcon status={r.status} />
+									</div>
+									<div className="font-semibold">{r.label}</div>
 								</div>
-							)}
-						</div>
-						<div className="grow p-2">
-							<BorderedContainer>
-								<div className="font-semibold">{r.label}</div>
-								<pre className="overflow-y-hidden max-h-96 whitespace-pre-wrap break-words">
-									<code>
-										{r.stdout}
-										{r.stderr}
-									</code>
-								</pre>
-							</BorderedContainer>
-						</div>
+								{r.stdout + r.stderr && (
+									<pre className="overflow-y-hidden max-h-96 p-2 bg-gray-50 rounded-lg border border-gray-300 whitespace-pre-wrap break-words">
+										<code>
+											{r.stdout}
+											{r.stderr}
+										</code>
+									</pre>
+								)}
+							</div>
+						</BorderedContainer>
 					</li>
 				))}
 			</ul>

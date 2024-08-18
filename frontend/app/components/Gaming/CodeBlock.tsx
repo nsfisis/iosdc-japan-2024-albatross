@@ -13,7 +13,7 @@ export default function CodeBlock({ code, language }: Props) {
 	const highlighted = highlight(code, languages[language]!, language);
 
 	return (
-		<pre className="h-full w-full p-2 bg-white rounded-lg border border-gray-300 whitespace-pre-wrap break-words">
+		<pre className="h-full w-full p-2 bg-gray-50 rounded-lg border border-gray-300 whitespace-pre-wrap break-words">
 			<code dangerouslySetInnerHTML={{ __html: highlighted }} />
 		</pre>
 	);
