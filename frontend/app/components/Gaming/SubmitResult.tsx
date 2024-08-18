@@ -38,12 +38,12 @@ export default function SubmitResult({ result, submitButton }: Props) {
 						<div className="grow p-2">
 							<BorderedContainer>
 								<div className="font-semibold">{r.label}</div>
-								<div>
+								<pre className="overflow-y-hidden max-h-96 whitespace-pre-wrap break-words">
 									<code>
 										{r.stdout}
 										{r.stderr}
 									</code>
-								</div>
+								</pre>
 							</BorderedContainer>
 						</div>
 					</li>
