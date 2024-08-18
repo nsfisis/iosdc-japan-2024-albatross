@@ -1,16 +1,19 @@
 type Props = {
+	gameDisplayName: string;
 	leftTimeSeconds: number;
 };
 
 export default function GolfPlayAppStarting({
-	leftTimeSeconds: timeLeft,
+	gameDisplayName,
+	leftTimeSeconds,
 }: Props) {
 	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
-			<div className="text-center">
-				<h1 className="text-4xl font-bold text-black-600 mb-4">
-					Starting... ({timeLeft} s)
-				</h1>
+		<div className="min-h-screen bg-gray-100 flex flex-col">
+			<div className="text-white bg-iosdc-japan p-10 text-center">
+				<div className="text-4xl text-bold">{gameDisplayName}</div>
+			</div>
+			<div className="text-center text-black font-black text-10xl animate-ping">
+				{leftTimeSeconds}
 			</div>
 		</div>
 	);

@@ -225,9 +225,19 @@ export default function GolfPlayApp({
 	if (gameState === "connecting") {
 		return <GolfPlayAppConnecting />;
 	} else if (gameState === "waiting") {
-		return <GolfPlayAppWaiting />;
+		return (
+			<GolfPlayAppWaiting
+				gameDisplayName={game.display_name}
+				playerInfo={playerInfo}
+			/>
+		);
 	} else if (gameState === "starting") {
-		return <GolfPlayAppStarting leftTimeSeconds={leftTimeSeconds!} />;
+		return (
+			<GolfPlayAppStarting
+				gameDisplayName={game.display_name}
+				leftTimeSeconds={leftTimeSeconds!}
+			/>
+		);
 	} else if (gameState === "gaming") {
 		return (
 			<GolfPlayAppGaming

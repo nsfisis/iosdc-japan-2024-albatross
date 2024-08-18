@@ -1,14 +1,19 @@
 type Props = {
+	gameDisplayName: string;
 	leftTimeSeconds: number;
 };
 
 export default function GolfWatchAppStarting({
-	leftTimeSeconds: timeLeft,
+	gameDisplayName,
+	leftTimeSeconds,
 }: Props) {
 	return (
-		<div className="min-h-screen bg-gray-100 flex items-center justify-center">
+		<div className="min-h-screen bg-gray-100 flex flex-col">
+			<div className="text-white bg-iosdc-japan p-10 text-center">
+				<div className="text-4xl text-bold">{gameDisplayName}</div>
+			</div>
 			<div className="text-center text-black font-black text-10xl animate-ping">
-				{timeLeft}
+				{leftTimeSeconds}
 			</div>
 		</div>
 	);
