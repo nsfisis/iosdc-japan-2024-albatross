@@ -25,6 +25,9 @@ export default function GolfWatchAppGaming({
 }: Props) {
 	const leftTime = (() => {
 		const k = gameDurationSeconds + leftTimeSeconds;
+		if (k <= 0) {
+			return "00:00";
+		}
 		const m = Math.floor(k / 60);
 		const s = k % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;

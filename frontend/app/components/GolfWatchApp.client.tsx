@@ -3,7 +3,6 @@ import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
 import type { PlayerInfo } from "../models/PlayerInfo";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
-import GolfWatchAppFinished from "./GolfWatchApps/GolfWatchAppFinished";
 import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
 import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
 import GolfWatchAppWaiting from "./GolfWatchApps/GolfWatchAppWaiting";
@@ -240,7 +239,7 @@ export default function GolfWatchApp({
 		return <GolfWatchAppWaiting />;
 	} else if (gameState === "starting") {
 		return <GolfWatchAppStarting leftTimeSeconds={leftTimeSeconds!} />;
-	} else if (gameState === "gaming") {
+	} else if (gameState === "gaming" || gameState === "finished") {
 		return (
 			<GolfWatchAppGaming
 				gameDisplayName={game.display_name}
@@ -252,8 +251,6 @@ export default function GolfWatchApp({
 				problemDescription={game.problem.description}
 			/>
 		);
-	} else if (gameState === "finished") {
-		return <GolfWatchAppFinished />;
 	} else {
 		return null;
 	}
