@@ -4,6 +4,7 @@ import SubmitButton from "../../components/SubmitButton";
 import type { PlayerInfo } from "../../models/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
 import SubmitResult from "../Gaming/SubmitResult";
+import UserIcon from "../UserIcon";
 
 type Props = {
 	gameDisplayName: string;
@@ -60,14 +61,10 @@ export default function GolfPlayAppGaming({
 							<div className="text-2xl">{playerInfo.displayName}</div>
 						</div>
 						{playerInfo.iconPath && (
-							<img
-								src={
-									process.env.NODE_ENV === "development"
-										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfo.iconPath}`
-										: `/iosdc-japan/2024/code-battle${playerInfo.iconPath}`
-								}
-								alt={`${playerInfo.displayName} のアイコン`}
-								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							<UserIcon
+								iconPath={playerInfo.iconPath}
+								displayName={playerInfo.displayName!}
+								className="w-12 h-12 my-auto"
 							/>
 						)}
 					</div>

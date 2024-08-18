@@ -3,6 +3,7 @@ import BorderedContainer from "../BorderedContainer";
 import CodeBlock from "../Gaming/CodeBlock";
 import ScoreBar from "../Gaming/ScoreBar";
 import SubmitResult from "../Gaming/SubmitResult";
+import UserIcon from "../UserIcon";
 
 type Props = {
 	gameDisplayName: string;
@@ -39,14 +40,10 @@ export default function GolfWatchAppGaming({
 				<div className="font-bold flex justify-between my-auto">
 					<div className="flex gap-4">
 						{playerInfoA.iconPath && (
-							<img
-								src={
-									process.env.NODE_ENV === "development"
-										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfoA.iconPath}`
-										: `/iosdc-japan/2024/code-battle${playerInfoA.iconPath}`
-								}
-								alt={`${playerInfoA.displayName} のアイコン`}
-								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							<UserIcon
+								iconPath={playerInfoA.iconPath}
+								displayName={playerInfoA.displayName!}
+								className="w-12 h-12 my-auto"
 							/>
 						)}
 						<div>
@@ -68,14 +65,10 @@ export default function GolfWatchAppGaming({
 							<div className="text-2xl">{playerInfoB.displayName}</div>
 						</div>
 						{playerInfoB.iconPath && (
-							<img
-								src={
-									process.env.NODE_ENV === "development"
-										? `http://localhost:8002/iosdc-japan/2024/code-battle${playerInfoB.iconPath}`
-										: `/iosdc-japan/2024/code-battle${playerInfoB.iconPath}`
-								}
-								alt={`${playerInfoB.displayName} のアイコン`}
-								className="w-12 h-12 rounded-full my-auto border-4 border-white"
+							<UserIcon
+								iconPath={playerInfoB.iconPath}
+								displayName={playerInfoB.displayName!}
+								className="w-12 h-12 my-auto"
 							/>
 						)}
 					</div>
