@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { AudioController } from "../.client/audio/AudioController";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
 import type { PlayerInfo } from "../models/PlayerInfo";
@@ -14,13 +15,17 @@ type Game = components["schemas"]["Game"];
 
 type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
 
+export type Props = {
+	game: Game;
+	sockToken: string;
+	audioController: AudioController;
+};
+
 export default function GolfWatchApp({
 	game,
 	sockToken,
-}: {
-	game: Game;
-	sockToken: string;
-}) {
+	audioController,
+}: Props) {
 	const socketUrl =
 		process.env.NODE_ENV === "development"
 			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`
@@ -53,6 +58,7 @@ export default function GolfWatchApp({
 						if (nowSec >= finishedAt) {
 							clearInterval(timer);
 							setGameState("finished");
+							audioController.playSoundEffectFinish();
 						} else {
 							setGameState("gaming");
 						}
@@ -65,7 +71,7 @@ export default function GolfWatchApp({
 				clearInterval(timer);
 			};
 		}
-	}, [gameState, startedAt, game.duration_seconds]);
+	}, [gameState, startedAt, game.duration_seconds, audioController]);
 
 	const playerA = game.players[0];
 	const playerB = game.players[1];
