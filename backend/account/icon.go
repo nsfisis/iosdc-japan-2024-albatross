@@ -34,7 +34,7 @@ func FetchIcon(
 		return fmt.Errorf("failed to fetch user icon (uid=%d): %w", userID, err)
 	}
 	// Download user icon file.
-	filePath := fmt.Sprintf("/files/%s/icon%s", url.PathEscape(user.Username), path.Ext(avatarURL))
+	filePath := fmt.Sprintf("/files/img/%s/icon%s", url.PathEscape(user.Username), path.Ext(avatarURL))
 	if err := downloadFile(ctx, fortee.Endpoint+avatarURL, "/data"+filePath); err != nil {
 		return fmt.Errorf("failed to fetch user icon (uid=%d): %w", userID, err)
 	}
