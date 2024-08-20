@@ -3,7 +3,7 @@ import { useLoaderData } from "@remix-run/react";
 import { ClientOnly } from "remix-utils/client-only";
 import { apiGetGame, apiGetToken } from "../.server/api/client";
 import { ensureUserLoggedIn } from "../.server/auth";
-import GolfWatchApp from "../components/GolfWatchApp.client";
+import GolfWatchAppWithAudioPlayRequest from "../components/GolfWatchAppWithAudioPlayRequest.client";
 import GolfWatchAppConnecting from "../components/GolfWatchApps/GolfWatchAppConnecting";
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => [
@@ -41,7 +41,9 @@ export default function GolfWatch() {
 
 	return (
 		<ClientOnly fallback={<GolfWatchAppConnecting />}>
-			{() => <GolfWatchApp game={game} sockToken={sockToken} />}
+			{() => (
+				<GolfWatchAppWithAudioPlayRequest game={game} sockToken={sockToken} />
+			)}
 		</ClientOnly>
 	);
 }

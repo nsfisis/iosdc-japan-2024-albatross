@@ -1,0 +1,14 @@
+{{ template "base.html" . }}
+
+{{ define "breadcrumb" }}
+<a href="{{ .BasePath }}/admin/dashboard">Dashboard</a>
+{{ end }}
+
+{{ define "content" }}
+  {{ range .Audio }}
+    <figure>
+      <figcaption>{{ .Label }}</figcaption>
+      <audio controls src="{{ $.BasePath }}/files/audio/{{ .FileName }}"></audio>
+    </figure>
+  {{ end }}
+{{ end }}

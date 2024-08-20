@@ -69,6 +69,7 @@ func (h *Handler) RegisterHandlers(g *echo.Group) {
 	g.GET("/games", h.getGames)
 	g.GET("/games/:gameID", h.getGameEdit)
 	g.POST("/games/:gameID", h.postGameEdit)
+	g.GET("/audio", h.getAudioTest)
 }
 
 func (h *Handler) getDashboard(c echo.Context) error {
@@ -288,4 +289,25 @@ func (h *Handler) postGameEdit(c echo.Context) error {
 	}
 
 	return c.Redirect(http.StatusSeeOther, basePath+"/admin/games")
+}
+
+func (h *Handler) getAudioTest(c echo.Context) error {
+	return c.Render(http.StatusOK, "audio", echo.Map{
+		"BasePath": basePath,
+		"Title":    "Audio Test",
+		"Audio": []echo.Map{
+			{"FileName": "EX_33.wav", "Label": "終了"},
+			{"FileName": "EX_34.wav", "Label": "勝敗1"},
+			{"FileName": "EX_35.wav", "Label": "勝敗2"},
+			{"FileName": "EX_36.wav", "Label": "グッド1"},
+			{"FileName": "EX_37.wav", "Label": "グッド2"},
+			{"FileName": "EX_38.wav", "Label": "グッド3"},
+			{"FileName": "EX_39.wav", "Label": "グッド4"},
+			{"FileName": "EX_40.wav", "Label": "スコア更新1"},
+			{"FileName": "EX_41.wav", "Label": "スコア更新2"},
+			{"FileName": "EX_42.wav", "Label": "スコア更新3"},
+			{"FileName": "EX_43.wav", "Label": "コンパイルエラー1"},
+			{"FileName": "EX_44.wav", "Label": "コンパイルエラー2"},
+		},
+	})
 }
