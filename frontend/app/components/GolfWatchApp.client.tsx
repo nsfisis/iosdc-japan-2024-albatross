@@ -260,6 +260,7 @@ export default function GolfWatchApp({
 				playerInfoB={playerInfoB}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
+				gameResult={null /* TODO */}
 			/>
 		);
 	} else {
