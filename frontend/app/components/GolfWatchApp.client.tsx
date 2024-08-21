@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { AudioController } from "../.client/audio/AudioController";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
-import type { PlayerInfo } from "../models/PlayerInfo";
+import type { PlayerState } from "../types/PlayerState";
 import GolfWatchAppConnecting from "./GolfWatchApps/GolfWatchAppConnecting";
 import GolfWatchAppGaming from "./GolfWatchApps/GolfWatchAppGaming";
 import GolfWatchAppStarting from "./GolfWatchApps/GolfWatchAppStarting";
@@ -73,12 +73,14 @@ export default function GolfWatchApp({
 		}
 	}, [gameState, startedAt, game.duration_seconds, audioController]);
 
-	const playerA = game.players[0];
-	const playerB = game.players[1];
+	const playerA = game.players[0]!;
+	const playerB = game.players[1]!;
 
-	const [playerInfoA, setPlayerInfoA] = useState<PlayerInfo>({
-		displayName: playerA?.display_name ?? null,
-		iconPath: playerA?.icon_path ?? null,
+	const playerProfileA = {
+		displayName: playerA.display_name,
+		iconPath: playerA.icon_path ?? null,
+	};
+	const [playerStateA, setPlayerStateA] = useState<PlayerState>({
 		score: null,
 		code: "",
 		submitResult: {
@@ -92,9 +94,11 @@ export default function GolfWatchApp({
 			})),
 		},
 	});
-	const [playerInfoB, setPlayerInfoB] = useState<PlayerInfo>({
-		displayName: playerB?.display_name ?? null,
-		iconPath: playerB?.icon_path ?? null,
+	const playerProfileB = {
+		displayName: playerB.display_name,
+		iconPath: playerB.icon_path ?? null,
+	};
+	const [playerStateB, setPlayerStateB] = useState<PlayerState>({
 		score: null,
 		code: "",
 		submitResult: {
@@ -138,12 +142,12 @@ export default function GolfWatchApp({
 				} else if (lastJsonMessage.type === "watcher:s2c:code") {
 					const { player_id, code } = lastJsonMessage.data;
 					const setter =
-						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+						player_id === playerA.user_id ? setPlayerStateA : setPlayerStateB;
 					setter((prev) => ({ ...prev, code }));
 				} else if (lastJsonMessage.type === "watcher:s2c:submit") {
 					const { player_id } = lastJsonMessage.data;
 					const setter =
-						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+						player_id === playerA.user_id ? setPlayerStateA : setPlayerStateB;
 					setter((prev) => ({
 						...prev,
 						submitResult: {
@@ -160,7 +164,7 @@ export default function GolfWatchApp({
 					const { player_id, testcase_id, status, stdout, stderr } =
 						lastJsonMessage.data;
 					const setter =
-						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+						player_id === playerA.user_id ? setPlayerStateA : setPlayerStateB;
 					setter((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
@@ -181,7 +185,7 @@ export default function GolfWatchApp({
 				} else if (lastJsonMessage.type === "watcher:s2c:submitresult") {
 					const { player_id, status, score } = lastJsonMessage.data;
 					const setter =
-						player_id === playerA?.user_id ? setPlayerInfoA : setPlayerInfoB;
+						player_id === playerA.user_id ? setPlayerStateA : setPlayerStateB;
 					setter((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
@@ -235,8 +239,8 @@ export default function GolfWatchApp({
 		lastJsonMessage,
 		readyState,
 		gameState,
-		playerA?.user_id,
-		playerB?.user_id,
+		playerA.user_id,
+		playerB.user_id,
 	]);
 
 	if (gameState === "connecting") {
@@ -245,8 +249,8 @@ export default function GolfWatchApp({
 		return (
 			<GolfWatchAppWaiting
 				gameDisplayName={game.display_name}
-				playerInfoA={playerInfoA}
-				playerInfoB={playerInfoB}
+				playerProfileA={playerProfileA}
+				playerProfileB={playerProfileB}
 			/>
 		);
 	} else if (gameState === "starting") {
@@ -262,8 +266,14 @@ export default function GolfWatchApp({
 				gameDisplayName={game.display_name}
 				gameDurationSeconds={game.duration_seconds}
 				leftTimeSeconds={leftTimeSeconds!}
-				playerInfoA={playerInfoA}
-				playerInfoB={playerInfoB}
+				playerInfoA={{
+					profile: playerProfileA,
+					state: playerStateA,
+				}}
+				playerInfoB={{
+					profile: playerProfileB,
+					state: playerStateB,
+				}}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
 				gameResult={null /* TODO */}

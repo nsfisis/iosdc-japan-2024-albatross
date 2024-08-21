@@ -1,14 +1,14 @@
-import { PlayerInfo } from "../../models/PlayerInfo";
-import PlayerProfile from "../PlayerProfile";
+import type { PlayerProfile } from "../../types/PlayerProfile";
+import PlayerNameAndIcon from "../PlayerNameAndIcon";
 
 type Props = {
 	gameDisplayName: string;
-	playerInfo: Omit<PlayerInfo, "code">;
+	playerProfile: PlayerProfile;
 };
 
 export default function GolfPlayAppWaiting({
 	gameDisplayName,
-	playerInfo,
+	playerProfile,
 }: Props) {
 	return (
 		<div className="min-h-screen bg-gray-100 flex flex-col font-bold text-center">
@@ -16,7 +16,7 @@ export default function GolfPlayAppWaiting({
 				<div className="text-4xl">{gameDisplayName}</div>
 			</div>
 			<div className="grow grid mx-auto text-black">
-				<PlayerProfile playerInfo={playerInfo} label="You" />
+				<PlayerNameAndIcon label="You" profile={playerProfile} />
 			</div>
 		</div>
 	);

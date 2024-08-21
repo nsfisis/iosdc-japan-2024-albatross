@@ -1,7 +1,7 @@
 import { Link } from "@remix-run/react";
 import React, { useRef } from "react";
 import SubmitButton from "../../components/SubmitButton";
-import type { PlayerInfo } from "../../models/PlayerInfo";
+import type { PlayerInfo } from "../../types/PlayerInfo";
 import BorderedContainer from "../BorderedContainer";
 import SubmitResult from "../Gaming/SubmitResult";
 import UserIcon from "../UserIcon";
@@ -10,7 +10,7 @@ type Props = {
 	gameDisplayName: string;
 	gameDurationSeconds: number;
 	leftTimeSeconds: number;
-	playerInfo: Omit<PlayerInfo, "code">;
+	playerInfo: PlayerInfo;
 	problemTitle: string;
 	problemDescription: string;
 	onCodeChange: (code: string) => void;
@@ -55,15 +55,15 @@ export default function GolfPlayAppGaming({
 				</div>
 				<Link to={"/dashboard"}>
 					<div className="flex gap-4 my-auto font-bold">
-						<div className="text-6xl">{playerInfo.score}</div>
+						<div className="text-6xl">{playerInfo.state.score}</div>
 						<div className="text-end">
 							<div className="text-gray-100">Player 1</div>
-							<div className="text-2xl">{playerInfo.displayName}</div>
+							<div className="text-2xl">{playerInfo.profile.displayName}</div>
 						</div>
-						{playerInfo.iconPath && (
+						{playerInfo.profile.iconPath && (
 							<UserIcon
-								iconPath={playerInfo.iconPath}
-								displayName={playerInfo.displayName!}
+								iconPath={playerInfo.profile.iconPath}
+								displayName={playerInfo.profile.displayName}
 								className="w-12 h-12 my-auto"
 							/>
 						)}
@@ -88,7 +88,7 @@ export default function GolfPlayAppGaming({
 				</div>
 				<div className="p-4">
 					<SubmitResult
-						result={playerInfo.submitResult}
+						result={playerInfo.state.submitResult}
 						submitButton={
 							<SubmitButton onClick={handleSubmitButtonClick}>
 								提出

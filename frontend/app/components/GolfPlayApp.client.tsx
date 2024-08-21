@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useDebouncedCallback } from "use-debounce";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
-import type { PlayerInfo } from "../models/PlayerInfo";
+import type { PlayerState } from "../types/PlayerState";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
 import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
@@ -72,9 +72,12 @@ export default function GolfPlayApp({
 		}
 	}, [gameState, startedAt, game.duration_seconds]);
 
-	const [playerInfo, setPlayerInfo] = useState<Omit<PlayerInfo, "code">>({
+	const playerProfile = {
 		displayName: player.display_name,
 		iconPath: player.icon_path ?? null,
+	};
+	const [playerState, setPlayerState] = useState<PlayerState>({
+		code: "",
 		score: null,
 		submitResult: {
 			status: "waiting_submission",
@@ -105,7 +108,7 @@ export default function GolfPlayApp({
 			type: "player:c2s:submit",
 			data: { code },
 		});
-		setPlayerInfo((prev) => ({
+		setPlayerState((prev) => ({
 			...prev,
 			submitResult: {
 				status: "running",
@@ -147,7 +150,7 @@ export default function GolfPlayApp({
 					}
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
 					const { testcase_id, status, stdout, stderr } = lastJsonMessage.data;
-					setPlayerInfo((prev) => {
+					setPlayerState((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
 							...prev.submitResult,
@@ -166,7 +169,7 @@ export default function GolfPlayApp({
 					});
 				} else if (lastJsonMessage.type === "player:s2c:submitresult") {
 					const { status, score } = lastJsonMessage.data;
-					setPlayerInfo((prev) => {
+					setPlayerState((prev) => {
 						const ret = { ...prev };
 						ret.submitResult = {
 							...prev.submitResult,
@@ -228,7 +231,7 @@ export default function GolfPlayApp({
 		return (
 			<GolfPlayAppWaiting
 				gameDisplayName={game.display_name}
-				playerInfo={playerInfo}
+				playerProfile={playerProfile}
 			/>
 		);
 	} else if (gameState === "starting") {
@@ -244,7 +247,10 @@ export default function GolfPlayApp({
 				gameDisplayName={game.display_name}
 				gameDurationSeconds={game.duration_seconds}
 				leftTimeSeconds={leftTimeSeconds!}
-				playerInfo={playerInfo}
+				playerInfo={{
+					profile: playerProfile,
+					state: playerState,
+				}}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
 				onCodeChange={onCodeChange}

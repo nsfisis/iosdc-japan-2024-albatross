@@ -1,5 +1,5 @@
 import React from "react";
-import type { SubmitResult } from "../../models/SubmitResult";
+import type { SubmitResult } from "../../types/SubmitResult";
 import BorderedContainer from "../BorderedContainer";
 import SubmitStatusLabel from "../SubmitStatusLabel";
 import ExecStatusIndicatorIcon from "./ExecStatusIndicatorIcon";
