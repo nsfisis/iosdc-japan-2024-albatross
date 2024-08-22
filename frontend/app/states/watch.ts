@@ -1,4 +1,5 @@
 import { atom } from "jotai";
+import { AudioController } from "../.client/audio/AudioController";
 import type { components } from "../.server/api/schema";
 import type { SubmitResult } from "../types/SubmitResult";
 
@@ -245,3 +246,5 @@ export const handleWsSubmitResultMessageAtom = atom(
 		callback(player_id, newResult, score);
 	},
 );
+
+export const audioControllerAtom = atom<AudioController | null>(null);

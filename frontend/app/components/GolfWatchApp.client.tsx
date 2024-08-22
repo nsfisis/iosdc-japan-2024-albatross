@@ -1,7 +1,6 @@
 import { useAtomValue, useSetAtom } from "jotai";
 import { useCallback, useEffect } from "react";
 import { useTimer } from "react-use-precision-timer";
-import { AudioController } from "../.client/audio/AudioController";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
 import {
@@ -29,14 +28,9 @@ type Game = components["schemas"]["Game"];
 export type Props = {
 	game: Game;
 	sockToken: string;
-	audioController: AudioController;
 };
 
-export default function GolfWatchApp({
-	game,
-	sockToken,
-	audioController,
-}: Props) {
+export default function GolfWatchApp({ game, sockToken }: Props) {
 	const socketUrl =
 		process.env.NODE_ENV === "development"
 			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/watch?token=${sockToken}`
