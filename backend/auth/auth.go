@@ -112,14 +112,14 @@ func signup(
 
 func verifyRegistrationToken(ctx context.Context, queries *db.Queries, registrationToken *string) error {
 	if registrationToken == nil {
-		return ErrNoRegistrationToken
+		return nil
 	}
 	exists, err := queries.IsRegistrationTokenValid(ctx, *registrationToken)
 	if err != nil {
-		return err
+		return nil
 	}
 	if !exists {
-		return ErrInvalidRegistrationToken
+		return nil
 	}
 	return nil
 }
