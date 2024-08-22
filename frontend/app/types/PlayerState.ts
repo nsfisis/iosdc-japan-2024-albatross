@@ -1,9 +1,7 @@
 import type { SubmitResult } from "./SubmitResult";
 
-export type PlayerInfo = {
-	displayName: string | null;
-	iconPath: string | null;
+export type PlayerState = {
 	score: number | null;
-	code: string | null;
+	code: string;
 	submitResult: SubmitResult;
 };

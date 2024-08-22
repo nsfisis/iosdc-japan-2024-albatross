@@ -51,6 +51,17 @@ export class AudioController {
 		});
 	}
 
+	async playDummySoundEffect(): Promise<void> {
+		const audio = this.audioElements["good_1"];
+		if (!audio) {
+			return;
+		}
+		audio.muted = true;
+		audio.currentTime = 0;
+		await audio.play();
+		audio.muted = false;
+	}
+
 	async playSoundEffect(soundEffect: SoundEffect): Promise<void> {
 		const audio = this.audioElements[soundEffect];
 		if (!audio) {

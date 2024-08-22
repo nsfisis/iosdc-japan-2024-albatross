@@ -1,32 +1,40 @@
 import { Link } from "@remix-run/react";
+import { useAtomValue } from "jotai";
 import React, { useRef } from "react";
 import SubmitButton from "../../components/SubmitButton";
-import type { PlayerInfo } from "../../models/PlayerInfo";
+import {
+	gamingLeftTimeSecondsAtom,
+	scoreAtom,
+	submitResultAtom,
+} from "../../states/play";
+import type { PlayerProfile } from "../../types/PlayerProfile";
 import BorderedContainer from "../BorderedContainer";
 import SubmitResult from "../Gaming/SubmitResult";
 import UserIcon from "../UserIcon";
 
 type Props = {
 	gameDisplayName: string;
-	gameDurationSeconds: number;
-	leftTimeSeconds: number;
-	playerInfo: Omit<PlayerInfo, "code">;
+	playerProfile: PlayerProfile;
 	problemTitle: string;
 	problemDescription: string;
+	initialCode: string;
 	onCodeChange: (code: string) => void;
 	onCodeSubmit: (code: string) => void;
 };
 
 export default function GolfPlayAppGaming({
 	gameDisplayName,
-	gameDurationSeconds,
-	leftTimeSeconds,
-	playerInfo,
+	playerProfile,
 	problemTitle,
 	problemDescription,
+	initialCode,
 	onCodeChange,
 	onCodeSubmit,
 }: Props) {
+	const leftTimeSeconds = useAtomValue(gamingLeftTimeSecondsAtom)!;
+	const score = useAtomValue(scoreAtom);
+	const submitResult = useAtomValue(submitResultAtom);
+
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 
 	const handleTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -40,9 +48,8 @@ export default function GolfPlayAppGaming({
 	};
 
 	const leftTime = (() => {
-		const k = gameDurationSeconds + leftTimeSeconds;
-		const m = Math.floor(k / 60);
-		const s = k % 60;
+		const m = Math.floor(leftTimeSeconds / 60);
+		const s = leftTimeSeconds % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 	})();
 
@@ -55,15 +62,15 @@ export default function GolfPlayAppGaming({
 				</div>
 				<Link to={"/dashboard"}>
 					<div className="flex gap-4 my-auto font-bold">
-						<div className="text-6xl">{playerInfo.score}</div>
+						<div className="text-6xl">{score}</div>
 						<div className="text-end">
 							<div className="text-gray-100">Player 1</div>
-							<div className="text-2xl">{playerInfo.displayName}</div>
+							<div className="text-2xl">{playerProfile.displayName}</div>
 						</div>
-						{playerInfo.iconPath && (
+						{playerProfile.iconPath && (
 							<UserIcon
-								iconPath={playerInfo.iconPath}
-								displayName={playerInfo.displayName!}
+								iconPath={playerProfile.iconPath}
+								displayName={playerProfile.displayName}
 								className="w-12 h-12 my-auto"
 							/>
 						)}
@@ -82,13 +89,14 @@ export default function GolfPlayAppGaming({
 				<div className="p-4">
 					<textarea
 						ref={textareaRef}
+						defaultValue={initialCode}
 						onChange={handleTextChange}
 						className="resize-none h-full w-full rounded-lg border border-gray-300 p-2 focus:outline-none focus:ring-2 focus:ring-gray-400 transition duration-300"
-					></textarea>
+					/>
 				</div>
 				<div className="p-4">
 					<SubmitResult
-						result={playerInfo.submitResult}
+						result={submitResult}
 						submitButton={
 							<SubmitButton onClick={handleSubmitButtonClick}>
 								提出

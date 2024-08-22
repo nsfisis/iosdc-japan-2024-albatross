@@ -1,4 +1,4 @@
-import type { SubmitResultStatus } from "../models/SubmitResult";
+import type { SubmitResultStatus } from "../types/SubmitResult";
 
 type Props = {
 	status: SubmitResultStatus;

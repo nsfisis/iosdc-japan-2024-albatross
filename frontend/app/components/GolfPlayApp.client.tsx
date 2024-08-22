@@ -1,8 +1,20 @@
-import { useEffect, useState } from "react";
+import { useAtomValue, useSetAtom } from "jotai";
+import { useEffect } from "react";
+import { useTimer } from "react-use-precision-timer";
 import { useDebouncedCallback } from "use-debounce";
 import type { components } from "../.server/api/schema";
 import useWebSocket, { ReadyState } from "../hooks/useWebSocket";
-import type { PlayerInfo } from "../models/PlayerInfo";
+import {
+	gameStartAtom,
+	gameStateKindAtom,
+	handleSubmitCodeAtom,
+	handleWsConnectionClosedAtom,
+	handleWsExecResultMessageAtom,
+	handleWsSubmitResultMessageAtom,
+	setCurrentTimestampAtom,
+	setGameStateConnectingAtom,
+	setGameStateWaitingAtom,
+} from "../states/play";
 import GolfPlayAppConnecting from "./GolfPlayApps/GolfPlayAppConnecting";
 import GolfPlayAppFinished from "./GolfPlayApps/GolfPlayAppFinished";
 import GolfPlayAppGaming from "./GolfPlayApps/GolfPlayAppGaming";
@@ -15,78 +27,47 @@ type GamePlayerMessageC2S = components["schemas"]["GamePlayerMessageC2S"];
 type Game = components["schemas"]["Game"];
 type User = components["schemas"]["User"];
 
-type GameState = "connecting" | "waiting" | "starting" | "gaming" | "finished";
+type Props = {
+	game: Game;
+	player: User;
+	initialCode: string;
+	sockToken: string;
+};
 
 export default function GolfPlayApp({
 	game,
 	player,
+	initialCode,
 	sockToken,
-}: {
-	game: Game;
-	player: User;
-	sockToken: string;
-}) {
+}: Props) {
 	const socketUrl =
 		process.env.NODE_ENV === "development"
 			? `ws://localhost:8002/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`
 			: `wss://t.nil.ninja/iosdc-japan/2024/code-battle/sock/golf/${game.game_id}/play?token=${sockToken}`;
+
+	const gameStateKind = useAtomValue(gameStateKindAtom);
+	const setCurrentTimestamp = useSetAtom(setCurrentTimestampAtom);
+	const gameStart = useSetAtom(gameStartAtom);
+	const setGameStateConnecting = useSetAtom(setGameStateConnectingAtom);
+	const setGameStateWaiting = useSetAtom(setGameStateWaitingAtom);
+	const handleWsConnectionClosed = useSetAtom(handleWsConnectionClosedAtom);
+	const handleWsExecResultMessage = useSetAtom(handleWsExecResultMessageAtom);
+	const handleWsSubmitResultMessage = useSetAtom(
+		handleWsSubmitResultMessageAtom,
+	);
+	const handleSubmitCode = useSetAtom(handleSubmitCodeAtom);
+
+	useTimer({ delay: 1000, startImmediately: true }, setCurrentTimestamp);
 
 	const { sendJsonMessage, lastJsonMessage, readyState } = useWebSocket<
 		GamePlayerMessageS2C,
 		GamePlayerMessageC2S
 	>(socketUrl);
 
-	const [gameState, setGameState] = useState<GameState>("connecting");
-
-	const [startedAt, setStartedAt] = useState<number | null>(null);
-
-	const [leftTimeSeconds, setLeftTimeSeconds] = useState<number | null>(null);
-
-	useEffect(() => {
-		if (
-			(gameState === "starting" || gameState === "gaming") &&
-			startedAt !== null
-		) {
-			const timer = setInterval(() => {
-				setLeftTimeSeconds((prev) => {
-					if (prev === null) {
-						return null;
-					}
-					if (prev <= 1) {
-						const nowSec = Math.floor(Date.now() / 1000);
-						const finishedAt = startedAt + game.duration_seconds;
-						if (nowSec >= finishedAt) {
-							clearInterval(timer);
-							setGameState("finished");
-						} else {
-							setGameState("gaming");
-						}
-					}
-					return prev - 1;
-				});
-			}, 1000);
-
-			return () => {
-				clearInterval(timer);
-			};
-		}
-	}, [gameState, startedAt, game.duration_seconds]);
-
-	const [playerInfo, setPlayerInfo] = useState<Omit<PlayerInfo, "code">>({
+	const playerProfile = {
 		displayName: player.display_name,
 		iconPath: player.icon_path ?? null,
-		score: null,
-		submitResult: {
-			status: "waiting_submission",
-			execResults: game.exec_steps.map((r) => ({
-				testcase_id: r.testcase_id,
-				status: "waiting_submission",
-				label: r.label,
-				stdout: "",
-				stderr: "",
-			})),
-		},
-	});
+	};
 
 	const onCodeChange = useDebouncedCallback((code: string) => {
 		console.log("player:c2s:code");
@@ -94,6 +75,8 @@ export default function GolfPlayApp({
 			type: "player:c2s:code",
 			data: { code },
 		});
+		const baseKey = `playerState:${game.game_id}:${player.user_id}`;
+		window.localStorage.setItem(`${baseKey}:code`, code);
 	}, 1000);
 
 	const onCodeSubmit = useDebouncedCallback((code: string) => {
@@ -105,18 +88,7 @@ export default function GolfPlayApp({
 			type: "player:c2s:submit",
 			data: { code },
 		});
-		setPlayerInfo((prev) => ({
-			...prev,
-			submitResult: {
-				status: "running",
-				execResults: prev.submitResult.execResults.map((r) => ({
-					...r,
-					status: "running",
-					stdout: "",
-					stderr: "",
-				})),
-			},
-		}));
+		handleSubmitCode();
 	}, 1000);
 
 	if (readyState === ReadyState.UNINSTANTIATED) {
@@ -125,133 +97,89 @@ export default function GolfPlayApp({
 
 	useEffect(() => {
 		if (readyState === ReadyState.CLOSING || readyState === ReadyState.CLOSED) {
-			if (gameState !== "finished") {
-				setGameState("connecting");
-			}
+			handleWsConnectionClosed();
 		} else if (readyState === ReadyState.CONNECTING) {
-			setGameState("connecting");
+			setGameStateConnecting();
 		} else if (readyState === ReadyState.OPEN) {
 			if (lastJsonMessage !== null) {
 				console.log(lastJsonMessage.type);
 				if (lastJsonMessage.type === "player:s2c:start") {
-					if (
-						gameState !== "starting" &&
-						gameState !== "gaming" &&
-						gameState !== "finished"
-					) {
-						const { start_at } = lastJsonMessage.data;
-						setStartedAt(start_at);
-						const nowSec = Math.floor(Date.now() / 1000);
-						setLeftTimeSeconds(start_at - nowSec);
-						setGameState("starting");
-					}
+					const { start_at } = lastJsonMessage.data;
+					gameStart(start_at);
 				} else if (lastJsonMessage.type === "player:s2c:execresult") {
-					const { testcase_id, status, stdout, stderr } = lastJsonMessage.data;
-					setPlayerInfo((prev) => {
-						const ret = { ...prev };
-						ret.submitResult = {
-							...prev.submitResult,
-							execResults: prev.submitResult.execResults.map((r) =>
-								r.testcase_id === testcase_id && r.status === "running"
-									? {
-											...r,
-											status,
-											stdout,
-											stderr,
-										}
-									: r,
-							),
-						};
-						return ret;
-					});
-				} else if (lastJsonMessage.type === "player:s2c:submitresult") {
-					const { status, score } = lastJsonMessage.data;
-					setPlayerInfo((prev) => {
-						const ret = { ...prev };
-						ret.submitResult = {
-							...prev.submitResult,
-							status,
-						};
-						if (status === "success") {
-							if (score) {
-								if (ret.score === null || score < ret.score) {
-									ret.score = score;
-								}
-							}
-						} else {
-							ret.submitResult.execResults = prev.submitResult.execResults.map(
-								(r) =>
-									r.status === "running" ? { ...r, status: "canceled" } : r,
+					handleWsExecResultMessage(
+						lastJsonMessage.data,
+						(submissionResult) => {
+							const baseKey = `playerState:${game.game_id}:${player.user_id}`;
+							window.localStorage.setItem(
+								`${baseKey}:submissionResult`,
+								JSON.stringify(submissionResult),
 							);
-						}
-						return ret;
-					});
+						},
+					);
+				} else if (lastJsonMessage.type === "player:s2c:submitresult") {
+					handleWsSubmitResultMessage(
+						lastJsonMessage.data,
+						(submissionResult, score) => {
+							const baseKey = `playerState:${game.game_id}:${player.user_id}`;
+							window.localStorage.setItem(
+								`${baseKey}:submissionResult`,
+								JSON.stringify(submissionResult),
+							);
+							window.localStorage.setItem(
+								`${baseKey}:score`,
+								score === null ? "" : score.toString(),
+							);
+						},
+					);
 				}
 			} else {
 				if (game.started_at) {
-					const nowSec = Math.floor(Date.now() / 1000);
-					if (game.started_at <= nowSec) {
-						// The game has already started.
-						if (gameState !== "gaming" && gameState !== "finished") {
-							setStartedAt(game.started_at);
-							setLeftTimeSeconds(game.started_at - nowSec);
-							setGameState("gaming");
-						}
-					} else {
-						// The game is starting.
-						if (
-							gameState !== "starting" &&
-							gameState !== "gaming" &&
-							gameState !== "finished"
-						) {
-							setStartedAt(game.started_at);
-							setLeftTimeSeconds(game.started_at - nowSec);
-							setGameState("starting");
-						}
-					}
+					gameStart(game.started_at);
 				} else {
-					setGameState("waiting");
+					setGameStateWaiting();
 				}
 			}
 		}
 	}, [
+		game.game_id,
 		game.started_at,
+		player.user_id,
 		sendJsonMessage,
 		lastJsonMessage,
 		readyState,
-		gameState,
+		gameStart,
+		handleWsConnectionClosed,
+		handleWsExecResultMessage,
+		handleWsSubmitResultMessage,
+		setGameStateConnecting,
+		setGameStateWaiting,
 	]);
 
-	if (gameState === "connecting") {
+	if (gameStateKind === "connecting") {
 		return <GolfPlayAppConnecting />;
-	} else if (gameState === "waiting") {
+	} else if (gameStateKind === "waiting") {
 		return (
 			<GolfPlayAppWaiting
 				gameDisplayName={game.display_name}
-				playerInfo={playerInfo}
+				playerProfile={playerProfile}
 			/>
 		);
-	} else if (gameState === "starting") {
-		return (
-			<GolfPlayAppStarting
-				gameDisplayName={game.display_name}
-				leftTimeSeconds={leftTimeSeconds!}
-			/>
-		);
-	} else if (gameState === "gaming") {
+	} else if (gameStateKind === "starting") {
+		return <GolfPlayAppStarting gameDisplayName={game.display_name} />;
+	} else if (gameStateKind === "gaming") {
 		return (
 			<GolfPlayAppGaming
 				gameDisplayName={game.display_name}
-				gameDurationSeconds={game.duration_seconds}
-				leftTimeSeconds={leftTimeSeconds!}
-				playerInfo={playerInfo}
+				playerProfile={playerProfile}
 				problemTitle={game.problem.title}
 				problemDescription={game.problem.description}
+				initialCode={initialCode}
 				onCodeChange={onCodeChange}
 				onCodeSubmit={onCodeSubmit}
 			/>
 		);
-	} else if (gameState === "finished") {
+	} else if (gameStateKind === "finished") {
 		return <GolfPlayAppFinished />;
 	} else {
 		return null;

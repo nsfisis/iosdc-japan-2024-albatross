@@ -6,7 +6,7 @@ import {
 	faRotate,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import type { ExecResultStatus } from "../../models/ExecResult";
+import type { ExecResultStatus } from "../../types/ExecResult";
 
 type Props = {
 	status: ExecResultStatus;

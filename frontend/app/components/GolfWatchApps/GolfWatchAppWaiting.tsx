@@ -1,18 +1,16 @@
-import { PlayerInfo as FullPlayerInfo } from "../../models/PlayerInfo";
-import PlayerProfile from "../PlayerProfile";
-
-type PlayerInfo = Pick<FullPlayerInfo, "displayName" | "iconPath">;
+import type { PlayerProfile } from "../../types/PlayerProfile";
+import PlayerNameAndIcon from "../PlayerNameAndIcon";
 
 type Props = {
 	gameDisplayName: string;
-	playerInfoA: PlayerInfo;
-	playerInfoB: PlayerInfo;
+	playerProfileA: PlayerProfile;
+	playerProfileB: PlayerProfile;
 };
 
 export default function GolfWatchAppWaiting({
 	gameDisplayName,
-	playerInfoA,
-	playerInfoB,
+	playerProfileA,
+	playerProfileB,
 }: Props) {
 	return (
 		<div className="min-h-screen bg-gray-100 flex flex-col font-bold text-center">
@@ -20,9 +18,9 @@ export default function GolfWatchAppWaiting({
 				<div className="text-4xl">{gameDisplayName}</div>
 			</div>
 			<div className="grow grid grid-cols-3 gap-10 mx-auto text-black">
-				<PlayerProfile playerInfo={playerInfoA} label="Player 1" />
+				<PlayerNameAndIcon label="Player 1" profile={playerProfileA} />
 				<div className="text-8xl my-auto">vs.</div>
-				<PlayerProfile playerInfo={playerInfoB} label="Player 2" />
+				<PlayerNameAndIcon label="Player 2" profile={playerProfileB} />
 			</div>
 		</div>
 	);

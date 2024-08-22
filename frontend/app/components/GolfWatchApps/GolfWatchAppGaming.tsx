@@ -1,4 +1,14 @@
-import { PlayerInfo } from "../../models/PlayerInfo";
+import { useAtomValue } from "jotai";
+import {
+	codeAAtom,
+	codeBAtom,
+	gamingLeftTimeSecondsAtom,
+	scoreAAtom,
+	scoreBAtom,
+	submitResultAAtom,
+	submitResultBAtom,
+} from "../../states/watch";
+import type { PlayerProfile } from "../../types/PlayerProfile";
 import BorderedContainer from "../BorderedContainer";
 import CodeBlock from "../Gaming/CodeBlock";
 import ScoreBar from "../Gaming/ScoreBar";
@@ -7,10 +17,8 @@ import UserIcon from "../UserIcon";
 
 type Props = {
 	gameDisplayName: string;
-	gameDurationSeconds: number;
-	leftTimeSeconds: number;
-	playerInfoA: PlayerInfo;
-	playerInfoB: PlayerInfo;
+	playerProfileA: PlayerProfile;
+	playerProfileB: PlayerProfile;
 	problemTitle: string;
 	problemDescription: string;
 	gameResult: "winA" | "winB" | "draw" | null;
@@ -18,21 +26,23 @@ type Props = {
 
 export default function GolfWatchAppGaming({
 	gameDisplayName,
-	gameDurationSeconds,
-	leftTimeSeconds,
-	playerInfoA,
-	playerInfoB,
+	playerProfileA,
+	playerProfileB,
 	problemTitle,
 	problemDescription,
 	gameResult,
 }: Props) {
+	const leftTimeSeconds = useAtomValue(gamingLeftTimeSecondsAtom)!;
+	const codeA = useAtomValue(codeAAtom);
+	const codeB = useAtomValue(codeBAtom);
+	const scoreA = useAtomValue(scoreAAtom);
+	const scoreB = useAtomValue(scoreBAtom);
+	const submitResultA = useAtomValue(submitResultAAtom);
+	const submitResultB = useAtomValue(submitResultBAtom);
+
 	const leftTime = (() => {
-		const k = gameDurationSeconds + leftTimeSeconds;
-		if (k <= 0) {
-			return "00:00";
-		}
-		const m = Math.floor(k / 60);
-		const s = k % 60;
+		const m = Math.floor(leftTimeSeconds / 60);
+		const s = leftTimeSeconds % 60;
 		return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 	})();
 
@@ -49,43 +59,43 @@ export default function GolfWatchAppGaming({
 			<div className={`text-white ${topBg} grid grid-cols-3 px-4 py-2`}>
 				<div className="font-bold flex justify-between my-auto">
 					<div className="flex gap-6">
-						{playerInfoA.iconPath && (
+						{playerProfileA.iconPath && (
 							<UserIcon
-								iconPath={playerInfoA.iconPath}
-								displayName={playerInfoA.displayName!}
+								iconPath={playerProfileA.iconPath}
+								displayName={playerProfileA.displayName}
 								className="w-12 h-12 my-auto"
 							/>
 						)}
 						<div>
 							<div className="text-gray-100">Player 1</div>
-							<div className="text-2xl">{playerInfoA.displayName}</div>
+							<div className="text-2xl">{playerProfileA.displayName}</div>
 						</div>
 					</div>
-					<div className="text-6xl">{playerInfoA.score}</div>
+					<div className="text-6xl">{scoreA}</div>
 				</div>
 				<div className="font-bold text-center">
 					<div className="text-gray-100">{gameDisplayName}</div>
 					<div className="text-3xl">
 						{gameResult
 							? gameResult === "winA"
-								? `勝者 ${playerInfoA.displayName}`
+								? `勝者 ${playerProfileA.displayName}`
 								: gameResult === "winB"
-									? `勝者 ${playerInfoB.displayName}`
+									? `勝者 ${playerProfileB.displayName}`
 									: "引き分け"
 							: leftTime}
 					</div>
 				</div>
 				<div className="font-bold flex justify-between my-auto">
-					<div className="text-6xl">{playerInfoB.score}</div>
+					<div className="text-6xl">{scoreB}</div>
 					<div className="flex gap-6 text-end">
 						<div>
 							<div className="text-gray-100">Player 2</div>
-							<div className="text-2xl">{playerInfoB.displayName}</div>
+							<div className="text-2xl">{playerProfileB.displayName}</div>
 						</div>
-						{playerInfoB.iconPath && (
+						{playerProfileB.iconPath && (
 							<UserIcon
-								iconPath={playerInfoB.iconPath}
-								displayName={playerInfoB.displayName!}
+								iconPath={playerProfileB.iconPath}
+								displayName={playerProfileB.displayName}
 								className="w-12 h-12 my-auto"
 							/>
 						)}
@@ -93,17 +103,17 @@ export default function GolfWatchAppGaming({
 				</div>
 			</div>
 			<ScoreBar
-				scoreA={playerInfoA.score}
-				scoreB={playerInfoB.score}
+				scoreA={scoreA}
+				scoreB={scoreB}
 				bgA="bg-orange-400"
 				bgB="bg-purple-400"
 			/>
 			<div className="grow grid grid-cols-3 p-4 gap-4">
-				<CodeBlock code={playerInfoA.code ?? ""} language="swift" />
+				<CodeBlock code={codeA} language="swift" />
 				<div className="flex flex-col gap-4">
 					<div className="grid grid-cols-2 gap-4">
-						<SubmitResult result={playerInfoA.submitResult} />
-						<SubmitResult result={playerInfoB.submitResult} />
+						<SubmitResult result={submitResultA} />
+						<SubmitResult result={submitResultB} />
 					</div>
 					<div>
 						<div className="mb-2 text-center text-xl font-bold">
@@ -112,7 +122,7 @@ export default function GolfWatchAppGaming({
 						<BorderedContainer>{problemDescription}</BorderedContainer>
 					</div>
 				</div>
-				<CodeBlock code={playerInfoB.code ?? ""} language="swift" />
+				<CodeBlock code={codeB} language="swift" />
 			</div>
 		</div>
 	);
