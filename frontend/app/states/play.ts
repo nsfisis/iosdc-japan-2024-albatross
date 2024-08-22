@@ -172,6 +172,11 @@ export const handleWsSubmitResultMessageAtom = atom(
 			newResult.execResults = prev.execResults.map((r) =>
 				r.status === "running" ? { ...r, status: "canceled" } : r,
 			);
+		} else {
+			newResult.execResults = prev.execResults.map((r) => ({
+				...r,
+				status: "success",
+			}));
 		}
 		set(submitResultAtom, newResult);
 		if (status === "success" && score !== null) {
