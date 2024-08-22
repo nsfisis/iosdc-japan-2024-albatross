@@ -103,6 +103,7 @@ export default function GolfPlayApp({
 		} else if (readyState === ReadyState.OPEN) {
 			if (lastJsonMessage !== null) {
 				console.log(lastJsonMessage.type);
+				console.log(lastJsonMessage.data);
 				if (lastJsonMessage.type === "player:s2c:start") {
 					const { start_at } = lastJsonMessage.data;
 					gameStart(start_at);

@@ -90,6 +90,7 @@ export default function GolfWatchApp({ game, sockToken }: Props) {
 		} else if (readyState === ReadyState.OPEN) {
 			if (lastJsonMessage !== null) {
 				console.log(lastJsonMessage.type);
+				console.log(lastJsonMessage.data);
 				if (lastJsonMessage.type === "watcher:s2c:start") {
 					const { start_at } = lastJsonMessage.data;
 					gameStart(start_at);
