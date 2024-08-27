@@ -46,8 +46,8 @@ ORDER BY games.game_id;
 -- name: ListGamesForPlayer :many
 SELECT * FROM games
 JOIN problems ON games.problem_id = problems.problem_id
-LEFT JOIN game_players ON games.game_id = game_players.game_id
-WHERE game_players.user_id = $1 OR games.game_id = 39
+JOIN game_players ON games.game_id = game_players.game_id
+WHERE game_players.user_id = $1
 ORDER BY games.game_id;
 
 -- name: UpdateGameState :exec

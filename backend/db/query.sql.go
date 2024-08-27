@@ -374,8 +374,8 @@ func (q *Queries) ListGames(ctx context.Context) ([]ListGamesRow, error) {
 const listGamesForPlayer = `-- name: ListGamesForPlayer :many
 SELECT games.game_id, game_type, state, display_name, duration_seconds, created_at, started_at, games.problem_id, problems.problem_id, title, description, game_players.game_id, user_id FROM games
 JOIN problems ON games.problem_id = problems.problem_id
-LEFT JOIN game_players ON games.game_id = game_players.game_id
-WHERE game_players.user_id = $1 OR games.game_id = 39
+JOIN game_players ON games.game_id = game_players.game_id
+WHERE game_players.user_id = $1
 ORDER BY games.game_id
 `
 
@@ -391,8 +391,8 @@ type ListGamesForPlayerRow struct {
 	ProblemID_2     int32
 	Title           string
 	Description     string
-	GameID_2        *int32
-	UserID          *int32
+	GameID_2        int32
+	UserID          int32
 }
 
 func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListGamesForPlayerRow, error) {
