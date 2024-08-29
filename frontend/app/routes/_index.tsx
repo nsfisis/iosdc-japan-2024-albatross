@@ -1,7 +1,7 @@
 import type { LoaderFunctionArgs, MetaFunction } from "@remix-run/node";
+import { Link } from "@remix-run/react";
 import { ensureUserNotLoggedIn } from "../.server/auth";
 import BorderedContainer from "../components/BorderedContainer";
-import NavigateLink from "../components/NavigateLink";
 
 export const meta: MetaFunction = () => [
 	{ title: "iOSDC Japan 2024 Albatross.swift" },
@@ -38,8 +38,17 @@ export default function Index() {
 					</p>
 				</BorderedContainer>
 			</div>
-			<div>
-				<NavigateLink to="/login">ログイン</NavigateLink>
+			<div className="mt-4">
+				<p className="mb-2">
+					追記:
+					イベントは終了しました。ご参加いただいたみなさま、ありがとうございました！
+				</p>
+				<Link
+					to="https://blog.iosdc.jp/2024/08/30/iosdc-japan-2024-swift-code-battle/"
+					className="underline underline-offset-4 text-pink-600 hover:text-pink-500 transition duration-300"
+				>
+					試合結果はこちらのスタッフブログで公開しています。
+				</Link>
 			</div>
 		</div>
 	);
