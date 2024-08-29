@@ -1,5 +1,18 @@
 # Albatross.swift
 
+
+# これは何？
+
+2024-08-22 から 2024-08-24 にかけて開催された [iOSDC Japan 2024](https://iosdc.jp/2024/) の中の企画、Swift コードバトルのシステムです。
+
+
+# サンドボックス化の仕組み
+
+ユーザから任意のコードを受け付ける関係上、何も対策をしないと深刻な脆弱性を抱えてしまいます。
+
+このシステムでは、送信されたコードを [SwiftWasm](https://swiftwasm.org/) によって WebAssembly に変換することでサンドボックス化をおこなっています。
+
+
 # License
 
 The contents of the repository are licensed under The MIT License, except for
