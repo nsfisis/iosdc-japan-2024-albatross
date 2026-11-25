@@ -5,7 +5,12 @@
 
 2024-08-22 から 2024-08-24 にかけて開催された [iOSDC Japan 2024](https://iosdc.jp/2024/) の中の企画、Swift コードバトルのシステムです。
 
-[サイトはこちら (現在は新規にプレイすることはできません)](https://t.nil.ninja/iosdc-japan/2024/code-battle/)
+現在は回答を締め切っていますが、コードゴルフの問題や開催中の参加者の方々の回答は、以下のページから確認できます。
+
+https://t.nil.ninja/iosdc-japan/2024/code-battle/
+
+> [!NOTE]
+> 現在はアーカイブされた静的ファイルがサーブされています: https://github.com/nsfisis/iosdc-japan-2024-albatross-archive
 
 
 # サンドボックス化の仕組み
