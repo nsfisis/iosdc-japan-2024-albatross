@@ -174,6 +174,84 @@ func (q *Queries) GetGameByID(ctx context.Context, gameID int32) (GetGameByIDRow
 	return i, err
 }
 
+const getRanking = `-- name: GetRanking :many
+
+SELECT
+    best.submission_id,
+    best.code,
+    best.code_size,
+    best.created_at,
+    users.user_id,
+    users.username,
+    users.display_name,
+    users.icon_path,
+    users.is_admin
+FROM (
+    SELECT DISTINCT ON (submissions.user_id)
+        submissions.submission_id,
+        submissions.user_id,
+        submissions.code,
+        submissions.code_size,
+        submissions.created_at
+    FROM submissions
+    JOIN submission_results ON submissions.submission_id = submission_results.submission_id
+    WHERE submissions.game_id = $1
+        AND submission_results.status = 'success'
+        AND NOT EXISTS (
+            SELECT 1 FROM testcase_results
+            WHERE testcase_results.submission_id = submissions.submission_id
+        )
+    ORDER BY submissions.user_id, submissions.code_size, submissions.created_at, submissions.submission_id
+) AS best
+JOIN users ON best.user_id = users.user_id
+ORDER BY best.code_size, best.created_at, best.submission_id
+`
+
+type GetRankingRow struct {
+	SubmissionID int32
+	Code         string
+	CodeSize     int32
+	CreatedAt    pgtype.Timestamp
+	UserID       int32
+	Username     string
+	DisplayName  string
+	IconPath     *string
+	IsAdmin      bool
+}
+
+// A submission is accepted if its result is "success" and no testcase failed.
+// Note that testcase_results only has rows for failed testcases, and that
+// submission_results is written as soon as the first testcase finishes.
+func (q *Queries) GetRanking(ctx context.Context, gameID int32) ([]GetRankingRow, error) {
+	rows, err := q.db.Query(ctx, getRanking, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []GetRankingRow
+	for rows.Next() {
+		var i GetRankingRow
+		if err := rows.Scan(
+			&i.SubmissionID,
+			&i.Code,
+			&i.CodeSize,
+			&i.CreatedAt,
+			&i.UserID,
+			&i.Username,
+			&i.DisplayName,
+			&i.IconPath,
+			&i.IsAdmin,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const getSubmissionCodeSizeByID = `-- name: GetSubmissionCodeSizeByID :one
 SELECT code_size FROM submissions
 WHERE submission_id = $1
@@ -418,6 +496,59 @@ func (q *Queries) ListGamesForPlayer(ctx context.Context, userID int32) ([]ListG
 			&i.Description,
 			&i.GameID_2,
 			&i.UserID,
+		); err != nil {
+			return nil, err
+		}
+		items = append(items, i)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+const listSubmissionSummaries = `-- name: ListSubmissionSummaries :many
+SELECT
+    submissions.submission_id,
+    submissions.user_id,
+    submissions.code_size,
+    submissions.created_at,
+    submission_results.status,
+    (
+        SELECT COUNT(*) FROM testcase_results
+        WHERE testcase_results.submission_id = submissions.submission_id
+    ) AS failed_testcase_count
+FROM submissions
+LEFT JOIN submission_results ON submissions.submission_id = submission_results.submission_id
+WHERE submissions.game_id = $1
+ORDER BY submissions.submission_id
+`
+
+type ListSubmissionSummariesRow struct {
+	SubmissionID        int32
+	UserID              int32
+	CodeSize            int32
+	CreatedAt           pgtype.Timestamp
+	Status              *string
+	FailedTestcaseCount int64
+}
+
+func (q *Queries) ListSubmissionSummaries(ctx context.Context, gameID int32) ([]ListSubmissionSummariesRow, error) {
+	rows, err := q.db.Query(ctx, listSubmissionSummaries, gameID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var items []ListSubmissionSummariesRow
+	for rows.Next() {
+		var i ListSubmissionSummariesRow
+		if err := rows.Scan(
+			&i.SubmissionID,
+			&i.UserID,
+			&i.CodeSize,
+			&i.CreatedAt,
+			&i.Status,
+			&i.FailedTestcaseCount,
 		); err != nil {
 			return nil, err
 		}

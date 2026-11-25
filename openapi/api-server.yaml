@@ -67,7 +67,7 @@ paths:
       operationId: getGames
       summary: List games
       parameters:
-        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/header_authorization_optional'
       responses:
         '200':
           description: List of games
@@ -91,7 +91,7 @@ paths:
       operationId: getGame
       summary: Get a game
       parameters:
-        - $ref: '#/components/parameters/header_authorization'
+        - $ref: '#/components/parameters/header_authorization_optional'
         - $ref: '#/components/parameters/path_game_id'
       responses:
         '200':
@@ -111,8 +111,60 @@ paths:
           $ref: '#/components/responses/Forbidden'
         '404':
           $ref: '#/components/responses/NotFound'
+  /games/{game_id}/watch/ranking:
+    get:
+      operationId: getGameWatchRanking
+      summary: Get the ranking of a game
+      parameters:
+        - $ref: '#/components/parameters/header_authorization_optional'
+        - $ref: '#/components/parameters/path_game_id'
+      responses:
+        '200':
+          description: Ranking of the game
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ranking:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RankingEntry'
+                required:
+                  - ranking
+        '404':
+          $ref: '#/components/responses/NotFound'
+  /games/{game_id}/submissions:
+    get:
+      operationId: getGameSubmissions
+      summary: List submissions of a game without their code
+      parameters:
+        - $ref: '#/components/parameters/header_authorization_optional'
+        - $ref: '#/components/parameters/path_game_id'
+      responses:
+        '200':
+          description: Submissions of the game
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  submissions:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SubmissionSummary'
+                required:
+                  - submissions
+        '404':
+          $ref: '#/components/responses/NotFound'
 components:
   parameters:
+    header_authorization_optional:
+      in: header
+      name: Authorization
+      schema:
+        type: string
+      required: false
     header_authorization:
       in: header
       name: Authorization
@@ -261,6 +313,56 @@ components:
         - problem_id
         - title
         - description
+    RankingEntry:
+      type: object
+      properties:
+        player:
+          $ref: '#/components/schemas/User'
+        score:
+          type: integer
+          example: 100
+        submitted_at:
+          type: integer
+          example: 946684800
+          x-go-type: int64
+        code:
+          type: string
+          example: "print(42)"
+      required:
+        - player
+        - score
+        - submitted_at
+        - code
+    SubmissionSummary:
+      type: object
+      properties:
+        submission_id:
+          type: integer
+          example: 1
+        user_id:
+          type: integer
+          example: 1
+        code_size:
+          type: integer
+          example: 100
+        submitted_at:
+          type: integer
+          example: 946684800
+          x-go-type: int64
+        status:
+          type: string
+          nullable: true
+          example: "success"
+        failed_testcase_count:
+          type: integer
+          example: 0
+      required:
+        - submission_id
+        - user_id
+        - code_size
+        - submitted_at
+        - status
+        - failed_testcase_count
     GamePlayerMessage:
       oneOf:
         - $ref: '#/components/schemas/GamePlayerMessageS2C'

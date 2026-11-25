@@ -78,6 +78,9 @@ func (h *Handler) GetToken(_ context.Context, _ GetTokenRequestObject, user *aut
 }
 
 func (h *Handler) GetGames(ctx context.Context, _ GetGamesRequestObject, user *auth.JWTClaims) (GetGamesResponseObject, error) {
+	if user == nil {
+		return h.getAllGames(ctx)
+	}
 	gameRows, err := h.q.ListGamesForPlayer(ctx, int32(user.UserID))
 	if err != nil {
 		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
@@ -174,5 +177,112 @@ func (h *Handler) GetGame(ctx context.Context, request GetGameRequestObject, use
 	}
 	return GetGame200JSONResponse{
 		Game: game,
+	}, nil
+}
+
+// getAllGames lists all games for users who are not logged in, so that the
+// results can be viewed after the event.
+func (h *Handler) getAllGames(ctx context.Context) (GetGamesResponseObject, error) {
+	gameRows, err := h.q.ListGames(ctx)
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	games := make([]Game, len(gameRows))
+	for i, row := range gameRows {
+		var startedAt *int64
+		if row.StartedAt.Valid {
+			startedAtTimestamp := row.StartedAt.Time.Unix()
+			startedAt = &startedAtTimestamp
+		}
+		games[i] = Game{
+			GameID:          int(row.GameID),
+			GameType:        GameGameType(row.GameType),
+			State:           GameState(row.State),
+			DisplayName:     row.DisplayName,
+			DurationSeconds: int(row.DurationSeconds),
+			StartedAt:       startedAt,
+			Problem: Problem{
+				ProblemID:   int(row.ProblemID),
+				Title:       row.Title,
+				Description: row.Description,
+			},
+			Players:   []User{},
+			ExecSteps: []ExecStep{},
+		}
+	}
+	return GetGames200JSONResponse{
+		Games: games,
+	}, nil
+}
+
+func (h *Handler) GetGameWatchRanking(ctx context.Context, request GetGameWatchRankingRequestObject, _ *auth.JWTClaims) (GetGameWatchRankingResponseObject, error) {
+	gameID := request.GameID
+	if _, err := h.q.GetGameByID(ctx, int32(gameID)); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetGameWatchRanking404JSONResponse{
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
+			}, nil
+		}
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	rows, err := h.q.GetRanking(ctx, int32(gameID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	ranking := make([]RankingEntry, len(rows))
+	for i, row := range rows {
+		ranking[i] = RankingEntry{
+			Player: User{
+				UserID:      int(row.UserID),
+				Username:    row.Username,
+				DisplayName: row.DisplayName,
+				IconPath:    row.IconPath,
+				IsAdmin:     row.IsAdmin,
+			},
+			Score:       int(row.CodeSize),
+			SubmittedAt: row.CreatedAt.Time.Unix(),
+			Code:        row.Code,
+		}
+	}
+	return GetGameWatchRanking200JSONResponse{
+		Ranking: ranking,
+	}, nil
+}
+
+func (h *Handler) GetGameSubmissions(ctx context.Context, request GetGameSubmissionsRequestObject, _ *auth.JWTClaims) (GetGameSubmissionsResponseObject, error) {
+	gameID := request.GameID
+	if _, err := h.q.GetGameByID(ctx, int32(gameID)); err != nil {
+		if errors.Is(err, pgx.ErrNoRows) {
+			return GetGameSubmissions404JSONResponse{
+				NotFoundJSONResponse: NotFoundJSONResponse{
+					Message: "Game not found",
+				},
+			}, nil
+		}
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	rows, err := h.q.ListSubmissionSummaries(ctx, int32(gameID))
+	if err != nil {
+		return nil, echo.NewHTTPError(http.StatusInternalServerError, err.Error())
+	}
+	submissions := make([]SubmissionSummary, len(rows))
+	for i, row := range rows {
+		status := nullable.NewNullNullable[string]()
+		if row.Status != nil {
+			status = nullable.NewNullableWithValue(*row.Status)
+		}
+		submissions[i] = SubmissionSummary{
+			SubmissionID:        int(row.SubmissionID),
+			UserID:              int(row.UserID),
+			CodeSize:            int(row.CodeSize),
+			SubmittedAt:         row.CreatedAt.Time.Unix(),
+			Status:              status,
+			FailedTestcaseCount: int(row.FailedTestcaseCount),
+		}
+	}
+	return GetGameSubmissions200JSONResponse{
+		Submissions: submissions,
 	}, nil
 }

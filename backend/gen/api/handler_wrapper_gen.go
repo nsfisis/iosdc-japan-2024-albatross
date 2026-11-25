@@ -61,16 +61,27 @@ func main() {
 	}
 	slices.Sort(methods)
 
+	// These methods can be called without login. The user is nil if the
+	// request has no valid token.
+	loginOptionalMethods := map[string]bool{
+		"GetGame":             true,
+		"GetGameSubmissions":  true,
+		"GetGameWatchRanking": true,
+		"GetGames":            true,
+	}
+
 	type TemplateParameter struct {
 		Name              string
 		RequiresLogin     bool
+		LoginOptional     bool
 		RequiresAdminRole bool
 	}
 	templateParameters := make([]TemplateParameter, len(methods))
 	for i, method := range methods {
 		templateParameters[i] = TemplateParameter{
 			Name:              method,
-			RequiresLogin:     method != "PostLogin",
+			RequiresLogin:     method != "PostLogin" && !loginOptionalMethods[method],
+			LoginOptional:     loginOptionalMethods[method],
 			RequiresAdminRole: strings.Contains(method, "Admin"),
 		}
 	}
@@ -159,6 +170,12 @@ func parseJWTClaimsFromAuthorizationHeader(authorization string) (*auth.JWTClaim
 					}, nil
 				}
 			{{ end -}}
+			return h.impl.{{ .Name }}(ctx, request, user)
+		{{ else if .LoginOptional -}}
+			var user *auth.JWTClaims
+			if request.Params.Authorization != nil {
+				user, _ = parseJWTClaimsFromAuthorizationHeader(*request.Params.Authorization)
+			}
 			return h.impl.{{ .Name }}(ctx, request, user)
 		{{ else -}}
 			return h.impl.{{ .Name }}(ctx, request)

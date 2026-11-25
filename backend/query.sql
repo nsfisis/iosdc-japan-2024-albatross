@@ -124,3 +124,54 @@ SELECT
 FROM testcases
 LEFT JOIN testcase_results AS r ON testcases.testcase_id = r.testcase_id
 WHERE r.submission_id = $1;
+
+-- A submission is accepted if its result is "success" and no testcase failed.
+-- Note that testcase_results only has rows for failed testcases, and that
+-- submission_results is written as soon as the first testcase finishes.
+
+-- name: GetRanking :many
+SELECT
+    best.submission_id,
+    best.code,
+    best.code_size,
+    best.created_at,
+    users.user_id,
+    users.username,
+    users.display_name,
+    users.icon_path,
+    users.is_admin
+FROM (
+    SELECT DISTINCT ON (submissions.user_id)
+        submissions.submission_id,
+        submissions.user_id,
+        submissions.code,
+        submissions.code_size,
+        submissions.created_at
+    FROM submissions
+    JOIN submission_results ON submissions.submission_id = submission_results.submission_id
+    WHERE submissions.game_id = $1
+        AND submission_results.status = 'success'
+        AND NOT EXISTS (
+            SELECT 1 FROM testcase_results
+            WHERE testcase_results.submission_id = submissions.submission_id
+        )
+    ORDER BY submissions.user_id, submissions.code_size, submissions.created_at, submissions.submission_id
+) AS best
+JOIN users ON best.user_id = users.user_id
+ORDER BY best.code_size, best.created_at, best.submission_id;
+
+-- name: ListSubmissionSummaries :many
+SELECT
+    submissions.submission_id,
+    submissions.user_id,
+    submissions.code_size,
+    submissions.created_at,
+    submission_results.status,
+    (
+        SELECT COUNT(*) FROM testcase_results
+        WHERE testcase_results.submission_id = submissions.submission_id
+    ) AS failed_testcase_count
+FROM submissions
+LEFT JOIN submission_results ON submissions.submission_id = submission_results.submission_id
+WHERE submissions.game_id = $1
+ORDER BY submissions.submission_id;
